@@ -6,6 +6,7 @@ import sys
 
 
 class CLI:
+    """CLI application helper class"""
     @staticmethod
     def args() -> list[str]:
         """Return list of command line arguments, excluding script path"""
