@@ -1,12 +1,11 @@
 import os
 import pathlib
 import subprocess
-
 import sys
 
 
 class CLI:
-    """CLI application helper class"""
+    """Command-line application helper class"""
     @staticmethod
     def args() -> list[str]:
         """Return list of command line arguments, excluding script path"""
