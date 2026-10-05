@@ -44,7 +44,8 @@ class CLI:
         # Add default help command
         self.add_command("help", "Show help message")
 
-    def help(self):
+    def help(self) -> None:
+        """Show help message with list of commands and flags with their descriptions"""
         print(f"{CLI.script_name()} - {self._author} (c) {self._copyright}")
         print()
         print("Commands:")
