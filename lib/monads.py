@@ -47,6 +47,13 @@ class Option:
 
         return False
 
+    def expect(self, error: T):
+        """Get value if Some, else raise custom ValueError"""
+        if self._value is None:
+            raise ValueError(error)
+
+        return self._value
+
     def unwrap(self):
         """Get the value if Some, else raise ValueError"""
         if self._value is None:
