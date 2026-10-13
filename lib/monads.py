@@ -47,7 +47,7 @@ class Option:
 
         return False
 
-    def get(self) -> T:
+    def expect(self) -> T:
         """Get value if variant is Some, else throw ValueError"""
         if self._value is None:
             raise ValueError(f"{self.__name__} is None!")
