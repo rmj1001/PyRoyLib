@@ -107,6 +107,16 @@ class Option:
 
         return Result.ok(self._value)
 
+    def filter(self, predicate: Callable[[T], bool]) -> "Option":
+        """Return Option.some(self._value) if predicate returns True, else return Option.none()"""
+        if self.is_none():
+            return self
+
+        if predicate(self._value):
+            return Option.some(self._value)
+
+        return Option.none()
+
 
 class ResultVariant(Enum):
     """State variants for Result monad"""
