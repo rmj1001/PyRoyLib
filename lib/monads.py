@@ -151,6 +151,35 @@ class Option:
 
         return value
 
+    def replace(self, value: T) -> None:
+        """Replace the current value with another value"""
+        self._value = value
+
+    def zip(self, other_option: Option) -> Option:
+        """Return tuple if both options are Some, else return None"""
+        if self.is_some() and other_option.is_some():
+            return Option.some((self._value, other_option._value))
+
+        return Option.none()
+
+    def unzip(self) -> tuple[Option, Option]:
+        """Unzips an option containing a tuple of values. Returns (None, None) if tuple not present."""
+        if not isinstance(self._value, tuple):
+            return Option.none(), Option.none()
+
+        first = self._value[0]
+        second = self._value[1]
+        first_opt = Option.none()
+        second_opt = Option.none()
+
+        if first is not None:
+            first_opt = Option.some(first)
+
+        if second is not None:
+            second_opt = Option.some(second)
+
+        return first_opt, second_opt
+
 
 class ResultVariant(Enum):
     """State variants for Result monad"""
