@@ -44,10 +44,7 @@ class Option:
         if self.is_none():
             return False
 
-        if not predicate(self._value):
-            return False
-
-        return True
+        return predicate(self._value)
 
     def is_none(self) -> bool:
         """Return true if variant is None"""
@@ -192,6 +189,16 @@ class Option:
             second_opt = Option.some(second)
 
         return first_opt, second_opt
+
+
+def something(value: T) -> Option:
+    """Shorthand for Option.some(value)"""
+    return Option.some(value)
+
+
+def nothing() -> Option:
+    """Shorthand for Option.none()"""
+    return Option.none()
 
 
 class ResultVariant(Enum):
