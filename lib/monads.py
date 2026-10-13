@@ -47,15 +47,18 @@ class Option:
 
         return False
 
-    def expect(self) -> T:
-        """Get value if variant is Some, else throw ValueError"""
+    def expect(self, default: T) -> T:
+        """Get value if variant is Some, else return default value"""
         if self._value is None:
-            raise ValueError(f"{self.__name__} is None!")
+            return default
 
         return self._value
 
-    def get_unsafe(self):
-        """Get the value regardless of variant or value type"""
+    def unwrap(self):
+        """Get the value if Some, else raise ValueError"""
+        if self._value is None:
+            raise ValueError("Cannot unwrap None")
+
         return self._value
 
     def map(self, func: Callable) -> "Option":
