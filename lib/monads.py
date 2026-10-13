@@ -47,17 +47,17 @@ class Option:
 
         return False
 
-    def expect(self, default: T) -> T:
-        """Get value if variant is Some, else return default value"""
-        if self._value is None:
-            return default
-
-        return self._value
-
     def unwrap(self):
         """Get the value if Some, else raise ValueError"""
         if self._value is None:
             raise ValueError("Cannot unwrap None")
+
+        return self._value
+
+    def unwrap_or(self, default: T) -> T:
+        """Get value if variant is Some, else return default value"""
+        if self._value is None:
+            return default
 
         return self._value
 
