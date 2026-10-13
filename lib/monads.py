@@ -96,9 +96,9 @@ class Option:
         return Option.some(func(self._value))
 
     def flatten(self) -> "Option":
-        """Flatten nested options"""
+        """Recursively flatten nested options"""
         if isinstance(self._value, Option):
-            return self._value
+            return self._value.flatten()
         else:
             return self
 
