@@ -117,6 +117,32 @@ class Option:
 
         return Option.none()
 
+    def both(self, other_option: Option) -> "Option":
+        """Return None if option is None, otherwise return other_option"""
+        if self.is_none():
+            return self
+
+        return other_option
+
+    def either(self, other_option: Option) -> "Option":
+        """Returns the option if it is Some, otherwise returns other_option"""
+        if self.is_some():
+            return self
+
+        return other_option
+
+    def or_else(self, func: Callable) -> "Option":
+        """Returns option if it is Some, else calls func and returns result"""
+        if self.is_some():
+            return self
+
+        result = func(self._value)
+
+        if result is None:
+            return Option.none()
+
+        return Option.some(result)
+
 
 class ResultVariant(Enum):
     """State variants for Result monad"""
