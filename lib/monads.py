@@ -93,6 +93,20 @@ class Option:
         """Call a function on the option and return a flattened option"""
         return self.map(func).flatten()
 
+    def ok_or(self, error: T) -> "Result":
+        """Return a result"""
+        if self.is_none():
+            return Result.err(error)
+
+        return Result.ok(self._value)
+
+    def ok_or_else(self, error: Callable) -> "Result":
+        """Return a result. If option is None, error will be the result of a function."""
+        if self.is_none():
+            return Result.err(error)
+
+        return Result.ok(self._value)
+
 
 class ResultVariant(Enum):
     """State variants for Result monad"""
