@@ -26,7 +26,7 @@ class Option:
         """Return true if variant is Some"""
         return self._value is not None
 
-    def is_some_and(self, predicate: Callable[[T], bool]):
+    def is_some_and(self, predicate: Callable[[T], bool]) -> bool:
         """Return true if variant is Some and matches predicate"""
         if self.is_none():
             return False
@@ -39,6 +39,13 @@ class Option:
     def is_none(self) -> bool:
         """Return true if variant is None"""
         return self._value is None
+
+    def is_none_or(self, predicate: Callable[[T], bool]) -> bool:
+        """Return true if variant is None or matches predicate"""
+        if self.is_none() or predicate(self._value):
+            return True
+
+        return False
 
     def get(self) -> T:
         """Get value if variant is Some, else throw ValueError"""
