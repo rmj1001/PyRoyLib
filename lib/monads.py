@@ -5,7 +5,7 @@ from typing import TypeVar, Callable
 T = TypeVar("T")
 
 
-class Option(Enum):
+class Option:
     """Rust-style option"""
     _value = None
 
@@ -37,12 +37,27 @@ class Option(Enum):
 
         return self._value
 
+    def get_unsafe(self):
+        """Get the value regardless of variant or value type"""
+        return self._value
+
     def map(self, func: Callable) -> "Option":
         """Call a function on the option and return a new option"""
         if self._value is None:
             return Option.none()
 
         return Option.some(func(self._value))
+
+    def flatten(self) -> "Option":
+        """Flatten nested options"""
+        if isinstance(self._value, Option):
+            return self._value
+        else:
+            return self
+
+    def flatmap(self, func: Callable) -> "Option":
+        """Call a function on the option and return a flattened option"""
+        return self.map(func).flatten()
 
 
 class ResultVariant(Enum):
@@ -79,9 +94,16 @@ class Result:
         """Return true if variant is ERR"""
         return self._state == ResultVariant.ERR
 
-    def get(self) -> T:
+    def get_value(self) -> T:
         """Get the value of the Result regardless of state"""
         return self._value
+
+    def get_unsafe(self) -> T:
+        """Convert error value to exception, or else return value"""
+        if self._state == ResultVariant.ERR:
+            raise Exception(self._value)
+        else:
+            return self._value
 
     def map(self, func: Callable) -> "Result":
         """Call a function on the result if variant is OK, else return self"""
@@ -89,3 +111,14 @@ class Result:
             return self
 
         return Result.ok(func(self._value))
+
+    def flatten(self):
+        """Return value if it is a Result, else return self"""
+        if isinstance(self._value, Result):
+            return self._value
+        else:
+            return self
+
+    def flatmap(self, func: Callable) -> "Result":
+        """Map a function to the result and flatten it"""
+        return self.map(func).flatten()
