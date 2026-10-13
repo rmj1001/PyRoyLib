@@ -143,6 +143,14 @@ class Option:
 
         return Option.some(result)
 
+    def take(self) -> T:
+        """Return the value in the Option and set it to None"""
+        value = self._value
+
+        self._value = None
+
+        return value
+
 
 class ResultVariant(Enum):
     """State variants for Result monad"""
