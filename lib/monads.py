@@ -49,24 +49,31 @@ class Option:
 
     def expect(self, error: T):
         """Get value if Some, else raise custom ValueError"""
-        if self._value is None:
+        if self.is_none():
             raise ValueError(error)
 
         return self._value
 
     def unwrap(self):
         """Get the value if Some, else raise ValueError"""
-        if self._value is None:
+        if self.is_none():
             raise ValueError("Cannot unwrap None")
 
         return self._value
 
     def unwrap_or(self, default: T) -> T:
         """Get value if variant is Some, else return default value"""
-        if self._value is None:
+        if self.is_none():
             return default
 
         return self._value
+
+    def unwrap_or_else(self, func: Callable) -> T:
+        """Get value if Some, else get value from passed function"""
+        if self.is_some():
+            return self._value
+
+        return func()
 
     def map(self, func: Callable) -> "Option":
         """Call a function on the option and return a new option"""
