@@ -12,6 +12,19 @@ class Option:
     def __init__(self, value: T | None):
         self._value = value
 
+    def __str__(self):
+        """Return string representation of option"""
+        if self.is_some():
+            return f"Some({self.unwrap()})"
+
+        return "None"
+
+    def __bool__(self):
+        """Return true if option is Some, false if None"""
+        if self.is_some():
+            return True
+        return False
+
     @classmethod
     def some(cls, value: T) -> "Option":
         """Create an option with Some variant"""
@@ -54,7 +67,7 @@ class Option:
 
         return self._value
 
-    def unwrap(self):
+    def unwrap(self) -> T:
         """Get the value if Some, else raise ValueError"""
         if self.is_none():
             raise ValueError("Cannot unwrap None")
