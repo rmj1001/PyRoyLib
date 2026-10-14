@@ -336,6 +336,29 @@ class Result[T,E]:
         """Returns the contained Err, never raises exception"""
         return self._value
 
+    def both(self, res: Result[U, E]) -> Result[U, E]:
+        """Result res if result is Ok, otherwise return Err of self"""
+        if self.is_ok():
+            return res
+
+        return self
+
+    def and_then(self, func: Callable[[U], U]) -> "Result[U, E]":
+        """Calls func if result is Ok, otherwise returns Err of self"""
+        if self.is_err():
+            return self
+
+        return ok(func(self._value))
+
+    def either(self, res: Result[U, E]) -> Result[U, E]:
+        """Returns res if result is Err, otherwise returns Ok value of self"""
+        if self.is_ok():
+            return self
+
+        return res
+
+
+
 
 def ok(value: T) -> Result[T, E]:
     return Result.ok(value)
