@@ -72,14 +72,14 @@ def input_bool(msg: str = "input > ",
 
 
 # TODO: Make this use Option
-def input_str(msg: str="str > ",
-              default: str | None = None,
+def input_str(msg: str = "input > ",
+              default: Option[str] = nada(),
               blank: bool = False,
               tries: int = 1,
-              strip: bool | str | None = None,
-              pre_val_func: Callable | None = None,
-              val_func: Callable[[U], bool] | None = None,
-              post_val_func: Callable | None = None) -> str:
+              strip: Option[bool|str] = nada(),
+              pre_val_func: Option[Callable] = nada(),
+              val_func: Option[Callable[[T], bool]] = nada(),
+              post_val_func: Option[Callable] = nada()) -> Option[str]:
     """Get a string from user input"""
     return prompt(msg, default, blank, tries, strip, pre_val_func, val_func, post_val_func)
 
