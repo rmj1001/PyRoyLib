@@ -219,6 +219,17 @@ class Result[T,E]:
         self._value = value
         self._state = state
 
+    def __str__(self):
+        """String representation for Result[T,E]"""
+        if self.is_ok():
+            return f"ok({self._value})"
+        else:
+            return f"err({self._value})"
+
+    def __bool__(self) -> bool:
+        """Return True if Result[T,E] is Ok, else return False"""
+        return self.is_ok()
+
     @classmethod
     def ok(cls, value: T) -> "Result[T,E]":
         """Create a result with OK variant"""
