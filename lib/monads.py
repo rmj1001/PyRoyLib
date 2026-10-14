@@ -298,11 +298,19 @@ class Result[T,E]:
         return err(func(self._value))
 
     def expect(self, message: E) -> T:
-        """Returns Ok value or throws exception with Err value"""
+        """Returns Ok value or throws exception with custom error message"""
         if self.is_err():
             raise ResultException(message)
 
         return self._value
+
+    def unwrap(self) -> T:
+        """Returns Ok value or throws exception with Err value"""
+        if self.is_err():
+            raise ResultException(self._value)
+
+        return self._value
+
 
 def ok(value: T) -> Result[T, E]:
     return Result.ok(value)
