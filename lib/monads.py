@@ -229,6 +229,9 @@ class Result[T,E]:
     _state: ResultVariant = ResultVariant.ERR
 
     def __init__(self, value: T, state: ResultVariant = ResultVariant.OK):
+        if value is None:
+            raise ResultException("Value cannot be None. Try using Option?")
+
         self._value = value
         self._state = state
 
