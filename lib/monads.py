@@ -5,6 +5,7 @@ from typing import TypeVar, Callable
 T = TypeVar("T")
 U = TypeVar("U")
 V = TypeVar("V")
+E = TypeVar("E") # For errors
 
 class Option[T]:
     """Rust-style option"""
@@ -58,7 +59,7 @@ class Option[T]:
 
         return False
 
-    def expect(self, error: T) -> T:
+    def expect(self, error: E) -> T:
         """Get value if Some, else raise custom ValueError"""
         if self.is_nada():
             raise ValueError(error)
