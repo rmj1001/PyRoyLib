@@ -246,6 +246,19 @@ class Result[T,E]:
         """Return True if Result[T,E] is Ok, else return False"""
         return self.is_ok()
 
+    def __eq__(self, other: object) -> bool:
+        """Compare Result objects for equality"""
+        if not isinstance(other, Result):
+            return NotImplemented
+
+        if self._value != other._value:
+            return False
+
+        if self._state != other._state:
+            return False
+
+        return True
+
     @classmethod
     def ok(cls, value: T) -> "Result[T,E]":
         """Create a result with OK variant"""
