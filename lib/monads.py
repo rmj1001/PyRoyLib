@@ -245,6 +245,13 @@ class Result[T,E]:
         """Return True if variant is ERR and predicate returns True"""
         return self.is_err() and predicate(self._value)
 
+    def map(self, func: Callable[[U], U]) -> "Result[T,E]":
+        """Create a new result with value mapped to func"""
+        if self.is_err():
+            return self
+
+        return ok(func(self._value))
+
 def ok(value: T) -> Result[T, E]:
     return Result.ok(value)
 
