@@ -71,7 +71,6 @@ def input_bool(msg: str = "input > ",
     return prompt(msg, default, blank, tries, strip, pre_val_func, val_func, post_val_func)
 
 
-# TODO: Make this use Option
 def input_str(msg: str = "input > ",
               default: Option[str] = nada(),
               blank: bool = False,
