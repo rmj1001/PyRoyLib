@@ -364,6 +364,13 @@ class Result[T,E]:
 
         return err(func(self._value))
 
+    def unwrap_or(self, default: T) -> T:
+        """Returns contained Ok value or default if Err"""
+        if self.is_err():
+            return default
+
+        return self._value
+
 
 def ok(value: T) -> Result[T, E]:
     return Result.ok(value)
