@@ -1,4 +1,5 @@
 from typing import TypeVar, Callable
+
 from monads import Option, some, nada
 
 T = TypeVar("T")
@@ -15,10 +16,9 @@ def prompt[T](msg: str = "input > ",
               default: Option[T] = nada(),
               blank: bool = False,
               tries: int = 1,
-              strip: str|bool = False,
-              pre_val_func: Option[Callable] = nada(),
-              val_func: Option[Callable[[T], bool]] = nada(),
-              post_val_func: Option[Callable] = nada()) -> Option[T]:
+              strip: str | bool = False,
+              validate: Option[Callable[[T], bool]] = nada()
+              ) -> Option[T]:
     """Prompt user for input, add colon after prompt message"""
     output: Option[T] = nada()
 
@@ -37,62 +37,49 @@ def prompt[T](msg: str = "input > ",
     if isinstance(strip, bool) and strip:
         output = output.flatmap(lambda s: s.strip())
 
-    # Run a function on the input before validation if one is passed
-    if pre_val_func.is_some():
-        func = pre_val_func.unwrap()
-        output = output.flatmap(func)
-
     # Try to validate input. If validation function returns False, set output to default
-    if val_func.is_some():
-        func = val_func.unwrap()
+    if validate.is_some():
+        func = validate.unwrap()
 
         if output.flatmap(func) == some(False):
             output = default
-
-    # Run a function on the input after validation if one is passed
-    if post_val_func.is_some():
-        func = post_val_func.unwrap()
-        output = output.flatmap(func)
 
     return output
 
 
 def input_bool(msg: str = "bool > ",
-              default: Option[bool] = nada(),
-              blank: bool = False,
-              tries: int = 1,
-              strip: str|bool = False,
-              pre_val_func: Option[Callable] = nada(),
-              val_func: Option[Callable[[T], bool]] = nada(),
-              post_val_func: Option[Callable] = nada()) -> Option[bool]:
+               default: Option[bool] = nada(),
+               blank: bool = False,
+               tries: int = 1,
+               strip: str | bool = False,
+               validate: Option[Callable[[T], bool]] = nada()
+               ) -> Option[bool]:
     """Get a boolean from user input"""
-    return prompt(msg, default, blank, tries, strip, pre_val_func, val_func, post_val_func)
+    return prompt(msg, default, blank, tries, strip, validate)
 
 
 def input_str(msg: str = "str > ",
               default: Option[str] = nada(),
               blank: bool = False,
               tries: int = 1,
-              strip: str|bool = False,
-              pre_val_func: Option[Callable] = nada(),
-              val_func: Option[Callable[[T], bool]] = nada(),
-              post_val_func: Option[Callable] = nada()) -> Option[str]:
+              strip: str | bool = False,
+              validate: Option[Callable[[T], bool]] = nada()
+              ) -> Option[str]:
     """Get a string from user input"""
-    return prompt(msg, default, blank, tries, strip, pre_val_func, val_func, post_val_func)
+    return prompt(msg, default, blank, tries, strip, validate)
 
 
 def input_int(msg: str = "int > ",
               default: Option[int] = nada(),
               blank: bool = False,
               tries: int = 1,
-              strip: str|bool = False,
-              pre_val_func: Option[Callable] = nada(),
-              val_func: Option[Callable[[T], bool]] = nada(),
-              post_val_func: Option[Callable] = nada(),
+              strip: str | bool = False,
+              validate: Option[Callable[[T], bool]] = nada(),
               minimum: Option[int] = nada(),
-              maximum: Option[int] = nada()) -> Option[int]:
+              maximum: Option[int] = nada()
+              ) -> Option[int]:
     """Get an integer from user input"""
-    output: Option[int] = prompt(msg, default, blank, tries, strip, pre_val_func, val_func, post_val_func)
+    output: Option[int] = prompt(msg, default, blank, tries, strip, validate)
 
     if output.is_nada():
         return output
@@ -113,17 +100,15 @@ def input_int(msg: str = "int > ",
 
 
 def input_float(msg: str = "float > ",
-              default: Option[float] = nada(),
-              blank: bool = False,
-              tries: int = 1,
-              strip: str|bool = False,
-              pre_val_func: Option[Callable] = nada(),
-              val_func: Option[Callable[[T], bool]] = nada(),
-              post_val_func: Option[Callable] = nada(),
-              minimum: Option[float] = nada(),
-              maximum: Option[float] = nada()) -> Option[float]:
+                default: Option[float] = nada(),
+                blank: bool = False,
+                tries: int = 1,
+                strip: str | bool = False,
+                validate: Option[Callable[[T], bool]] = nada(),
+                minimum: Option[float] = nada(),
+                maximum: Option[float] = nada()) -> Option[float]:
     """Get a float from user input"""
-    output: Option[float] = prompt(msg, default, blank, tries, strip, pre_val_func, val_func, post_val_func)
+    output: Option[float] = prompt(msg, default, blank, tries, strip, validate)
 
     if output.is_nada():
         return output
@@ -142,16 +127,16 @@ def input_float(msg: str = "float > ",
 
     return output
 
+
 def lower(s: str) -> str:
     s = s.lower()
     return s
 
+
 def input_yesno(msg: str = "str > ",
-              case_insensitive: bool = False,
-              default: Option[str] = nada(),
-              tries: int = 1,
-              strip: str|bool = False,
-              post_val_func: Option[Callable] = nada()) -> Option[str]:
+                default: Option[str] = nada(),
+                tries: int = 1,
+                strip: str | bool = False) -> Option[str]:
     """Return True if yes, False if no."""
 
     def is_yes_or_no(value: str) -> bool:
@@ -159,7 +144,7 @@ def input_yesno(msg: str = "str > ",
         no: list[str] = ["no", "n"]
         return value.lower() in yes or value.lower() in no
 
-    return prompt(msg, default, False, tries, strip, nada(), some(is_yes_or_no), post_val_func)
+    return prompt(msg, default, False, tries, strip, some(is_yes_or_no))
 
 
 # TODO: Make this use Option
@@ -198,7 +183,7 @@ def input_choice(choices: list[T],
 
 
 # TODO: Make this use Option
-def input_menu(choices: dict[U,T],
+def input_menu(choices: dict[U, T],
                msg: str = "Choose an option below.\n",
                case_insensitive: bool = False,
                default: T | None = None,
