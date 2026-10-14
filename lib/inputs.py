@@ -128,15 +128,9 @@ def input_float(msg: str = "float > ",
     return output
 
 
-def lower(s: str) -> str:
-    s = s.lower()
-    return s
-
-
 def input_yesno(msg: str = "str > ",
                 default: Option[str] = nada(),
-                tries: int = 1,
-                strip: str | bool = False) -> Option[str]:
+                tries: int = 1) -> Option[str]:
     """Return True if yes, False if no."""
 
     def is_yes_or_no(value: str) -> bool:
@@ -144,42 +138,32 @@ def input_yesno(msg: str = "str > ",
         no: list[str] = ["no", "n"]
         return value.lower() in yes or value.lower() in no
 
-    return prompt(msg, default, False, tries, strip, some(is_yes_or_no))
+    return prompt(msg, default, False, tries, True, some(is_yes_or_no))
 
 
-# TODO: Make this use Option
 def input_choice(choices: list[T],
                  msg: str = "Choose an option below.\n",
                  case_insensitive: bool = False,
-                 default: T | None = None,
+                 default: Option[T] = nada(),
                  blank: bool = False,
                  tries: int = 1,
-                 strip: bool | str | None = None,
-                 pre_val_func: Callable | None = None,
-                 val_func: Callable[[U], bool] | None = None,
-                 post_val_func: Callable | None = None) -> T:
+                 strip: bool | str = False) -> T:
     """Select value from list from user input"""
     for i in range(len(choices)):
         msg += f"- {choices[i]}\n"
 
     msg += "\n\nChoice > "
 
-    output = prompt(msg, default, blank, tries, strip, pre_val_func, val_func, post_val_func)
+    def validate(v: T, valid_choices: list[T]) -> bool:
+        if case_insensitive and isinstance(v, str):
+            v = v.lower()
+            valid_choices = [choice.lower() for choice in valid_choices]
 
-    if case_insensitive:
-        output = output.lower()
-        choices = [choice.lower() for choice in choices]
+        return v in valid_choices
 
-    if output in choices:
-        return output
+    output = prompt(msg, default, blank, tries, strip, some(lambda s: validate(s, choices)))
 
-    if default is None:
-        raise InputException("User input is invalid and default value was not provided.")
-
-    if default not in choices:
-        raise InputException("User input and default value are invalid.")
-
-    return default
+    return output
 
 
 # TODO: Make this use Option
