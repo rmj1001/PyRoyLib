@@ -357,7 +357,12 @@ class Result[T,E]:
 
         return res
 
+    def or_else(self, func: Callable[[E], E]) -> Result[U, E]:
+        """Calls func if result is Err, otherwise returns Ok of self"""
+        if self.is_ok():
+            return self
 
+        return err(func(self._value))
 
 
 def ok(value: T) -> Result[T, E]:
