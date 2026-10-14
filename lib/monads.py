@@ -237,31 +237,3 @@ class Result:
         """Return true if variant is ERR"""
         return self._state == ResultVariant.ERR
 
-    def get_value(self) -> T:
-        """Get the value of the Result regardless of state"""
-        return self._value
-
-    def get_unsafe(self) -> T:
-        """Convert error value to exception, or else return value"""
-        if self._state == ResultVariant.ERR:
-            raise Exception(self._value)
-        else:
-            return self._value
-
-    def map(self, func: Callable) -> "Result":
-        """Call a function on the result if variant is OK, else return self"""
-        if self._state == ResultVariant.ERR:
-            return self
-
-        return Result.ok(func(self._value))
-
-    def flatten(self):
-        """Return value if it is a Result, else return self"""
-        if isinstance(self._value, Result):
-            return self._value
-        else:
-            return self
-
-    def flatmap(self, func: Callable) -> "Result":
-        """Map a function to the result and flatten it"""
-        return self.map(func).flatten()
