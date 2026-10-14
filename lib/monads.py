@@ -325,12 +325,13 @@ class Result[T,E]:
 
         raise ResultException(self._value)
 
-    def into_ok(self) -> "Result[T,E]":
+    def into_ok(self) -> T:
         """Returns the contained Ok, never raises exception"""
-        if self.is_ok():
-            return self
+        return self._value
 
-        return ok(self._value)
+    def into_err(self) -> E:
+        """Returns the contained Err, never raises exception"""
+        return self._value
 
 
 def ok(value: T) -> Result[T, E]:
