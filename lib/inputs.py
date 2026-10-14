@@ -59,7 +59,7 @@ def prompt[T](msg: str = "input > ",
     return output
 
 
-def input_bool(msg: str = "input > ",
+def input_bool(msg: str = "bool > ",
               default: Option[bool] = nada(),
               blank: bool = False,
               tries: int = 1,
@@ -71,7 +71,7 @@ def input_bool(msg: str = "input > ",
     return prompt(msg, default, blank, tries, strip, pre_val_func, val_func, post_val_func)
 
 
-def input_str(msg: str = "input > ",
+def input_str(msg: str = "str > ",
               default: Option[str] = nada(),
               blank: bool = False,
               tries: int = 1,
@@ -83,7 +83,7 @@ def input_str(msg: str = "input > ",
     return prompt(msg, default, blank, tries, strip, pre_val_func, val_func, post_val_func)
 
 
-def input_int(msg: str = "input > ",
+def input_int(msg: str = "int > ",
               default: Option[int] = nada(),
               blank: bool = False,
               tries: int = 1,
