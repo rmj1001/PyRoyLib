@@ -209,7 +209,7 @@ class ResultVariant(Enum):
     ERR = 1
 
 
-class Result:
+class Result[T,E]:
     """Rust-style result"""
 
     _value = None
@@ -220,14 +220,14 @@ class Result:
         self._state = state
 
     @classmethod
-    def ok(cls, value: T) -> "Result":
+    def ok(cls, value: T) -> "Result[T,E]":
         """Create a result with OK variant"""
         return cls(value, ResultVariant.OK)
 
     @classmethod
-    def err(cls, value: T) -> "Result":
+    def err(cls, error: E) -> "Result[T,E]":
         """Create a result with ERR variant"""
-        return cls(value, ResultVariant.ERR)
+        return cls(error, ResultVariant.ERR)
 
     def is_ok(self) -> bool:
         """Return true if variant is OK"""
