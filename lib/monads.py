@@ -241,3 +241,8 @@ class Result[T,E]:
         """Return true if variant is ERR"""
         return self._state == ResultVariant.ERR
 
+def ok(value: T) -> Result[T, E]:
+    return Result.ok(value)
+
+def err(value: E) -> Result[T, E]:
+    return Result.err(value)
