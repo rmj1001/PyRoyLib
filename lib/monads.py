@@ -3,35 +3,36 @@ from typing import TypeVar, Callable
 
 # Generic type
 T = TypeVar("T")
+U = TypeVar("U")
+V = TypeVar("V")
 
-
-class Option:
+class Option[T]:
     """Rust-style option"""
     _value = None
 
     def __init__(self, value: T | None):
         self._value = value
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return string representation of option"""
         if self.is_some():
             return f"Some({self.unwrap()})"
 
         return "Nada"
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         """Return true if option is Some, false if Nada"""
         if self.is_some():
             return True
         return False
 
     @classmethod
-    def some(cls, value: T) -> "Option":
+    def some(cls, value: T) -> "Option[T]":
         """Create an option with Some variant"""
         return cls(value)
 
     @classmethod
-    def nada(cls) -> "Option":
+    def nada(cls) -> "Option[T]":
         """Create an option with Nada variant"""
         return cls(None)
 
@@ -57,7 +58,7 @@ class Option:
 
         return False
 
-    def expect(self, error: T):
+    def expect(self, error: T) -> T:
         """Get value if Some, else raise custom ValueError"""
         if self.is_nada():
             raise ValueError(error)
@@ -85,39 +86,39 @@ class Option:
 
         return func()
 
-    def map(self, func: Callable) -> "Option":
+    def map(self, func: Callable) -> "Option[T]":
         """Call a function on the option and return a new option"""
         if self._value is None:
             return Option.nada()
 
         return Option.some(func(self._value))
 
-    def flatten(self) -> "Option":
+    def flatten(self) -> "Option[T]":
         """Recursively flatten nested options"""
         if isinstance(self._value, Option):
             return self._value.flatten()
         else:
             return self
 
-    def flatmap(self, func: Callable) -> "Option":
+    def flatmap(self, func: Callable) -> "Option[T]":
         """Call a function on the option and return a flattened option"""
         return self.map(func).flatten()
 
-    def ok_or(self, error: T) -> "Result":
+    def ok_or(self, error: T) -> "Result[T]":
         """Return a result"""
         if self.is_nada():
             return Result.err(error)
 
         return Result.ok(self._value)
 
-    def ok_or_else(self, error: Callable) -> "Result":
+    def ok_or_else(self, error: Callable) -> "Result[T]":
         """Return a result. If option is Nada, error will be the result of a function."""
         if self.is_nada():
             return Result.err(error)
 
         return Result.ok(self._value)
 
-    def filter(self, predicate: Callable[[T], bool]) -> "Option":
+    def filter(self, predicate: Callable[[T], bool]) -> "Option[T]":
         """Return Option.some(self._value) if predicate returns True, else return Option.none()"""
         if self.is_nada():
             return self
@@ -127,21 +128,21 @@ class Option:
 
         return Option.nada()
 
-    def both(self, other_option: Option) -> "Option":
+    def both(self, other_option: Option[V]) -> "Option[T]|Option[V]":
         """Return Nada if option is Nada, otherwise return other_option"""
         if self.is_nada():
             return self
 
         return other_option
 
-    def either(self, other_option: Option) -> "Option":
+    def either(self, other_option: Option[V]) -> "Option[T]|Option[V]":
         """Returns the option if it is Some, otherwise returns other_option"""
         if self.is_some():
             return self
 
         return other_option
 
-    def or_else(self, func: Callable) -> "Option":
+    def or_else(self, func: Callable) -> "Option[T]":
         """Returns option if it is Some, else calls func and returns result"""
         if self.is_some():
             return self
@@ -165,14 +166,14 @@ class Option:
         """Replace the current value with another value"""
         self._value = value
 
-    def zip(self, other_option: Option) -> Option:
+    def zip(self, other_option: Option[V]) -> Option[U]:
         """Return tuple if both options are Some, else return Nada"""
         if self.is_some() and other_option.is_some():
             return Option.some((self._value, other_option._value))
 
         return Option.nada()
 
-    def unzip(self) -> tuple[Option, Option]:
+    def unzip(self) -> tuple[Option[T], Option[V]]:
         """Unzips an option containing a tuple of values. Returns (Nada, Nada) if tuple not present."""
         if not isinstance(self._value, tuple):
             return Option.nada(), Option.nada()
@@ -191,12 +192,12 @@ class Option:
         return first_opt, second_opt
 
 
-def some(value: T) -> Option:
+def some(value: T) -> Option[T]:
     """Shorthand for Option.some(value)"""
     return Option.some(value)
 
 
-def nada() -> Option:
+def nada() -> Option[T]:
     """Shorthand for Option.nada()"""
     return Option.nada()
 
