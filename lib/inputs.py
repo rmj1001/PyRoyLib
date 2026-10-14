@@ -59,15 +59,14 @@ def prompt[T](msg: str = "input > ",
     return output
 
 
-# TODO: Make this use Option
-def input_bool(msg: str="bool > ",
-               default: bool | None = None,
-               blank: bool = False,
-               tries: int = 1,
-               strip: bool | str | None = None,
-               pre_val_func: Callable | None = None,
-               val_func: Callable[[U], bool] | None = None,
-               post_val_func: Callable | None = None) -> bool:
+def input_bool(msg: str = "input > ",
+              default: Option[bool] = nada(),
+              blank: bool = False,
+              tries: int = 1,
+              strip: Option[bool|str] = nada(),
+              pre_val_func: Option[Callable] = nada(),
+              val_func: Option[Callable[[T], bool]] = nada(),
+              post_val_func: Option[Callable] = nada()) -> Option[bool]:
     """Get a boolean from user input"""
     return prompt(msg, default, blank, tries, strip, pre_val_func, val_func, post_val_func)
 
