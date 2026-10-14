@@ -15,7 +15,7 @@ def prompt[T](msg: str = "input > ",
               default: Option[T] = nada(),
               blank: bool = False,
               tries: int = 1,
-              strip: Option[bool|str] = nada(),
+              strip: str|bool = False,
               pre_val_func: Option[Callable] = nada(),
               val_func: Option[Callable[[T], bool]] = nada(),
               post_val_func: Option[Callable] = nada()) -> Option[T]:
@@ -30,8 +30,6 @@ def prompt[T](msg: str = "input > ",
 
     if not blank and output == "":
         output = default
-
-    strip = strip.unwrap_or(False)
 
     if isinstance(strip, str):
         output = output.flatmap(lambda s: s.strip(strip))
@@ -63,7 +61,7 @@ def input_bool(msg: str = "bool > ",
               default: Option[bool] = nada(),
               blank: bool = False,
               tries: int = 1,
-              strip: Option[bool|str] = nada(),
+              strip: str|bool = False,
               pre_val_func: Option[Callable] = nada(),
               val_func: Option[Callable[[T], bool]] = nada(),
               post_val_func: Option[Callable] = nada()) -> Option[bool]:
@@ -75,7 +73,7 @@ def input_str(msg: str = "str > ",
               default: Option[str] = nada(),
               blank: bool = False,
               tries: int = 1,
-              strip: Option[bool|str] = nada(),
+              strip: str|bool = False,
               pre_val_func: Option[Callable] = nada(),
               val_func: Option[Callable[[T], bool]] = nada(),
               post_val_func: Option[Callable] = nada()) -> Option[str]:
@@ -87,7 +85,7 @@ def input_int(msg: str = "int > ",
               default: Option[int] = nada(),
               blank: bool = False,
               tries: int = 1,
-              strip: Option[bool|str] = nada(),
+              strip: str|bool = False,
               pre_val_func: Option[Callable] = nada(),
               val_func: Option[Callable[[T], bool]] = nada(),
               post_val_func: Option[Callable] = nada(),
@@ -118,7 +116,7 @@ def input_float(msg: str = "float > ",
               default: Option[float] = nada(),
               blank: bool = False,
               tries: int = 1,
-              strip: Option[bool|str] = nada(),
+              strip: str|bool = False,
               pre_val_func: Option[Callable] = nada(),
               val_func: Option[Callable[[T], bool]] = nada(),
               post_val_func: Option[Callable] = nada(),
@@ -144,38 +142,24 @@ def input_float(msg: str = "float > ",
 
     return output
 
+def lower(s: str) -> str:
+    s = s.lower()
+    return s
 
-# TODO: Make this use Option
-def input_yesno(msg: str = "yes/no > ",
-                case_insensitive: bool = False,
-                default: str | None = None,
-                blank: bool = False,
-                tries: int = 1,
-                strip: bool | str | None = None,
-                pre_val_func: Callable | None = None,
-                val_func: Callable[[U], bool] | None = None,
-                post_val_func: Callable | None = None) -> bool:
+def input_yesno(msg: str = "str > ",
+              case_insensitive: bool = False,
+              default: Option[str] = nada(),
+              tries: int = 1,
+              strip: str|bool = False,
+              post_val_func: Option[Callable] = nada()) -> Option[str]:
     """Return True if yes, False if no."""
-    output: str = prompt(msg, default, blank, tries, strip, pre_val_func, val_func, post_val_func)
-    yes: list[str] = ["yes", "y"]
-    no: list[str] = ["no", "n"]
 
-    if case_insensitive:
-        output = output.lower()
+    def is_yes_or_no(value: str) -> bool:
+        yes: list[str] = ["yes", "y"]
+        no: list[str] = ["no", "n"]
+        return value.lower() in yes or value.lower() in no
 
-    def valid(value: str) -> bool:
-        return value in yes or value in no
-
-    if valid(output):
-        return output in yes
-
-    if default is None:
-        raise InputException("User input is invalid and default value was not provided.")
-
-    if valid(default):
-        return default in yes
-
-    raise InputException("User input and default value are invalid.")
+    return prompt(msg, default, False, tries, strip, nada(), some(is_yes_or_no), post_val_func)
 
 
 # TODO: Make this use Option
