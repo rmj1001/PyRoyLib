@@ -311,6 +311,27 @@ class Result[T,E]:
 
         return self._value
 
+    def expect_err(self, message: T) -> E:
+        """Returns contained Err, or else raises exception if Ok"""
+        if self.is_err():
+            return self._value
+
+        raise ResultException(message)
+
+    def unwrap_err(self) -> E:
+        """Returns contained Err, or else raises exception with Ok value"""
+        if self.is_err():
+            return self._value
+
+        raise ResultException(self._value)
+
+    def into_ok(self) -> "Result[T,E]":
+        """Returns the contained Ok, never raises exception"""
+        if self.is_ok():
+            return self
+
+        return ok(self._value)
+
 
 def ok(value: T) -> Result[T, E]:
     return Result.ok(value)
