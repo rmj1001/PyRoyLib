@@ -1,4 +1,5 @@
 from typing import TypeVar, Callable
+from monads import Option, some, nada
 
 T = TypeVar("T")
 U = TypeVar("U")
@@ -11,52 +12,54 @@ class InputException(Exception):
 
 
 def prompt[T](msg: str = "input > ",
-              default: T | None = None,
+              default: Option[T] = nada(),
               blank: bool = False,
               tries: int = 1,
-              strip: bool | str | None = None,
-              pre_val_func: Callable | None = None,
-              val_func: Callable[[T], bool] | None = None,
-              post_val_func: Callable | None = None) -> T:
+              strip: Option[bool|str] = nada(),
+              pre_val_func: Option[Callable] = nada(),
+              val_func: Option[Callable[[T], bool]] = nada(),
+              post_val_func: Option[Callable] = nada()) -> Option[T]:
     """Prompt user for input, add colon after prompt message"""
-    output = ""
+    output: Option[T] = nada()
 
     for i in range(tries):
-        output = input(f"{msg}: ")
+        output = some(input(f"{msg}: "))
 
         if not blank and output == "":
             continue
 
     if not blank and output == "":
-        if default is not None:
-            return default
-        else:
-            raise InputException("Prompt does not allow blank input and user exceeded allowed tries.")
+        output = default
 
-    if isinstance(strip, bool) and strip:
-        output = output.strip()
+    strip = strip.unwrap_or(False)
 
     if isinstance(strip, str):
-        output = output.strip(strip)
+        output = output.flatmap(lambda s: s.strip(strip))
 
-    if pre_val_func is not None:
-        output = pre_val_func(output)
+    if isinstance(strip, bool) and strip:
+        output = output.flatmap(lambda s: s.strip())
 
-    if val_func is not None:
-        is_val: bool = val_func(output)
+    # Run a function on the input before validation if one is passed
+    if pre_val_func.is_some():
+        func = pre_val_func.unwrap()
+        output = output.flatmap(func)
 
-        if not is_val and default is not None:
-            return default
+    # Try to validate input. If validation function returns False, set output to default
+    if val_func.is_some():
+        func = val_func.unwrap()
 
-        if not is_val and default is None:
-            raise InputException("User input is invalid and default value was not provided.")
+        if output.flatmap(func) == some(False):
+            output = default
 
-    if post_val_func is not None:
-        output = post_val_func(output)
+    # Run a function on the input after validation if one is passed
+    if post_val_func.is_some():
+        func = post_val_func.unwrap()
+        output = output.flatmap(func)
 
     return output
 
 
+# TODO: Make this use Option
 def input_bool(msg: str="bool > ",
                default: bool | None = None,
                blank: bool = False,
@@ -69,6 +72,7 @@ def input_bool(msg: str="bool > ",
     return prompt(msg, default, blank, tries, strip, pre_val_func, val_func, post_val_func)
 
 
+# TODO: Make this use Option
 def input_str(msg: str="str > ",
               default: str | None = None,
               blank: bool = False,
@@ -81,6 +85,7 @@ def input_str(msg: str="str > ",
     return prompt(msg, default, blank, tries, strip, pre_val_func, val_func, post_val_func)
 
 
+# TODO: Make this use Option
 def input_int(msg: str="int > ",
               default: int | None = None,
               blank: bool = False,
@@ -103,6 +108,7 @@ def input_int(msg: str="int > ",
     return output
 
 
+# TODO: Make this use Option
 def input_float(msg: str = "float > ",
                 default: float | None = None,
                 blank: bool = False,
@@ -125,6 +131,7 @@ def input_float(msg: str = "float > ",
     return output
 
 
+# TODO: Make this use Option
 def input_yesno(msg: str = "yes/no > ",
                 case_insensitive: bool = False,
                 default: str | None = None,
@@ -157,6 +164,7 @@ def input_yesno(msg: str = "yes/no > ",
     raise InputException("User input and default value are invalid.")
 
 
+# TODO: Make this use Option
 def input_choice(choices: list[T],
                  msg: str = "Choose an option below.\n",
                  case_insensitive: bool = False,
@@ -191,6 +199,7 @@ def input_choice(choices: list[T],
     return default
 
 
+# TODO: Make this use Option
 def input_menu(choices: dict[U,T],
                msg: str = "Choose an option below.\n",
                case_insensitive: bool = False,
