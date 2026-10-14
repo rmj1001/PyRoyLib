@@ -10,7 +10,7 @@ class InputException(Exception):
         super().__init__(msg)
 
 
-def prompt[T](msg: str,
+def prompt[T](msg: str = "input > ",
               default: T | None = None,
               blank: bool = False,
               tries: int = 1,
@@ -57,7 +57,7 @@ def prompt[T](msg: str,
     return output
 
 
-def input_bool(msg: str,
+def input_bool(msg: str="bool > ",
                default: bool | None = None,
                blank: bool = False,
                tries: int = 1,
@@ -69,7 +69,7 @@ def input_bool(msg: str,
     return prompt(msg, default, blank, tries, strip, pre_val_func, val_func, post_val_func)
 
 
-def input_str(msg: str,
+def input_str(msg: str="str > ",
               default: str | None = None,
               blank: bool = False,
               tries: int = 1,
@@ -81,7 +81,7 @@ def input_str(msg: str,
     return prompt(msg, default, blank, tries, strip, pre_val_func, val_func, post_val_func)
 
 
-def input_int(msg: str,
+def input_int(msg: str="int > ",
               default: int | None = None,
               blank: bool = False,
               tries: int = 1,
@@ -103,7 +103,7 @@ def input_int(msg: str,
     return output
 
 
-def input_float(msg: str,
+def input_float(msg: str = "float > ",
                 default: float | None = None,
                 blank: bool = False,
                 tries: int = 1,
@@ -125,7 +125,7 @@ def input_float(msg: str,
     return output
 
 
-def input_yesno(msg: str,
+def input_yesno(msg: str = "yes/no > ",
                 case_insensitive: bool = False,
                 default: str | None = None,
                 blank: bool = False,
@@ -157,8 +157,8 @@ def input_yesno(msg: str,
     raise InputException("User input and default value are invalid.")
 
 
-def input_choice(msg: str,
-                 choices: list[T],
+def input_choice(choices: list[T],
+                 msg: str = "Choose an option below.\n",
                  case_insensitive: bool = False,
                  default: T | None = None,
                  blank: bool = False,
@@ -168,6 +168,11 @@ def input_choice(msg: str,
                  val_func: Callable[[U], bool] | None = None,
                  post_val_func: Callable | None = None) -> T:
     """Select value from list from user input"""
+    for i in range(len(choices)):
+        msg += f"- {choices[i]}\n"
+
+    msg += "\n\nChoice > "
+
     output = prompt(msg, default, blank, tries, strip, pre_val_func, val_func, post_val_func)
 
     if case_insensitive:
@@ -186,8 +191,8 @@ def input_choice(msg: str,
     return default
 
 
-def input_menu(msg: str,
-               choices: dict[T, U],
+def input_menu(choices: dict[U,T],
+               msg: str = "Choose an option below.\n",
                case_insensitive: bool = False,
                default: T | None = None,
                blank: bool = False,
@@ -197,6 +202,11 @@ def input_menu(msg: str,
                val_func: Callable[[U], bool] | None = None,
                post_val_func: Callable | None = None) -> T:
     """Select value from dictionary from user input"""
+    for k, v in choices:
+        msg += f"{k}. {v}\n"
+
+    msg += "\n\nChoice > "
+
     output = prompt(msg, default, blank, tries, strip, pre_val_func, val_func, post_val_func)
 
     if case_insensitive:
