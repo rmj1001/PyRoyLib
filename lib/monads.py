@@ -407,8 +407,10 @@ class Result[T, E]:
 
 
 def ok(value: T) -> Result[T, E]:
+    """Shorthand for Result.ok(), useful for pattern matching"""
     return Result.ok(value)
 
 
 def err(value: E) -> Result[T, E]:
+    """Shorthand for Result.err(), useful for pattern matching"""
     return Result.err(value)
