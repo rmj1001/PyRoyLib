@@ -40,6 +40,16 @@ class Option[T]:
             return True
         return False
 
+    def __eq__(self, other: object) -> bool:
+        """Return True if Options are identical, else False"""
+        if not isinstance(other, Option):
+            return NotImplemented
+
+        if self._value == other._value:
+            return True
+
+        return False
+
     @classmethod
     def some(cls, value: T) -> "Option[T]":
         """Create an option with Some variant"""
