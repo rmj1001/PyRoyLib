@@ -75,14 +75,14 @@ class Option[T]:
     def expect(self, error: E) -> T:
         """Get value if Some, else raise custom ValueError"""
         if self.is_nada():
-            raise ValueError(error)
+            raise OptionException(error)
 
         return self._value
 
     def unwrap(self) -> T:
         """Get the value if Some, else raise ValueError"""
         if self.is_nada():
-            raise ValueError("Cannot unwrap Nada")
+            raise OptionException("Cannot unwrap Nada")
 
         return self._value
 
@@ -300,7 +300,9 @@ class Result[T,E]:
     def expect(self, message: E) -> T:
         """Returns Ok value or throws exception with Err value"""
         if self.is_err():
-            throw
+            raise ResultException(message)
+
+        return self._value
 
 def ok(value: T) -> Result[T, E]:
     return Result.ok(value)
