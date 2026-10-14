@@ -394,6 +394,13 @@ class Result[T,E]:
 
         return self._value
 
+    def unwrap_or_else(self, func: Callable[[], U]) -> U:
+        """Returns contained Ok value or value from func if Err"""
+        if self.is_ok():
+            return self._value
+
+        return func()
+
 
 def ok(value: T) -> Result[T, E]:
     return Result.ok(value)
