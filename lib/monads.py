@@ -46,6 +46,9 @@ class Option[T]:
 
     def __eq__(self, other: object) -> bool:
         """Return True if Options are identical, else False"""
+        if self.is_nada() and other is None:
+            return True
+
         if not isinstance(other, Option):
             return NotImplemented
 
