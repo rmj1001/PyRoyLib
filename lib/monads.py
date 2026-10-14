@@ -252,6 +252,13 @@ class Result[T,E]:
 
         return ok(func(self._value))
 
+    def map_or(self, func: Callable[[U], U], default: U) -> "Result[T,E]":
+        """Returns the provided default if Err or applies func to value"""
+        if self.is_err():
+            return default
+
+        return ok(func(self._value))
+
 def ok(value: T) -> Result[T, E]:
     return Result.ok(value)
 
