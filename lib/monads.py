@@ -17,10 +17,10 @@ class Option:
         if self.is_some():
             return f"Some({self.unwrap()})"
 
-        return "None"
+        return "Nada"
 
     def __bool__(self):
-        """Return true if option is Some, false if None"""
+        """Return true if option is Some, false if Nada"""
         if self.is_some():
             return True
         return False
@@ -31,8 +31,8 @@ class Option:
         return cls(value)
 
     @classmethod
-    def none(cls) -> "Option":
-        """Create an option with None variant"""
+    def nada(cls) -> "Option":
+        """Create an option with Nada variant"""
         return cls(None)
 
     def is_some(self) -> bool:
@@ -41,39 +41,39 @@ class Option:
 
     def is_some_and(self, predicate: Callable[[T], bool]) -> bool:
         """Return true if variant is Some and matches predicate"""
-        if self.is_none():
+        if self.is_nada():
             return False
 
         return predicate(self._value)
 
-    def is_none(self) -> bool:
-        """Return true if variant is None"""
+    def is_nada(self) -> bool:
+        """Return true if variant is Nada"""
         return self._value is None
 
-    def is_none_or(self, predicate: Callable[[T], bool]) -> bool:
-        """Return true if variant is None or matches predicate"""
-        if self.is_none() or predicate(self._value):
+    def is_nada_or(self, predicate: Callable[[T], bool]) -> bool:
+        """Return true if variant is Nada or matches predicate"""
+        if self.is_nada() or predicate(self._value):
             return True
 
         return False
 
     def expect(self, error: T):
         """Get value if Some, else raise custom ValueError"""
-        if self.is_none():
+        if self.is_nada():
             raise ValueError(error)
 
         return self._value
 
     def unwrap(self) -> T:
         """Get the value if Some, else raise ValueError"""
-        if self.is_none():
-            raise ValueError("Cannot unwrap None")
+        if self.is_nada():
+            raise ValueError("Cannot unwrap Nada")
 
         return self._value
 
     def unwrap_or(self, default: T) -> T:
         """Get value if variant is Some, else return default value"""
-        if self.is_none():
+        if self.is_nada():
             return default
 
         return self._value
@@ -88,7 +88,7 @@ class Option:
     def map(self, func: Callable) -> "Option":
         """Call a function on the option and return a new option"""
         if self._value is None:
-            return Option.none()
+            return Option.nada()
 
         return Option.some(func(self._value))
 
@@ -105,31 +105,31 @@ class Option:
 
     def ok_or(self, error: T) -> "Result":
         """Return a result"""
-        if self.is_none():
+        if self.is_nada():
             return Result.err(error)
 
         return Result.ok(self._value)
 
     def ok_or_else(self, error: Callable) -> "Result":
-        """Return a result. If option is None, error will be the result of a function."""
-        if self.is_none():
+        """Return a result. If option is Nada, error will be the result of a function."""
+        if self.is_nada():
             return Result.err(error)
 
         return Result.ok(self._value)
 
     def filter(self, predicate: Callable[[T], bool]) -> "Option":
         """Return Option.some(self._value) if predicate returns True, else return Option.none()"""
-        if self.is_none():
+        if self.is_nada():
             return self
 
         if predicate(self._value):
             return Option.some(self._value)
 
-        return Option.none()
+        return Option.nada()
 
     def both(self, other_option: Option) -> "Option":
-        """Return None if option is None, otherwise return other_option"""
-        if self.is_none():
+        """Return Nada if option is Nada, otherwise return other_option"""
+        if self.is_nada():
             return self
 
         return other_option
@@ -149,12 +149,12 @@ class Option:
         result = func(self._value)
 
         if result is None:
-            return Option.none()
+            return Option.nada()
 
         return Option.some(result)
 
     def take(self) -> T:
-        """Return the value in the Option and set it to None"""
+        """Return the value in the Option and set it to Nada"""
         value = self._value
 
         self._value = None
@@ -166,21 +166,21 @@ class Option:
         self._value = value
 
     def zip(self, other_option: Option) -> Option:
-        """Return tuple if both options are Some, else return None"""
+        """Return tuple if both options are Some, else return Nada"""
         if self.is_some() and other_option.is_some():
             return Option.some((self._value, other_option._value))
 
-        return Option.none()
+        return Option.nada()
 
     def unzip(self) -> tuple[Option, Option]:
-        """Unzips an option containing a tuple of values. Returns (None, None) if tuple not present."""
+        """Unzips an option containing a tuple of values. Returns (Nada, Nada) if tuple not present."""
         if not isinstance(self._value, tuple):
-            return Option.none(), Option.none()
+            return Option.nada(), Option.nada()
 
         first = self._value[0]
         second = self._value[1]
-        first_opt = Option.none()
-        second_opt = Option.none()
+        first_opt = Option.nada()
+        second_opt = Option.nada()
 
         if first is not None:
             first_opt = Option.some(first)
@@ -191,14 +191,14 @@ class Option:
         return first_opt, second_opt
 
 
-def something(value: T) -> Option:
+def some(value: T) -> Option:
     """Shorthand for Option.some(value)"""
     return Option.some(value)
 
 
-def nothing() -> Option:
-    """Shorthand for Option.none()"""
-    return Option.none()
+def nada() -> Option:
+    """Shorthand for Option.nada()"""
+    return Option.nada()
 
 
 class ResultVariant(Enum):
