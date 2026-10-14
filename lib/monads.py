@@ -5,10 +5,12 @@ from typing import TypeVar, Callable
 T = TypeVar("T")
 U = TypeVar("U")
 V = TypeVar("V")
-E = TypeVar("E") # For errors
+E = TypeVar("E")  # For errors
+
 
 class OptionException[E](Exception):
     """Custom exception for Option type"""
+
     def __init__(self, message: E) -> None:
         self.message = message
         super().__init__(self.message)
@@ -16,9 +18,11 @@ class OptionException[E](Exception):
 
 class ResultException[E](Exception):
     """Custom exception for Result type"""
+
     def __init__(self, message: E) -> None:
         self.message = message
         super().__init__(self.message)
+
 
 class Option[T]:
     """Rust-style option"""
@@ -232,7 +236,7 @@ class ResultVariant(Enum):
     ERR = 1
 
 
-class Result[T,E]:
+class Result[T, E]:
     """Rust-style result"""
 
     _value = None
@@ -404,6 +408,7 @@ class Result[T,E]:
 
 def ok(value: T) -> Result[T, E]:
     return Result.ok(value)
+
 
 def err(value: E) -> Result[T, E]:
     return Result.err(value)
