@@ -266,6 +266,13 @@ class Result[T,E]:
 
         return ok(success(self._value))
 
+    def map_err(self, func: Callable[[E], E]) -> "Result[T,E]":
+        """Maps an Err value, leaving Ok untouched"""
+        if self.is_ok():
+            return self
+
+        return err(func(self._value))
+
 def ok(value: T) -> Result[T, E]:
     return Result.ok(value)
 
