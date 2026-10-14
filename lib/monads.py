@@ -7,6 +7,19 @@ U = TypeVar("U")
 V = TypeVar("V")
 E = TypeVar("E") # For errors
 
+class OptionException[E](Exception):
+    """Custom exception for Option type"""
+    def __init__(self, message: E) -> None:
+        self.message = message
+        super().__init__(self.message)
+
+
+class ResultException[E](Exception):
+    """Custom exception for Result type"""
+    def __init__(self, message: E) -> None:
+        self.message = message
+        super().__init__(self.message)
+
 class Option[T]:
     """Rust-style option"""
     _value = None
@@ -105,14 +118,14 @@ class Option[T]:
         """Call a function on the option and return a flattened option"""
         return self.map(func).flatten()
 
-    def ok_or(self, error: T) -> "Result[T]":
+    def ok_or(self, error: T) -> "Result[T,E]":
         """Return a result"""
         if self.is_nada():
             return Result.err(error)
 
         return Result.ok(self._value)
 
-    def ok_or_else(self, error: Callable) -> "Result[T]":
+    def ok_or_else(self, error: Callable) -> "Result[T,E]":
         """Return a result. If option is Nada, error will be the result of a function."""
         if self.is_nada():
             return Result.err(error)
@@ -283,6 +296,11 @@ class Result[T,E]:
             return self
 
         return err(func(self._value))
+
+    def expect(self, message: E) -> T:
+        """Returns Ok value or throws exception with Err value"""
+        if self.is_err():
+            throw
 
 def ok(value: T) -> Result[T, E]:
     return Result.ok(value)
