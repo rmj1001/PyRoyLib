@@ -17,9 +17,9 @@ class Option[T]:
     def __str__(self) -> str:
         """Return string representation of option"""
         if self.is_some():
-            return f"Some({self.unwrap()})"
+            return f"some({self.unwrap()})"
 
-        return "Nada"
+        return "nada"
 
     def __bool__(self) -> bool:
         """Return true if option is Some, false if Nada"""
