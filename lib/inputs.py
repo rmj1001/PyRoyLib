@@ -104,14 +104,12 @@ def input_int(msg: str = "input > ",
     if minimum.is_some():
         min_val = minimum.unwrap()
 
-        if output_val < min_val:
-            return some(min_val)
+        return some(min(output_val, min_val))
 
     if maximum.is_some():
         max_val = maximum.unwrap()
 
-        if output_val > max_val:
-            return some(max_val)
+        return some(max(output_val, max_val))
 
     return output
 
