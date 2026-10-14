@@ -114,25 +114,33 @@ def input_int(msg: str = "int > ",
     return output
 
 
-# TODO: Make this use Option
 def input_float(msg: str = "float > ",
-                default: float | None = None,
-                blank: bool = False,
-                tries: int = 1,
-                strip: bool | str | None = None,
-                pre_val_func: Callable | None = None,
-                val_func: Callable[[U], bool] | None = None,
-                post_val_func: Callable | None = None,
-                minimum: float | None = None,
-                maximum: float | None = None) -> float:
+              default: Option[float] = nada(),
+              blank: bool = False,
+              tries: int = 1,
+              strip: Option[bool|str] = nada(),
+              pre_val_func: Option[Callable] = nada(),
+              val_func: Option[Callable[[T], bool]] = nada(),
+              post_val_func: Option[Callable] = nada(),
+              minimum: Option[float] = nada(),
+              maximum: Option[float] = nada()) -> Option[float]:
     """Get a float from user input"""
-    output: float = prompt(msg, default, blank, tries, strip, pre_val_func, val_func, post_val_func)
+    output: Option[float] = prompt(msg, default, blank, tries, strip, pre_val_func, val_func, post_val_func)
 
-    if minimum is not None and output < minimum:
-        return minimum
+    if output.is_nada():
+        return output
 
-    if maximum is not None and output > maximum:
-        return maximum
+    output_val = output.unwrap()
+
+    if minimum.is_some():
+        min_val = minimum.unwrap()
+
+        return some(min(output_val, min_val))
+
+    if maximum.is_some():
+        max_val = maximum.unwrap()
+
+        return some(max(output_val, max_val))
 
     return output
 
