@@ -233,6 +233,10 @@ class Result[T,E]:
         """Return true if variant is OK"""
         return self._state == ResultVariant.OK
 
+    def is_ok_and(self, predicate: Callable[[U], bool]) -> bool:
+        """Return true if variant is OK and predicate returns True"""
+        return self.is_ok() and predicate(self._value)
+
     def is_err(self) -> bool:
         """Return true if variant is ERR"""
         return self._state == ResultVariant.ERR
