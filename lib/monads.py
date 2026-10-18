@@ -1,12 +1,17 @@
 from enum import Enum
 from typing import TypeVar, Callable
 
-# Generic type
+# Generic types
 T = TypeVar("T") # Generic type for Option class
 V = TypeVar("V") # Generic type for Options passed as parameters
 R = TypeVar("R") # Return type when Callable[[T], R]
 E = TypeVar("E")  # For errors
 
+# Used for Option functions that pass value to function and return generic result
+MapFunc = Callable[[T], R]
+
+# Used for Option functions that pass value to function and return boolean (i.e. for validation)
+PredicateFunc = Callable[[T], bool]
 
 class OptionException[E](Exception):
     """Custom exception for Option type"""
@@ -71,7 +76,7 @@ class Option[T]:
         """Return true if variant is Some"""
         return self._value is not None
 
-    def is_some_and(self, predicate: Callable[[T], bool]) -> bool:
+    def is_some_and(self, predicate: PredicateFunc) -> bool:
         """Return true if variant is Some and matches predicate"""
         if self.is_nada():
             return False
@@ -82,7 +87,7 @@ class Option[T]:
         """Return true if variant is Nada"""
         return self._value is None
 
-    def is_nada_or(self, predicate: Callable[[T], bool]) -> bool:
+    def is_nada_or(self, predicate: PredicateFunc) -> bool:
         """Return true if variant is Nada or matches predicate"""
         if self.is_nada() or predicate(self._value):
             return True
@@ -117,7 +122,7 @@ class Option[T]:
 
         return func()
 
-    def map(self, func: Callable) -> "Option[Callable[[T], R]]":
+    def map(self, func: MapFunc) -> "Option[MapFunc]":
         """Call a function on the option and return a new option"""
         if self._value is None:
             return Option.nada()
@@ -131,7 +136,7 @@ class Option[T]:
         else:
             return self
 
-    def flatmap(self, func: Callable) -> "Option[Callable[[T], R]]":
+    def flatmap(self, func: MapFunc) -> "Option[MapFunc]":
         """Call a function on the option and return a flattened option"""
         return self.map(func).flatten()
 
@@ -149,7 +154,7 @@ class Option[T]:
 
         return Result.ok(self._value)
 
-    def filter(self, predicate: Callable[[T], bool]) -> "Option[T]":
+    def filter(self, predicate: PredicateFunc) -> "Option[T]":
         """Return Option.some(self._value) if predicate returns True, else return Option.none()"""
         if self.is_nada():
             return self
@@ -173,7 +178,7 @@ class Option[T]:
 
         return self
 
-    def or_else(self, func: Callable) -> "Option[Callable[[T],R]]":
+    def or_else(self, func: MapFunc) -> "Option[MapFunc]":
         """Returns option if it is Some, else calls func and returns result"""
         if self.is_some():
             return self
