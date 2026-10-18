@@ -66,3 +66,6 @@ class Pip:
             Pip.install(packages)
         except PipException as e:
             terminal.CLI.unrecoverable(f"Pip: {e.message}")
+
+if __name__ == "__main__":
+    Pip.run('--version')
