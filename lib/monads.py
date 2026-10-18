@@ -6,11 +6,15 @@ T = TypeVar("T") # Generic type for Option class
 V = TypeVar("V") # Generic type for Options passed as parameters
 R = TypeVar("R") # Return type when Callable[[T], R]
 E = TypeVar("E")  # For errors
+E2 = TypeVar("E2") # For other errors
 
-# Used for Option functions that pass value to function and return generic result
+# Used for functions that pass value to function and return generic result
 MapFunc = Callable[[T], R]
 
-# Used for Option functions that pass value to function and return boolean (i.e. for validation)
+# Used for functions that pass an error to function and return another error
+ErrMapFunc = Callable[[E], E2]
+
+# Used for functions that pass value to function and return boolean (i.e. for validation)
 PredicateFunc = Callable[[T], bool]
 
 class OptionException[E](Exception):
@@ -295,7 +299,7 @@ class Result[T, E]:
         """Return True if variant is OK"""
         return self._state == ResultVariant.OK
 
-    def is_ok_and(self, predicate: Callable[[R], bool]) -> bool:
+    def is_ok_and(self, predicate: PredicateFunc) -> bool:
         """Return True if variant is OK and predicate returns True"""
         return self.is_ok() and predicate(self._value)
 
@@ -303,32 +307,32 @@ class Result[T, E]:
         """Return True if variant is ERR"""
         return self._state == ResultVariant.ERR
 
-    def is_err_and(self, predicate: Callable[[R], bool]) -> bool:
+    def is_err_and(self, predicate: PredicateFunc) -> bool:
         """Return True if variant is ERR and predicate returns True"""
         return self.is_err() and predicate(self._value)
 
-    def map(self, func: Callable[[R], R]) -> "Result[T,E]":
+    def map(self, func: MapFunc) -> "Result[T,E]":
         """Create a new result with value mapped to func"""
         if self.is_err():
             return self
 
         return ok(func(self._value))
 
-    def map_or(self, func: Callable[[R], R], default: R) -> "Result[T,E]":
+    def map_or(self, func: MapFunc, default: V) -> "Result[MapFunc|V,E]":
         """Returns the provided default if Err or applies func to value"""
         if self.is_err():
             return default
 
         return ok(func(self._value))
 
-    def map_or_else(self, success: Callable[[R], R], default: Callable[[E], E]) -> "Result[T,E]":
+    def map_or_else(self, success: MapFunc, default: ErrMapFunc) -> "Result[MapFunc,ErrMapFunc]":
         """Returns the function on Err if Err or function on Ok"""
         if self.is_err():
             return err(default(self._value))
 
         return ok(success(self._value))
 
-    def map_err(self, func: Callable[[E], E]) -> "Result[T,E]":
+    def map_err(self, func: ErrMapFunc) -> "Result[T,ErrMapFunc]":
         """Maps an Err value, leaving Ok untouched"""
         if self.is_ok():
             return self
@@ -371,42 +375,42 @@ class Result[T, E]:
         """Returns the contained Err, never raises exception"""
         return self._value
 
-    def both(self, res: Result[R, E]) -> Result[R, E]:
+    def both(self, res: Result[V, E]) -> "Result[T|V, E]":
         """Result res if result is Ok, otherwise return Err of self"""
         if self.is_ok():
             return res
 
         return self
 
-    def and_then(self, func: Callable[[R], R]) -> "Result[R, E]":
+    def and_then(self, func: MapFunc) -> "Result[MapFunc, E]":
         """Calls func if result is Ok, otherwise returns Err of self"""
         if self.is_err():
             return self
 
         return ok(func(self._value))
 
-    def either(self, res: Result[R, E]) -> Result[R, E]:
+    def either(self, res: Result[V, E]) -> Result[T|V, E]:
         """Returns res if result is Err, otherwise returns Ok value of self"""
         if self.is_ok():
             return self
 
         return res
 
-    def or_else(self, func: Callable[[E], E]) -> Result[R, E]:
+    def or_else(self, func: ErrMapFunc) -> Result[T, ErrMapFunc]:
         """Calls func if result is Err, otherwise returns Ok of self"""
         if self.is_ok():
             return self
 
         return err(func(self._value))
 
-    def unwrap_or(self, default: T) -> T:
+    def unwrap_or(self, default: V) -> T|V:
         """Returns contained Ok value or default if Err"""
         if self.is_err():
             return default
 
         return self._value
 
-    def unwrap_or_else(self, func: Callable[[], R]) -> R:
+    def unwrap_or_else(self, func: Callable[[], R]) -> T|R:
         """Returns contained Ok value or value from func if Err"""
         if self.is_ok():
             return self._value
