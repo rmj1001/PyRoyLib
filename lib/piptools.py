@@ -2,6 +2,7 @@ import subprocess
 import sys
 
 class PipException(Exception):
+    """Exception raised when pip command fails on console."""
     def __init__(self, message: str):
         self.message = message
         super().__init__(self.message)
