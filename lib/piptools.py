@@ -29,6 +29,7 @@ class PipHandler:
 
     @staticmethod
     def installed_packages() -> list[str]:
+        """Returns a list of installed pip packages."""
         reqs = subprocess.check_output(PipHandler.COMMANDS + ['freeze'])
         return [r.decode().split('==')[0] for r in reqs.split()]
 
