@@ -1,5 +1,6 @@
 import subprocess
 import sys
+import terminal
 
 class PipException(Exception):
     """Exception raised when pip command fails on console."""
@@ -20,12 +21,6 @@ class PipHandler:
             subprocess.check_call(commands)
         except subprocess.CalledProcessError as e:
             raise PipException(f"Command {' '.join(commands)} failed and returned a non-zero exit code.")
-
-    @staticmethod
-    def unrecoverable(message: str):
-        """Print error to console and exit with status code 1."""
-        print(f"PipHandler: {message}")
-        sys.exit(1)
 
     @staticmethod
     def installed_packages() -> list[str]:
@@ -70,4 +65,4 @@ class PipHandler:
         try:
             PipHandler.install(packages)
         except PipException as e:
-            PipHandler.unrecoverable(e.message)
+            terminal.CLI.unrecoverable(f"Pip: {e.message}")

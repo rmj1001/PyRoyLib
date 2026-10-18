@@ -105,6 +105,12 @@ class CLI:
         answer = input(f"{question} [y/N]: ").lower()
         return answer in ["y", "yes"]
 
+    @staticmethod
+    def unrecoverable(message: str):
+        """Print error to console and exit with status code 1."""
+        print(message)
+        sys.exit(1)
+
 
 if __name__ == "__main__":
     """Testing"""
