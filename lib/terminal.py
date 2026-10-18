@@ -19,7 +19,7 @@ class CLI:
             commands: dict[str, str] | None = None,
             flags: dict[str, str] | None = None,
             settings: dict | None = None
-        ):
+    ):
         self._author = author
         self._copyright = copyright
 
@@ -66,6 +66,10 @@ class CLI:
     def add_flag(self, name: str, description: str) -> None:
         """Add a flag to the flags dictionary"""
         self._flags[name] = description
+
+    @staticmethod
+    def is_windows() -> bool:
+        return os.name == "nt"
 
     @staticmethod
     def args() -> list[str]:
