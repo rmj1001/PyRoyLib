@@ -197,7 +197,7 @@ class Option[T]:
         """Replace the current value with another value"""
         self._value = value
 
-    def zip(self, other_option: Option[V]) -> Option[U]:
+    def zip(self, other_option: Option[V]) -> Option[tuple[T,V]]:
         """Return tuple if both options are Some, else return Nada"""
         if self.is_some() and other_option.is_some():
             return Option.some((self._value, other_option._value))
