@@ -63,7 +63,7 @@ class Option[T]:
         return cls(value)
 
     @classmethod
-    def nada(cls) -> "Option[T]":
+    def nada(cls) -> "Option":
         """Create an option with Nada variant"""
         return cls(None)
 
@@ -228,7 +228,7 @@ def some(value: T) -> Option[T]:
     return Option.some(value)
 
 
-def nada() -> Option[T]:
+def nada() -> Option:
     """Shorthand for Option.nada()"""
     return Option.nada()
 
