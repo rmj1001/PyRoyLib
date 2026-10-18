@@ -21,6 +21,7 @@ class PipHandler:
 
     @staticmethod
     def unrecoverable(message: str):
+        """Print error to console and exit with status code 1."""
         print(f"PipHandler: {message}")
         sys.exit(1)
 
