@@ -34,7 +34,7 @@ class PipHandler:
         return package in installed_packages
 
     @staticmethod
-    def install(packages: str | list[str]):
+    def install(packages: str | list[str]) -> None:
         """Try to install a pip package."""
         if isinstance(packages, str):
             if PipHandler.is_installed(packages):
@@ -60,7 +60,7 @@ class PipHandler:
             raise PipException(f"Failed to install packages: {', '.join(failed_packages)}.")
 
     @staticmethod
-    def require(packages: str | list[str]):
+    def require(packages: str | list[str]) -> None:
         """Try to install one or more pip package(s), exit if package(s) not installed."""
         try:
             PipHandler.install(packages)
