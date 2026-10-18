@@ -1,0 +1,67 @@
+import subprocess
+import sys
+
+class PipException(Exception):
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
+
+class PipHandler:
+    COMMANDS = [sys.executable, "-m", "pip"]
+
+    @staticmethod
+    def run(commands: list[str] | str):
+        """Run a pip command from the command line. Raise PipException on failure."""
+        commands = PipHandler.COMMANDS + [commands] if isinstance(commands, str) else PipHandler.COMMANDS + commands
+
+        try:
+            subprocess.check_call(commands)
+        except subprocess.CalledProcessError as e:
+            raise PipException(f"Command {' '.join(commands)} failed and returned a non-zero exit code.")
+
+    @staticmethod
+    def unrecoverable(message: str):
+        print(f"PipHandler: {message}")
+        sys.exit(1)
+
+    @staticmethod
+    def is_installed(package: str) -> bool:
+        """Check if a package is installed."""
+        reqs = subprocess.check_output(PipHandler.COMMANDS + ['freeze'])
+        installed_packages = [r.decode().split('==')[0] for r in reqs.split()]
+
+        return package in installed_packages
+
+    @staticmethod
+    def install(packages: str | list[str]):
+        """Try to install a pip package."""
+        if isinstance(packages, str):
+            if PipHandler.is_installed(packages):
+                return
+
+            try:
+                PipHandler.run(["install", packages])
+            except PipException:
+                raise PipException(f"Failed to install package '{packages}'.")
+
+        failed_packages = []
+
+        for package in packages:
+            if PipHandler.is_installed(package):
+                continue
+
+            try:
+                PipHandler.run(["install", package])
+            except PipException:
+                failed_packages.append(package)
+
+        if len(failed_packages) > 0:
+            raise PipException(f"Failed to install packages: {', '.join(failed_packages)}.")
+
+    @staticmethod
+    def require(packages: str | list[str]):
+        """Try to install one or more pip package(s), exit if package(s) not installed."""
+        try:
+            PipHandler.install(packages)
+        except PipException as e:
+            PipHandler.unrecoverable(e.message)
