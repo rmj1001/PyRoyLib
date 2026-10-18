@@ -150,7 +150,7 @@ class Option[T]:
     def ok_or_else(self, error: Callable) -> "Result[T,E]":
         """Return a result. If option is Nada, error will be the result of a function."""
         if self.is_nada():
-            return Result.err(error)
+            return Result.err(error())
 
         return Result.ok(self._value)
 
