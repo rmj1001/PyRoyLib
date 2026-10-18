@@ -28,12 +28,14 @@ class PipHandler:
         sys.exit(1)
 
     @staticmethod
+    def installed_packages() -> list[str]:
+        reqs = subprocess.check_output(PipHandler.COMMANDS + ['freeze'])
+        return [r.decode().split('==')[0] for r in reqs.split()]
+
+    @staticmethod
     def is_installed(package: str) -> bool:
         """Check if a package is installed."""
-        reqs = subprocess.check_output(PipHandler.COMMANDS + ['freeze'])
-        installed_packages = [r.decode().split('==')[0] for r in reqs.split()]
-
-        return package in installed_packages
+        return package in PipHandler.installed_packages()
 
     @staticmethod
     def install(packages: str | list[str]) -> None:
