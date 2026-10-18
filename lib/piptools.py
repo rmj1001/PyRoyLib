@@ -7,6 +7,7 @@ class PipException(Exception):
         super().__init__(self.message)
 
 class PipHandler:
+    """Handle pip commands on the console and install or require packages."""
     COMMANDS = [sys.executable, "-m", "pip"]
 
     @staticmethod
