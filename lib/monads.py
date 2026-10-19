@@ -119,12 +119,12 @@ class Option[T]:
 
         return self._value
 
-    def unwrap_or_else(self, func: Callable) -> T | Callable:
+    def unwrap_or_else(self, func: Callable, *args, **kwargs) -> T | Callable:
         """Get value if Some, else get value from passed function"""
         if self.is_some():
             return self._value
 
-        return func()
+        return func(*args, **kwargs)
 
     def map(self, func: MapFunc) -> "Option[MapFunc]":
         """Call a function on the option and return a new option"""
