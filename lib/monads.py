@@ -391,12 +391,12 @@ class Result[T, E]:
 
         return self
 
-    def and_then(self, func: MapFunc) -> "Result[MapFunc, E]":
+    def and_then(self, func: Callable, *args, **kwargs) -> "Result[Callable, E]":
         """Calls func if result is Ok, otherwise returns Err of self"""
         if self.is_err():
             return self
 
-        return ok(func(self._value))
+        return ok(func(*args, **kwargs))
 
     def other_if_err(self, res: Result[V, E]) -> Result[T | V, E]:
         """Returns res if result is Err, otherwise returns Ok value of self"""
@@ -405,12 +405,12 @@ class Result[T, E]:
 
         return res
 
-    def or_else(self, func: ErrMapFunc) -> Result[T, ErrMapFunc]:
+    def or_else(self, func: Callable, *args, **kwargs) -> Result[T, Callable]:
         """Calls func if result is Err, otherwise returns Ok of self"""
         if self.is_ok():
             return self
 
-        return err(func(self._value))
+        return err(func(*args, **kwargs))
 
     def unwrap_or(self, default: V) -> T|V:
         """Returns contained Ok value or default if Err"""
