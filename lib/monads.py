@@ -384,7 +384,7 @@ class Result[T, E]:
         """Returns the contained Err, never raises exception"""
         return self._value
 
-    def both(self, res: Result[V, E]) -> "Result[T|V, E]":
+    def other_if_ok(self, res: Result[V, E]) -> "Result[T|V, E]":
         """Result res if result is Ok, otherwise return Err of self"""
         if self.is_ok():
             return res
@@ -398,7 +398,7 @@ class Result[T, E]:
 
         return ok(func(self._value))
 
-    def either(self, res: Result[V, E]) -> Result[T|V, E]:
+    def other_if_err(self, res: Result[V, E]) -> Result[T | V, E]:
         """Returns res if result is Err, otherwise returns Ok value of self"""
         if self.is_ok():
             return self
