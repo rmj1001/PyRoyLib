@@ -242,5 +242,84 @@ class TestOption(unittest.TestCase):
         self.assertEqual(tup.unzip(), (opt1, opt2))
 
 
+class TestResult(unittest.TestCase):
+    def test_init(self):
+        pass
+
+    def test_str(self):
+        pass
+
+    def test_bool(self):
+        pass
+
+    def test_eq(self):
+        pass
+
+    def test_ok(self):
+        pass
+
+    def test_err(self):
+        pass
+
+    def test_is_ok(self):
+        pass
+
+    def test_is_ok_and(self):
+        pass
+
+    def test_is_err(self):
+        pass
+
+    def test_is_err_and(self):
+        pass
+
+    def test_map(self):
+        pass
+
+    def test_map_or(self):
+        pass
+
+    def test_map_or_else(self):
+        pass
+
+    def test_map_err(self):
+        pass
+
+    def test_expect(self):
+        pass
+
+    def test_unwrap(self):
+        pass
+
+    def test_expect_err(self):
+        pass
+
+    def test_unwrap_err(self):
+        pass
+
+    def test_into_ok(self):
+        pass
+
+    def test_into_err(self):
+        pass
+
+    def test_other_if_ok(self):
+        pass
+
+    def test_and_then(self):
+        pass
+
+    def test_other_if_err(self):
+        pass
+
+    def test_or_else(self):
+        pass
+
+    def test_unwrap_or(self):
+        pass
+
+    def test_unwrap_or_else(self):
+        pass
+
 if __name__ == '__main__':
     unittest.main()
