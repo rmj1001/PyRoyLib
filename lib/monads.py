@@ -419,12 +419,12 @@ class Result[T, E]:
 
         return self._value
 
-    def unwrap_or_else(self, func: Callable[[], R]) -> T|R:
+    def unwrap_or_else(self, func: Callable, *args, **kwargs) -> T|R:
         """Returns contained Ok value or value from func if Err"""
         if self.is_ok():
             return self._value
 
-        return func()
+        return func(*args, **kwargs)
 
 
 def ok(value: T, *args, **kwargs) -> Result[T, E]:
