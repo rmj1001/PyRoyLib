@@ -330,7 +330,7 @@ class Result[T, E]:
     def map_or(self, func: MapFunc, default: V) -> "Result[MapFunc|V,E]":
         """Returns the provided default if Err or applies func to value"""
         if self.is_err():
-            return default
+            return ok(default)
 
         return ok(func(self._value))
 
