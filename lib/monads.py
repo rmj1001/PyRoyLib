@@ -335,9 +335,9 @@ class Result[T, E]:
         return ok(func(self._value))
 
     def map_or_else(self, success: MapFunc, default: Callable, *args, **kwargs) -> "Result[MapFunc,ErrMapFunc]":
-        """Returns the function on Err if Err or function on Ok"""
+        """Maps function if variant is Ok, else creates new Ok result with default function returned value"""
         if self.is_err():
-            return err(default(*args, **kwargs))
+            return ok(default(*args, **kwargs))
 
         return ok(success(self._value))
 
@@ -362,7 +362,7 @@ class Result[T, E]:
 
         return self._value
 
-    def expect_err(self, message: T) -> E:
+    def expect_err(self, message: V) -> E:
         """Returns contained Err, or else raises exception if Ok"""
         if self.is_err():
             return self._value
