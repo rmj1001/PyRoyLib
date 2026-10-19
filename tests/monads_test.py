@@ -14,6 +14,7 @@ class TestOption(unittest.TestCase):
         self.assertIsInstance(opt2, Option)
 
     def test_eq(self):
+        """Tests equality for variants"""
         opt = Option(None)
         opt2 = Option(1)
 
