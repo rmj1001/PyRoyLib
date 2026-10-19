@@ -67,8 +67,11 @@ class Option[T]:
         return False
 
     @classmethod
-    def some(cls, value: T) -> "Option[T]":
+    def some(cls, value: T, *args, **kwargs) -> "Option[T]":
         """Create an option with Some variant"""
+        if isinstance(value, Callable):
+            return cls(value(*args, **kwargs))
+
         return cls(value)
 
     @classmethod
@@ -151,10 +154,10 @@ class Option[T]:
 
         return Result.ok(self._value)
 
-    def ok_or_else(self, error: Callable) -> "Result[T,E]":
+    def ok_or_else(self, func: Callable, *args, **kwargs) -> "Result[T,E]":
         """Return a result. If option is Nada, error will be the result of a function."""
         if self.is_nada():
-            return Result.err(error())
+            return Result.err(func(*args, **kwargs))
 
         return Result.ok(self._value)
 
@@ -182,12 +185,12 @@ class Option[T]:
 
         return self
 
-    def or_else(self, func: MapFunc) -> "Option[MapFunc]":
+    def or_else(self, func: Callable, *args, **kwargs) -> "Option[MapFunc]":
         """Returns option if it is Some, else calls func and returns result"""
         if self.is_some():
             return self
 
-        result = func(self._value)
+        result = func(*args, **kwargs)
 
         if result is None:
             return Option.nada()
@@ -232,8 +235,11 @@ class Option[T]:
         return first_opt, second_opt
 
 
-def some(value: T) -> Option[T]:
+def some(value: T, *args, **kwargs) -> Option[T]:
     """Shorthand for Option.some(value)"""
+    if isinstance(value, Callable):
+        return Option.some(value, *args, **kwargs)
+
     return Option.some(value)
 
 
@@ -255,9 +261,6 @@ class Result[T, E]:
     _state: ResultVariant = ResultVariant.ERR
 
     def __init__(self, value: T, state: ResultVariant = ResultVariant.OK):
-        if value is None:
-            raise ResultException("Value cannot be None. Try using Option?")
-
         self._value = value
         self._state = state
 
@@ -286,13 +289,19 @@ class Result[T, E]:
         return True
 
     @classmethod
-    def ok(cls, value: T) -> "Result[T,E]":
+    def ok(cls, value: T, *args, **kwargs) -> "Result[T,E]":
         """Create a result with OK variant"""
+        if isinstance(value, Callable):
+            return cls(value(*args, **kwargs), ResultVariant.OK)
+
         return cls(value, ResultVariant.OK)
 
     @classmethod
-    def err(cls, error: E) -> "Result[T,E]":
+    def err(cls, error: E, *args, **kwargs) -> "Result[T,E]":
         """Create a result with ERR variant"""
+        if isinstance(error, Callable):
+            return cls(error(*args, **kwargs), ResultVariant.ERR)
+
         return cls(error, ResultVariant.ERR)
 
     def is_ok(self) -> bool:
@@ -418,11 +427,17 @@ class Result[T, E]:
         return func()
 
 
-def ok(value: T) -> Result[T, E]:
+def ok(value: T, *args, **kwargs) -> Result[T, E]:
     """Shorthand for Result.ok(), useful for pattern matching"""
+    if isinstance(value, Callable):
+        return Result.ok(value, *args, **kwargs)
+
     return Result.ok(value)
 
 
-def err(value: E) -> Result[T, E]:
+def err(value: E, *args, **kwargs) -> Result[T, E]:
     """Shorthand for Result.err(), useful for pattern matching"""
+    if isinstance(value, Callable):
+        return Result.err(value, *args, **kwargs)
+
     return Result.err(value)
