@@ -334,10 +334,10 @@ class Result[T, E]:
 
         return ok(func(self._value))
 
-    def map_or_else(self, success: MapFunc, default: ErrMapFunc) -> "Result[MapFunc,ErrMapFunc]":
+    def map_or_else(self, success: MapFunc, default: Callable, *args, **kwargs) -> "Result[MapFunc,ErrMapFunc]":
         """Returns the function on Err if Err or function on Ok"""
         if self.is_err():
-            return err(default(self._value))
+            return err(default(*args, **kwargs))
 
         return ok(success(self._value))
 
