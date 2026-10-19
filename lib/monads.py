@@ -142,7 +142,7 @@ class Option[T]:
 
     def flatmap(self, func: MapFunc) -> "Option[MapFunc]":
         """Call a function on the option and return a flattened option"""
-        return self.map(func).flatten()
+        return self.flatten().map(func).flatten()
 
     def ok_or(self, error: E) -> "Result[T,E]":
         """Return a result"""
