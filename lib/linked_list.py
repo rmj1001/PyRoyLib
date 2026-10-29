@@ -13,20 +13,21 @@ class SLLNode[T]:
 class SingleLinkedList[T]:
     """Single-linked list"""
     head: SLLNode[T] | None
-    _max: int
+    _nodes: int
 
     def __init__(self, starting_data: list[T] | None = None) -> None:
         """Create a single-linked list with either no data or a list of starting data"""
         self.head = None
-        self._max = 0
+        self._nodes = 0
 
+        # If a list is provided, add each item in the list as a new node
         if starting_data is not None:
             for item in starting_data:
                 self.add(item)
 
     def __len__(self) -> int:
-        """Get the number of nodes in the list"""
-        return self._max
+        """Get the number of nodes in the list without traversal"""
+        return self._nodes
 
     def __str__(self) -> str:
         """Get the string representation of the list"""
@@ -66,40 +67,47 @@ class SingleLinkedList[T]:
 
     def add(self, data: T) -> None:
         """Add a new node to the end of the list with the provided data"""
+
+        # New node is the head if a head didn't exist
         if self.head is None:
             self.head = SLLNode(data)
-            self._max = 1
+            self._nodes = 1
             return
 
+        # Traverse until tail is found
         current = self.head
 
         while current.next is not None:
             current = current.next
 
+        # Add new node to end of the linked list, increment nodes counter by 1
         current.next = SLLNode(data)
-        self._max += 1
+        self._nodes += 1
 
     def remove(self, data: T) -> None:
         """Remove the first node with the provided data"""
         if self.head is None:
             raise Exception("Single linked list is empty")
 
+        # Remove head if it is the only node in the linked list
         if self.head.data == data and self.head.next is None:
             self.head = None
-            self._max = 0
+            self._nodes = 0
             return
 
+        # Replace the head with the next node in the list
         if self.head.data == data and self.head.next is not None:
             self.head = self.head.next
-            self._max -= 1
+            self._nodes -= 1
             return
 
+        # Traverse until node with matching data is found, replace that node with the next node
         current = self.head
 
         while current.next is not None:
             if current.next.data == data:
                 current.next = current.next.next
-                self._max -= 1
+                self._nodes -= 1
                 return
 
             current = current.next
@@ -108,19 +116,22 @@ class SingleLinkedList[T]:
 
     def get(self, index: int) -> T:
         """Get the item at the provided index"""
+        # Propagate the IndexError up
         try:
             self.valid_index(index)
         except IndexError as e:
-            # Propagate the IndexError up
             raise e
 
+        # Return head if index is 0
         if index == 0:
             return self.head.data
 
+        # Convert negative index to positive index (neg. index corresponds with position from tail going backwards)
         if index < 0:
             # Negative indexes will get the item from that position at the end of the list
             return self.get(index + len(self))
 
+        # Traverse list until finding the node with the specified index and return its data
         current_index = 0
         current_item = self.head
 
@@ -132,23 +143,29 @@ class SingleLinkedList[T]:
 
     def remove_at(self, index: int) -> None:
         """Remove the item at the provided index"""
+        # Propagate the index error up
         try:
             self.valid_index(index)
         except IndexError as e:
             raise e
 
+        # Remove head if index is 0
         if index == 0:
+            # Head is replaced with next node if next node is not None
             if self.head.next is None:
                 self.head = None
             else:
                 self.head = self.head.next
 
-            self._max -= 1
+            # Decrement nodes counter
+            self._nodes -= 1
             return
 
+        # Convert neg. index to positive index (corresponds with position from tail going backwards)
         if index < 0:
             self.remove_at(index + len(self))
 
+        # Traverse list until node at index is reached
         current_index = 0
         current_item = self.head
 
@@ -156,12 +173,16 @@ class SingleLinkedList[T]:
             current_item = current_item.next
             current_index += 1
 
+        # Replace tail with None
         if current_item.next.next is None:
             current_item.next = None
+
+        # Replace node with its next node
         else:
             current_item.next = current_item.next.next
 
-        self._max -= 1
+        # Decrement nodes counter
+        self._nodes -= 1
 
     def search(self, data: T) -> int:
         """Get the index of the item that matches the provided data"""
@@ -172,6 +193,7 @@ class SingleLinkedList[T]:
         index: int = 0
         found: bool = False
 
+        # Traverse nodes until node's data matches passed data, increment counter if going to next node
         while current is not None:
             if current.data == data:
                 found = True
