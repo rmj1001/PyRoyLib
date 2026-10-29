@@ -1,4 +1,4 @@
-from typing import TypeVar
+from typing import TypeVar, Iterable
 
 T = TypeVar("T")
 
@@ -15,7 +15,7 @@ class SingleLinkedList[T]:
     head: SLLNode[T] | None
     _nodes: int
 
-    def __init__(self, starting_data: list[T] | None = None) -> None:
+    def __init__(self, starting_data: Iterable[T] | None = None) -> None:
         """Create a single-linked list with either no data or a list of starting data"""
         self.head = None
         self._nodes = 0
@@ -53,9 +53,6 @@ class SingleLinkedList[T]:
 
     def valid_index(self, index) -> None:
         """Raise an IndexError exception if the provided index is out of range"""
-        if self.head is None:
-            raise IndexError("List is empty")
-
         if index < 0 and index + len(self) < 0:
             # Negative index when combined with the list length should be greater than 0
             raise IndexError(
@@ -67,7 +64,6 @@ class SingleLinkedList[T]:
 
     def add(self, data: T) -> None:
         """Add a new node to the end of the list with the provided data"""
-
         # New node is the head if a head didn't exist
         if self.head is None:
             self.head = SLLNode(data)
@@ -116,6 +112,9 @@ class SingleLinkedList[T]:
 
     def get(self, index: int) -> T:
         """Get the item at the provided index"""
+        if self.head is None:
+            raise Exception("Single linked list is empty")
+
         # Propagate the IndexError up
         try:
             self.valid_index(index)
@@ -143,6 +142,9 @@ class SingleLinkedList[T]:
 
     def remove_at(self, index: int) -> None:
         """Remove the item at the provided index"""
+        if self.head is None:
+            raise Exception("Single linked list is empty")
+
         # Propagate the index error up
         try:
             self.valid_index(index)
@@ -185,7 +187,7 @@ class SingleLinkedList[T]:
         self._nodes -= 1
 
     def search(self, data: T) -> int:
-        """Get the index of the item that matches the provided data"""
+        """Get the index of the first item that matches the provided data"""
         if self.head is None:
             raise Exception("Single linked list is empty")
 
