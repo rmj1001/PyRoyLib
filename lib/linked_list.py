@@ -54,12 +54,12 @@ class SingleLinkedList[T]:
 
     def valid_index(self, index) -> None:
         """Raise an IndexError exception if the provided index is out of range"""
-        if index < 0 and index + len(self) < 0:
+        if index + len(self) < 0:
             # Negative index when combined with the list length should be greater than 0
             raise IndexError(
                 "Index is out of range: Negative index's absolute value is greater than the length of the list")
 
-        if not 0 <= index < len(self):
+        if index >= len(self):
             # Index goes from 0 to len(self)-1
             raise IndexError("Index is out of range: Index is greater than the last element's index")
 
@@ -347,16 +347,21 @@ class DoubleLinkedList[T]:
             self._nodes -= 1
             return
 
+        # Traverse until node with matching data is found, then delete it
         current = self.head
 
         while current.next is not None:
-            if current.next.data == data:
-                current.next = current.next.next
-                current.next.previous = current
-                self._nodes -= 1
-                return
+            if current.next.data != data:
+                current = current.next
+                continue
 
-            current = current.next
+            current.next = current.next.next
+
+            if current.next is not None:
+                current.next.previous = current
+
+            self._nodes -= 1
+            return
 
         raise Exception(f"List did not contain data: {data}")
 
