@@ -200,7 +200,7 @@ class SingleLinkedList[T]:
         if data is None and conditional is None:
             raise Exception("You must provide data or a conditional.")
 
-        index = self.search(conditional if conditional is not None else data)
+        index = self.search(data, conditional)
         self.remove_at(index)
 
     def update(self, index: int, data: T) -> None:
