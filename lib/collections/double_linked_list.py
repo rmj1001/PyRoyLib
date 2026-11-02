@@ -195,9 +195,6 @@ class DoubleLinkedList[T]:
         if self.head is None:
             raise IndexError("Single linked list is empty")
 
-        if data is None and conditional is None:
-            raise Exception("You must provide data or a conditional.")
-
         index = self.search(data, conditional)
         self.remove_at(index)
 
