@@ -76,144 +76,135 @@ class DoubleLinkedList[T]:
         """Add node to end of list while specifying its parent"""
         if self.head is None:
             self.head = DLLNode(data)
-        else:
-            current = self.head
+            self.tail = self.head
+            self._nodes += 1
+            return
 
-            while current.next is not None:
-                current = current.next
+        self.tail.next = DLLNode(data=data, previous=self.tail)
 
-            current.next = DLLNode(data, previous=current)
+        if self.tail is not None:
+            self.tail = self.tail.next
 
         self._nodes += 1
 
-    def get(self, index: int) -> T:
-        """Get data from node at given index"""
+    def get_node(self, index: int) -> DLLNode[T]:
+        """Get the node address at the provided index"""
         if self.head is None:
-            raise Exception("Single linked list is empty")
+            raise IndexError("Double linked list is empty")
 
-        # Propagate IndexError up
-        try:
-            self.valid_index(index)
-        except IndexError as e:
-            raise e
+        # Convert negative indexes to positive and validate
+        index = self.process_index(index)
+        self.valid_index(index)
 
-        # Convert negative index to positive index (corresponding to position from tail going backwards)
-        if index < 0:
-            return self.get(index + len(self))
+        # Return head if index is 0
+        if index == 0:
+            return self.head
 
-        # Traverse list
-        current = self.head
+        # Return tail if index is -1 or len(self)-1
+        if self.is_tail(index) and self.tail is not None:
+            return self.tail
+
+        # Get other nodes
         current_index = 0
+        current_item: DLLNode[T] | None = self.head
 
-        while current is not None:
-            # Return data if index matches the current node's index, or else traverse again
-            if index == current_index:
-                return current.data
-            else:
-                current = current.next
-                current_index += 1
+        while current_index < index and current_item is not None:
+            current_item = current_item.next
+            current_index += 1
 
-        raise IndexError(f"Index {index} is out of range")
+        if current_item is not None:
+            return current_item
+        else:
+            raise Exception(f"Double linked list does not contain node at index {index}")
 
-    def search(self, data: T) -> int:
-        """Search for first node index with given data"""
+    def get_data(self, index: int) -> T:
+        """Get data from node at given index"""
+        node = self.get_node(index)
+        return node.data
+
+    def search(self, data: T = None, conditional: Predicate | None = None) -> int:
+        """Get the index of the first item that matches the provided data"""
         if self.head is None:
-            raise Exception("Single linked list is empty")
+            raise IndexError("Double linked list is empty")
+
+        if data is None and conditional is None:
+            raise Exception("You must provide data or a conditional.")
 
         current = self.head
         index: int = 0
 
+        # Traverse nodes until node's data matches passed data, increment counter if going to next node
         while current is not None:
-            if current.data == data:
+            if data is not None and current.data == data:
+                return index
+            elif conditional is not None and conditional(current.data):
                 return index
             else:
                 current = current.next
                 index += 1
 
-        raise Exception(f"List did not contain data: {data}")
-
-    def remove(self, data: T) -> None:
-        """Remove first node from list with given data"""
-        if self.head is None:
-            raise Exception("Single linked list is empty")
-
-        # Remove head if it is the only node in the linked list
-        if self.head.data == data and self.head.next is None:
-            self.head = None
-            self._nodes -= 1
-            return
-
-        # Replace head with next node in the list
-        if self.head.data == data and self.head.next is not None:
-            self.head = self.head.next
-            self.head.previous = None
-            self._nodes -= 1
-            return
-
-        # Traverse until node with matching data is found, then delete it
-        current = self.head
-
-        while current.next is not None:
-            if current.next.data != data:
-                current = current.next
-                continue
-
-            current.next = current.next.next
-
-            if current.next is not None:
-                current.next.previous = current
-
-            self._nodes -= 1
-            return
-
-        raise Exception(f"List did not contain data: {data}")
+        if conditional is not None:
+            raise Exception(f"List did not contain data matching the condition: {conditional}")
+        else:
+            raise Exception(f"List did not contain data: {data if data is not None else 'None'}")
 
     def remove_at(self, index: int) -> None:
         """Remove node from list at given index"""
         if self.head is None:
-            raise Exception("Single linked list is empty")
+            raise Exception("Double linked list is empty")
 
-        # Propagate IndexError
-        try:
-            self.valid_index(index)
-        except IndexError as e:
-            raise e
+        # Convert negative indexes to positive ones and validate them
+        index = self.process_index(index)
+        self.valid_index(index)
 
-        # Remove head if it is the only node in the linked list
-        if index == 0 and self.head.next is None:
+        # Handle head index cases
+        if index == 0 and len(self) == 1:
             self.head = None
+            self.tail = None
             self._nodes -= 1
-            return None
+            return
 
-        # Replace head with next node in the list
-        if index == 0 and self.head.next is not None:
+        if index == 0 and len(self) > 1:
             self.head = self.head.next
-            self.head.previous = None
+            self.head.next.previous = None
             self._nodes -= 1
-            return None
+            return
 
-        # Convert negative index to positive index corresponding with position from tail going backwards
-        if index < 0:
-            self.remove_at(index + len(self))
-            return None
+        previous_node = self.get_node(index - 1)
 
-        # Traverse list until node at index is reached
-        current_index = 0
-        current_item = self.head
+        # The next node is the node at the passed index
+        if previous_node.next is None:
+            raise Exception(f"No node exists at index {index}.")
 
-        while current_index < index - 1:
-            current_item = current_item.next
-            current_index += 1
+        # Remove node at the provided index, replacing it with next node if it exists, or setting it to None
+        previous_node.next = previous_node.next.next if previous_node.next.next is not None else None
 
-        # Replace tail with None
-        if current_item.next.next is None:
-            current_item.next = None
+        # Update the next node's previous field to the previous node
+        if previous_node.next is not None:
+            previous_node.next.previous = previous_node
 
-        # Replace node with its next node
-        else:
-            current_item.next = current_item.next.next
-            current_item.next.previous = current_item
+        # Update tail address if necessary
+        if self.is_tail(index):
+            self.tail = previous_node.next if previous_node.next is not None else previous_node
 
         # Decrement nodes counter
         self._nodes -= 1
-        return None
+
+    def remove(self, data: T = None, conditional: Predicate | None = None) -> None:
+        """Remove the first node with the provided data"""
+        if self.head is None:
+            raise IndexError("Single linked list is empty")
+
+        if data is None and conditional is None:
+            raise Exception("You must provide data or a conditional.")
+
+        index = self.search(data, conditional)
+        self.remove_at(index)
+
+    def update(self, index: int, data: T) -> None:
+        """Update the data of a node at a given index"""
+        if self.head is None:
+            raise IndexError("Double linked list is empty")
+
+        node = self.get_node(index)
+        node.data = data

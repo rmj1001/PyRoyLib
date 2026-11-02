@@ -27,19 +27,19 @@ class TestDoubleLinkedList(unittest.TestCase):
         self.assertTrue(empty.is_empty())
         self.assertFalse(not_empty.is_empty())
 
-    def test_get(self):
+    def test_get_data(self):
         empty = DoubleLinkedList()
         not_empty = DoubleLinkedList([1, 2, 3, 4, 5, 6])
 
         with self.assertRaises(Exception):
-            empty.get(1)
+            empty.get_data(1)
 
         with self.assertRaises(Exception):
-            not_empty.get(10)
+            not_empty.get_data(10)
 
-        self.assertEqual(not_empty.get(3), 4)
+        self.assertEqual(not_empty.get_data(3), 4)
 
-        self.assertEqual(not_empty.get(-1), 6)
+        self.assertEqual(not_empty.get_data(-1), 6)
 
     def test_search(self):
         empty = DoubleLinkedList()
@@ -64,11 +64,11 @@ class TestDoubleLinkedList(unittest.TestCase):
             not_empty.remove(10)
 
         not_empty.remove(1)
-        self.assertEqual(not_empty.get(0), 2)
+        self.assertEqual(not_empty.get_data(0), 2)
         self.assertEqual(len(not_empty), 5)
 
         not_empty.remove(6)
-        self.assertEqual(not_empty.get(-1), 5)
+        self.assertEqual(not_empty.get_data(-1), 5)
         self.assertEqual(len(not_empty), 4)
 
     def test_remove_at(self):
@@ -82,11 +82,11 @@ class TestDoubleLinkedList(unittest.TestCase):
             not_empty.remove_at(10)
 
         not_empty.remove_at(2)
-        self.assertEqual(not_empty.get(2), 4)
+        self.assertEqual(not_empty.get_data(2), 4)
         self.assertEqual(len(not_empty), 5)
 
         not_empty.remove_at(-1)
-        self.assertEqual(not_empty.get(-1), 5)
+        self.assertEqual(not_empty.get_data(-1), 5)
         self.assertEqual(len(not_empty), 4)
 
     def test_backwards_traversal(self):
@@ -96,11 +96,7 @@ class TestDoubleLinkedList(unittest.TestCase):
         self.assertEqual(not_empty.head.next.next.next.previous.data, 3)
 
         not_empty.remove(3)
-        self.assertEqual(not_empty.get(2), 4)
+        self.assertEqual(not_empty.get_data(2), 4)
 
         not_empty.remove_at(3)
-        self.assertEqual(not_empty.get(3), 6)
-
-
-if __name__ == '__main__':
-    unittest.main()
+        self.assertEqual(not_empty.get_data(3), 6)
