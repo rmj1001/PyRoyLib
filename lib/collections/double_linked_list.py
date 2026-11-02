@@ -17,7 +17,8 @@ class DoubleLinkedList[T]:
 
     def __init__(self, starting_data: Iterable[T] | None = None) -> None:
         """Constructor with optional parameter to populate list with items from iterable"""
-        self.head = None
+        self.head: DLLNode[T] | None = None
+        self.tail: DLLNode[T] | None = None
         self._nodes = 0
 
         if starting_data is not None:
@@ -47,12 +48,22 @@ class DoubleLinkedList[T]:
         return output
 
     def is_empty(self) -> bool:
-        """Check if list has nodes"""
-        return self._nodes == 0
+        """Check if the list is empty"""
+        return len(self) == 0
 
-    def valid_index(self, index: int) -> None:
+    def is_tail(self, index: int) -> bool:
+        """Check if index is the tail of the list"""
+        return index == -1 or index == len(self) - 1
+
+    def process_index(self, index: int) -> int:
+        """Convert negative indexes to positive ones"""
+        return index if index >= 0 else index + len(self)
+
+    def valid_index(self, index) -> None:
         """Raise an IndexError exception if the provided index is out of range"""
-        if index + len(self) < 0:
+        index = self.process_index(index)
+
+        if index < 0:
             # Negative index when combined with the list length should be greater than 0
             raise IndexError(
                 "Index is out of range: Negative index's absolute value is greater than the length of the list")
