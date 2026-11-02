@@ -1,4 +1,3 @@
-import unittest
 from typing import TypeVar, List, Iterable
 
 T = TypeVar('T')
