@@ -54,6 +54,26 @@ class TestQueue(unittest.TestCase):
         self.assertEqual(str(empty_queue), f"Queue()")
         self.assertEqual(str(full_queue), f"Queue(1, 2, 3, 4, 5, 6)")
 
+    def test_iter(self):
+        empty = Queue()
+        full = Queue([1, 2, 3, 4, 5, 6])
+
+        iter_empty = iter(empty)
+        iter_full = iter(full)
+
+        with self.assertRaises(StopIteration):
+            next(iter_empty)
+
+        self.assertEqual(next(iter_full), 1)
+        self.assertEqual(next(iter_full), 2)
+        self.assertEqual(next(iter_full), 3)
+        self.assertEqual(next(iter_full), 4)
+        self.assertEqual(next(iter_full), 5)
+        self.assertEqual(next(iter_full), 6)
+
+        with self.assertRaises(StopIteration):
+            next(iter_full)
+
 
 if __name__ == '__main__':
     unittest.main()

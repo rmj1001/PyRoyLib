@@ -52,6 +52,26 @@ class TestStack(unittest.TestCase):
         self.assertEqual(str(empty_stack), f"Stack()")
         self.assertEqual(str(full_stack), f"Stack(1, 2, 3, 4, 5, 6)")
 
+    def test_iter(self):
+        empty_stack = Stack()
+        full_stack = Stack([1, 2, 3, 4, 5, 6])
+
+        iter_empty = iter(empty_stack)
+        iter_full = iter(full_stack)
+
+        with self.assertRaises(StopIteration):
+            next(iter_empty)
+
+        self.assertEqual(next(iter_full), 1)
+        self.assertEqual(next(iter_full), 2)
+        self.assertEqual(next(iter_full), 3)
+        self.assertEqual(next(iter_full), 4)
+        self.assertEqual(next(iter_full), 5)
+        self.assertEqual(next(iter_full), 6)
+
+        with self.assertRaises(StopIteration):
+            next(iter_full)
+
 
 if __name__ == '__main__':
     unittest.main()

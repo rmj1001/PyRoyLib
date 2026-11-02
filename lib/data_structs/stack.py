@@ -12,11 +12,13 @@ class StackException(Exception):
 class Stack[T]:
     data: List[T]
     elements: int
+    _current: int
 
     def __init__(self, starting_data: Iterable[T] | None = None) -> None:
         """Initialize a stack, with or without starting data"""
         self.data = []
         self.elements = 0
+        self._current = 0
 
         if starting_data is not None:
             for item in starting_data:
@@ -31,6 +33,19 @@ class Stack[T]:
         """String representation of the stack"""
         str_data = [str(item) for item in self.data]
         return f"Stack({', '.join(str_data)})" if len(self) > 0 else "Stack()"
+
+    def __iter__(self) -> Iterable[T]:
+        """Convert stack to iterator"""
+        return iter(self.data)
+
+    def __next__(self) -> T:
+        """Yield the current element from the stack"""
+        if self._current < len(self):
+            element = self.data[self._current]
+            self._current += 1
+            yield element
+        else:
+            raise StopIteration
 
     def is_empty(self) -> bool:
         """Check if the stack is empty."""
