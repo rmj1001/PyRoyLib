@@ -3,6 +3,10 @@ from typing import TypeVar, List, Iterable
 
 T = TypeVar('T')
 
+class StackException(Exception):
+    def __init__(self, message) -> None:
+        self.message = message
+        super().__init__(message)
 
 class Stack[T]:
     data: List[T]
@@ -39,7 +43,7 @@ class Stack[T]:
     def pop(self) -> T:
         """Remove data from the stack."""
         if self.is_empty():
-            raise Exception('Stack is empty')
+            raise StackException('Stack is empty')
 
         data = self.data.pop()
         self.elements -= 1
@@ -48,7 +52,7 @@ class Stack[T]:
     def peek(self) -> T:
         """Get the last data from the stack."""
         if self.is_empty():
-            raise Exception('Stack is empty')
+            raise StackException('Stack is empty')
 
         return self.data[-1]
 
@@ -72,7 +76,7 @@ class TestStack(unittest.TestCase):
         empty_stack = Stack()
         full_stack = Stack([1, 2, 3, 4, 5, 6])
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(StackException):
             empty_stack.pop()
 
         self.assertEqual(full_stack.pop(), 6)
@@ -82,7 +86,7 @@ class TestStack(unittest.TestCase):
         empty_stack = Stack()
         full_stack = Stack([1, 2, 3, 4, 5, 6])
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(StackException):
             empty_stack.peek()
 
         self.assertEqual(full_stack.peek(), 6)
