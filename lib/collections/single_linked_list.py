@@ -110,9 +110,9 @@ class SingleLinkedList[T]:
 
         # Get other nodes
         current_index = 0
-        current_item = self.head
+        current_item: SLLNode[T] | None = self.head
 
-        while current_index < index:
+        while current_index < index and current_item is not None:
             current_item = current_item.next
             current_index += 1
 
