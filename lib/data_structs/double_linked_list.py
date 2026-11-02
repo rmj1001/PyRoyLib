@@ -1,8 +1,10 @@
 from typing import TypeVar, Iterable, Callable
+
 from lib.data_structs.single_linked_list import LinkedListException
 
 T = TypeVar("T")
 Predicate = Callable[[T], bool]
+
 
 class DLLNode[T]:
     """Node for a double-linked list"""

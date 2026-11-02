@@ -88,14 +88,13 @@ class TestSingleLinkedList(unittest.TestCase):
 
         with self.assertRaises(Exception):
             empty.search(1)
-            empty.search(conditional = lambda x: x == 5)
+            empty.search(conditional=lambda x: x == 5)
 
         def is_five(num: int) -> bool:
             return num == 5
 
         self.assertEqual(not_empty.search(5), 4)
-        self.assertEqual(not_empty.search(conditional = is_five), 4)
-
+        self.assertEqual(not_empty.search(conditional=is_five), 4)
 
     def test_update(self):
         empty = SingleLinkedList()

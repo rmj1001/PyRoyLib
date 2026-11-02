@@ -2,11 +2,11 @@ from enum import Enum
 from typing import TypeVar, Callable
 
 # Generic types
-T = TypeVar("T") # Generic type for Option class
-V = TypeVar("V") # Generic type for Options passed as parameters
-R = TypeVar("R") # Return type when Callable[[T], R]
+T = TypeVar("T")  # Generic type for Option class
+V = TypeVar("V")  # Generic type for Options passed as parameters
+R = TypeVar("R")  # Return type when Callable[[T], R]
 E = TypeVar("E")  # For errors
-E2 = TypeVar("E2") # For other errors
+E2 = TypeVar("E2")  # For other errors
 
 # Used for functions that pass value to function and return generic result
 MapFunc = Callable[[T], R]
@@ -16,6 +16,7 @@ ErrMapFunc = Callable[[E], E2]
 
 # Used for functions that pass value to function and return boolean (i.e. for validation)
 PredicateFunc = Callable[[T], bool]
+
 
 class OptionException[E](Exception):
     """Custom exception for Option type"""
@@ -209,7 +210,7 @@ class Option[T]:
         """Replace the current value with another value"""
         self._value = value
 
-    def zip(self, other_option: Option[V]) -> Option[tuple[T,V]]:
+    def zip(self, other_option: Option[V]) -> Option[tuple[T, V]]:
         """Return tuple if both options are Some, else return Nada"""
         if self.is_some() and other_option.is_some():
             return Option.some((self._value, other_option._value))
@@ -412,14 +413,14 @@ class Result[T, E]:
 
         return err(func(*args, **kwargs))
 
-    def unwrap_or(self, default: V) -> T|V:
+    def unwrap_or(self, default: V) -> T | V:
         """Returns contained Ok value or default if Err"""
         if self.is_err():
             return default
 
         return self._value
 
-    def unwrap_or_else(self, func: Callable, *args, **kwargs) -> T|R:
+    def unwrap_or_else(self, func: Callable, *args, **kwargs) -> T | R:
         """Returns contained Ok value or value from func if Err"""
         if self.is_ok():
             return self._value

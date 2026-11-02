@@ -2,10 +2,12 @@ from typing import TypeVar, List, Iterable
 
 T = TypeVar('T')
 
+
 class StackException(Exception):
     def __init__(self, message) -> None:
         self.message = message
         super().__init__(message)
+
 
 class Stack[T]:
     data: List[T]

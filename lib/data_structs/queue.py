@@ -2,6 +2,7 @@ from typing import TypeVar, List, Iterable
 
 T = TypeVar('T')
 
+
 class QueueException(Exception):
     def __init__(self, message: str) -> None:
         self.message = message

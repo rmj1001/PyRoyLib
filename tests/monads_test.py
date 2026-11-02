@@ -1,5 +1,7 @@
 import unittest
+
 from lib.monads import Option, some, nada, OptionException, Result, ok, err, ResultException, ResultVariant
+
 
 class TestOption(unittest.TestCase):
     """Class for testing lib.monads.Option"""
@@ -200,7 +202,7 @@ class TestOption(unittest.TestCase):
         """Test Option.or_else()"""
         opt1 = some(1)
         opt2 = nada()
-        func = lambda x: x*3
+        func = lambda x: x * 3
 
         self.assertEqual(opt1.or_else(func), some(1))
         self.assertEqual(opt2.or_else(func, 1), some(3))
@@ -243,6 +245,7 @@ class TestOption(unittest.TestCase):
 
 class TestResult(unittest.TestCase):
     """Test suite for lib.monads.Result"""
+
     def test_init(self):
         """Test Result initialization with Ok and Err variants"""
         res1 = Result(1, ResultVariant.OK)
@@ -330,7 +333,7 @@ class TestResult(unittest.TestCase):
         """Test Result.map()"""
         res1 = ok(1)
         res2 = err("Error")
-        func = lambda x: x*3
+        func = lambda x: x * 3
 
         self.assertEqual(res1.map(func), ok(3))
         self.assertEqual(res2.map(func), err("Error"))
@@ -433,7 +436,7 @@ class TestResult(unittest.TestCase):
         """Test Result.and_then()"""
         res1 = ok(1)
         res2 = err("Error")
-        func = lambda x: x*3
+        func = lambda x: x * 3
 
         self.assertEqual(res1.and_then(func, 3), ok(9))
         self.assertEqual(res2.and_then(func, 3), err("Error"))
@@ -451,7 +454,7 @@ class TestResult(unittest.TestCase):
         """Test Result.or_else()"""
         res1 = ok(1)
         res2 = err("Error")
-        func = lambda x: x*3
+        func = lambda x: x * 3
 
         self.assertEqual(res1.or_else(func, 3), ok(1))
         self.assertEqual(res2.or_else(func, 3), err(9))
@@ -469,7 +472,7 @@ class TestResult(unittest.TestCase):
         """Test Result.unwrap_or_else()"""
         res1 = ok(1)
         res2 = err("Error")
-        func = lambda x: x*3
+        func = lambda x: x * 3
 
         self.assertEqual(res1.unwrap_or_else(func, 3), 1)
         self.assertEqual(res2.unwrap_or_else(func, 3), 9)

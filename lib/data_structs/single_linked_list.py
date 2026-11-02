@@ -3,10 +3,12 @@ from typing import TypeVar, Iterable, Callable
 T = TypeVar("T")
 Predicate = Callable[[T], bool]
 
+
 class LinkedListException(Exception):
     def __init__(self, message: str) -> None:
         self.message = message
         super().__init__(self.message)
+
 
 class SLLNode[T]:
     """Node for single-linked-list"""

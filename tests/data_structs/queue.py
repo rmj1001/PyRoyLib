@@ -1,5 +1,7 @@
 import unittest
+
 from lib.data_structs.queue import Queue, QueueException
+
 
 class TestQueue(unittest.TestCase):
     def test_empty(self):
@@ -51,6 +53,7 @@ class TestQueue(unittest.TestCase):
 
         self.assertEqual(str(empty_queue), f"Queue()")
         self.assertEqual(str(full_queue), f"Queue(1, 2, 3, 4, 5, 6)")
+
 
 if __name__ == '__main__':
     unittest.main()

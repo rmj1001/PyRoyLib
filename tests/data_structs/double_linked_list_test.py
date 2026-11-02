@@ -1,5 +1,7 @@
 import unittest
+
 from lib.data_structs.double_linked_list import DoubleLinkedList
+
 
 class TestDoubleLinkedList(unittest.TestCase):
     def test_init_add(self):

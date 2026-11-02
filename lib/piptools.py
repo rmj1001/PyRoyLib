@@ -1,12 +1,16 @@
 import subprocess
 import sys
+
 import terminal
+
 
 class PipException(Exception):
     """Exception raised when pip command fails on console."""
+
     def __init__(self, message: str):
         self.message = message
         super().__init__(self.message)
+
 
 class Pip:
     """Handle pip commands on the console and install or require packages."""
@@ -66,6 +70,7 @@ class Pip:
             Pip.install(packages)
         except PipException as e:
             terminal.CLI.unrecoverable(f"Pip: {e.message}")
+
 
 if __name__ == "__main__":
     Pip.run('--version')
