@@ -1,6 +1,5 @@
 import unittest
-from lib.monads import *
-
+from lib.monads import Option, some, nada, OptionException, Result, ok, err, ResultException, ResultVariant
 
 class TestOption(unittest.TestCase):
     """Class for testing lib.monads.Option"""
