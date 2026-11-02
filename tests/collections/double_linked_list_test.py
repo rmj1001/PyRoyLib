@@ -27,7 +27,7 @@ class TestDoubleLinkedList(unittest.TestCase):
         self.assertTrue(empty.is_empty())
         self.assertFalse(not_empty.is_empty())
 
-    def test_get_data(self):
+    def test_get(self):
         empty = DoubleLinkedList()
         not_empty = DoubleLinkedList([1, 2, 3, 4, 5, 6])
 
@@ -38,8 +38,9 @@ class TestDoubleLinkedList(unittest.TestCase):
             not_empty.get_data(10)
 
         self.assertEqual(not_empty.get_data(3), 4)
-
         self.assertEqual(not_empty.get_data(-1), 6)
+
+        self.assertEqual(not_empty.get_node(-1), not_empty.tail)
 
     def test_search(self):
         empty = DoubleLinkedList()
@@ -52,6 +53,7 @@ class TestDoubleLinkedList(unittest.TestCase):
             not_empty.search(10)
 
         self.assertEqual(not_empty.search(3), 2)
+        self.assertEqual(not_empty.search(conditional=lambda x: x == 6), 5)
 
     def test_remove(self):
         empty = DoubleLinkedList()
@@ -100,3 +102,20 @@ class TestDoubleLinkedList(unittest.TestCase):
 
         not_empty.remove_at(3)
         self.assertEqual(not_empty.get_data(3), 6)
+
+    def test_update(self):
+        empty = DoubleLinkedList()
+        not_empty = DoubleLinkedList([1, 2, 3, 4, 5, 6])
+
+        with self.assertRaises(Exception):
+            empty.update(1, 1)
+
+        not_empty.update(0, 3)
+        self.assertEqual(not_empty.get_data(0), 3)
+
+        not_empty.update(5, 1)
+        self.assertEqual(not_empty.get_data(5), 1)
+
+
+if __name__ == '__main__':
+    unittest.main()
