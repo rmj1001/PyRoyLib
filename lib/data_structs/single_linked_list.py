@@ -3,6 +3,11 @@ from typing import TypeVar, Iterable, Callable
 T = TypeVar("T")
 Predicate = Callable[[T], bool]
 
+class LinkedListException(Exception):
+    def __init__(self, message: str) -> None:
+        self.message = message
+        super().__init__(self.message)
+
 class SLLNode[T]:
     """Node for single-linked-list"""
 
@@ -94,7 +99,7 @@ class SingleLinkedList[T]:
     def get_node(self, index: int) -> SLLNode[T]:
         """Get the node address at the provided index"""
         if self.head is None:
-            raise IndexError("Single linked list is empty")
+            raise LinkedListException("Single linked list is empty")
 
         # Convert negative indexes to positive ones and validate them
         index = self.process_index(index)
@@ -119,12 +124,12 @@ class SingleLinkedList[T]:
         if current_item is not None:
             return current_item
         else:
-            raise Exception(f"Single linked list does not contain node at index {index}.")
+            raise LinkedListException(f"Single linked list does not contain node at index {index}.")
 
     def get_data(self, index: int) -> T:
         """Get the item at the provided index"""
         if self.head is None:
-            raise IndexError("Single linked list is empty")
+            raise LinkedListException("Single linked list is empty")
 
         node = self.get_node(index)
         return node.data
@@ -132,10 +137,10 @@ class SingleLinkedList[T]:
     def search(self, data: T = None, conditional: Predicate | None = None) -> int:
         """Get the index of the first item that matches the provided data"""
         if self.head is None:
-            raise IndexError("Single linked list is empty")
+            raise LinkedListException("Single linked list is empty")
 
         if data is None and conditional is None:
-            raise Exception("You must provide data or a conditional.")
+            raise LinkedListException("You must provide data or a conditional.")
 
         current = self.head
         index: int = 0
@@ -151,14 +156,14 @@ class SingleLinkedList[T]:
                 index += 1
 
         if conditional is not None:
-            raise Exception(f"List did not contain data matching the condition: {conditional}")
+            raise LinkedListException(f"List did not contain data matching the condition: {conditional}")
         else:
-            raise Exception(f"List did not contain data: {data if data is not None else 'None'}")
+            raise LinkedListException(f"List did not contain data: {data if data is not None else 'None'}")
 
     def remove_at(self, index: int) -> None:
         """Remove the item at the provided index"""
         if self.head is None:
-            raise IndexError("Single linked list is empty")
+            raise LinkedListException("Single linked list is empty")
 
         # Convert negative indexes to positive ones and validate them
         index = self.process_index(index)
@@ -180,7 +185,7 @@ class SingleLinkedList[T]:
 
         # The next node is the node at the passed index
         if previous_node.next is None:
-            raise Exception(f"No node exists at index {index}.")
+            raise IndexError(f"No node exists at index {index}.")
 
         # Remove node at the provided index, replacing it with next node if it exists, or setting it to None
         previous_node.next = previous_node.next.next if previous_node.next.next is not None else None
@@ -195,7 +200,7 @@ class SingleLinkedList[T]:
     def remove(self, data: T = None, conditional: Predicate | None = None) -> None:
         """Remove the first node with the provided data"""
         if self.head is None:
-            raise IndexError("Single linked list is empty")
+            raise LinkedListException("Single linked list is empty")
 
         index = self.search(data, conditional)
         self.remove_at(index)
@@ -203,7 +208,7 @@ class SingleLinkedList[T]:
     def update(self, index: int, data: T) -> None:
         """Update the data of a node at a given index"""
         if self.head is None:
-            raise IndexError("Single linked list is empty")
+            raise LinkedListException("Single linked list is empty")
 
         node = self.get_node(index)
         node.data = data
