@@ -3,6 +3,11 @@ from typing import TypeVar, List, Iterable
 
 T = TypeVar('T')
 
+class QueueException(Exception):
+    def __init__(self, message: str) -> None:
+        self.message = message
+        super().__init__(message)
+
 
 class Queue[T]:
     data: List[T]
@@ -39,7 +44,7 @@ class Queue[T]:
     def dequeue(self) -> T:
         """Remove data from the queue."""
         if self.is_empty():
-            raise Exception('Queue is empty')
+            raise QueueException('Queue is empty')
 
         data = self.data.pop(0)
         self.elements -= 1
@@ -48,7 +53,7 @@ class Queue[T]:
     def front(self) -> T:
         """Get the last data from the queue."""
         if self.is_empty():
-            raise Exception('Queue is empty')
+            raise QueueException('Queue is empty')
 
         return self.data[0]
 
@@ -74,7 +79,7 @@ class TestQueue(unittest.TestCase):
         empty_queue = Queue()
         full_queue = Queue([1, 2, 3, 4, 5, 6])
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(QueueException):
             empty_queue.dequeue()
 
         self.assertEqual(full_queue.dequeue(), 1)
@@ -84,7 +89,7 @@ class TestQueue(unittest.TestCase):
         empty_queue = Queue()
         full_queue = Queue([1, 2, 3, 4, 5, 6])
 
-        with self.assertRaises(Exception):
+        with self.assertRaises(QueueException):
             empty_queue.front()
 
         self.assertEqual(full_queue.front(), 1)
