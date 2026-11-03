@@ -53,12 +53,17 @@ class DoubleLinkedList[T]:
 
     def __iter__(self) -> Iterable[T]:
         """Convert to Iterable"""
-        return iter(self)
+        self._current = self.head
+
+        while self._current is not None:
+            data = self._current.data
+            self._current = self._current.next
+            yield data
 
     def __next__(self) -> T:
         """Yield the data in the current node, if current node is not None, else raise StopIteration"""
         if self._current is not None:
-            output = self.head.data
+            output = self._current.data
             self._current = self._current.next
             yield output
         else:

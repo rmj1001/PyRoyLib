@@ -114,7 +114,7 @@ class TestSingleLinkedList(unittest.TestCase):
         not_empty: SingleLinkedList[int] = SingleLinkedList([1, 2, 3, 4, 5, 6])
 
         with self.assertRaises(StopIteration):
-            next(iter(empty))
+            next(empty)
 
         for data in not_empty:
             print(data)
