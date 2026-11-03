@@ -53,7 +53,7 @@ class Queue[T]:
 
     def enqueue(self, data: T) -> None:
         """Add data to the queue."""
-        self.data.insert(0, data)
+        self.data.append(data)
         self.elements += 1
 
     def dequeue(self) -> T:

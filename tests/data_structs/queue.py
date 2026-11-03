@@ -18,7 +18,7 @@ class TestQueue(unittest.TestCase):
         empty_queue.enqueue(2)
         empty_queue.enqueue(3)
 
-        self.assertEqual(empty_queue.data[0], 3)
+        self.assertEqual(empty_queue.data[0], 1)
 
     def test_dequeue(self):
         empty_queue = Queue()
