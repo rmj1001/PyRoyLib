@@ -28,6 +28,7 @@ class SingleLinkedList[T]:
         """Create a single-linked list with either no data or a list of starting data"""
         self.head = None
         self._nodes = 0
+        self._current = self.head
 
         # If a list is provided, add each item in the list as a new node
         if starting_data is not None:
@@ -55,6 +56,19 @@ class SingleLinkedList[T]:
         output += ")"
 
         return output
+
+    def __iter__(self) -> Iterable[T]:
+        """Convert to Iterable"""
+        return iter(self)
+
+    def __next__(self) -> T:
+        """Yield the data in the current node, if current node is not None, else raise StopIteration"""
+        if self._current is not None:
+            output = self.head.data
+            self._current = self._current.next
+            yield output
+        else:
+            raise StopIteration
 
     def is_empty(self) -> bool:
         """Check if the list is empty"""

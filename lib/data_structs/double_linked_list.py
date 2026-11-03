@@ -23,6 +23,7 @@ class DoubleLinkedList[T]:
         self.head: DLLNode[T] | None = None
         self.tail: DLLNode[T] | None = None
         self._nodes = 0
+        self._current = self.head
 
         if starting_data is not None:
             for item in starting_data:
@@ -49,6 +50,19 @@ class DoubleLinkedList[T]:
         output += ")"
 
         return output
+
+    def __iter__(self) -> Iterable[T]:
+        """Convert to Iterable"""
+        return iter(self)
+
+    def __next__(self) -> T:
+        """Yield the data in the current node, if current node is not None, else raise StopIteration"""
+        if self._current is not None:
+            output = self.head.data
+            self._current = self._current.next
+            yield output
+        else:
+            raise StopIteration
 
     def is_empty(self) -> bool:
         """Check if the list is empty"""

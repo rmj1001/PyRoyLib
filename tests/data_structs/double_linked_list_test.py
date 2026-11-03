@@ -118,6 +118,16 @@ class TestDoubleLinkedList(unittest.TestCase):
         not_empty.update(5, 1)
         self.assertEqual(not_empty.get_data(5), 1)
 
+    def iter(self):
+        empty = DoubleLinkedList()
+        not_empty = DoubleLinkedList([1, 2, 3, 4, 5, 6])
+
+        with self.assertRaises(StopIteration):
+            next(iter(empty))
+
+        for data in not_empty:
+            print(data)
+
 
 if __name__ == '__main__':
     unittest.main()
