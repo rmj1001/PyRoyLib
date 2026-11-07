@@ -1,73 +1,83 @@
-from typing import TypeVar, List, Iterable
-
-T = TypeVar('T')
-
+from typing import Iterable
 
 class QueueException(Exception):
-    def __init__(self, message: str) -> None:
+    def __init__(self, message: str):
         self.message = message
         super().__init__(message)
 
 
+class QueueNode[T]:
+    value: T
+    next: QueueNode[T] | None
+
+    def __init__(self, value: T, next_node: QueueNode[T] | None = None):
+        self.value = value
+        self.next = next_node
+
+
 class Queue[T]:
-    data: List[T]
-    elements: int
-    _current: int
+    head: QueueNode[T] | None
+    tail: QueueNode[T] | None
+    _count: int
 
-    def __init__(self, starting_data: Iterable[T] | None = None) -> None:
-        """Initialize a queue, with or without starting data"""
-        self.data = []
-        self.elements = 0
-        self._current = 0
+    def __init__(self, initial_data: Iterable[T] | None = None):
+        self.head = None
+        self.tail = None
+        self._count = 0
 
-        if starting_data is not None:
-            for item in starting_data:
-                self.data.append(item)
-                self.elements += 1
+        if initial_data is not None:
+            for item in initial_data:
+                self.enqueue(item)
 
     def __len__(self) -> int:
-        """Return the number of elements in the queue"""
-        return self.elements
+        """Get the number of elements in the queue"""
+        return self._count
 
     def __str__(self) -> str:
-        """String representation of the queue"""
-        str_data = [str(item) for item in self.data]
-        return f"Queue({', '.join(str_data)})" if len(self) > 0 else "Queue()"
+        """Get the string representation of the queue"""
+        string: str = 'Queue('
+        values: list[T] = []
 
-    def __iter__(self) -> Iterable[T]:
-        """Convert queue to iterator"""
-        return iter(self.data)
+        current = self.head
+        while current is not None:
+            values.append(current.value)
+            current = current.next
 
-    def __next__(self) -> T:
-        """Yield the current element from the queue"""
-        if self._current < len(self):
-            element = self.data[self._current]
-            self._current += 1
-            yield element
-        else:
-            raise StopIteration
+        string += ', '.join([str(item) for item in values])
+        string += ')'
+
+        return string
 
     def is_empty(self) -> bool:
-        """Check if the queue is empty."""
-        return self.elements == 0
+        """Check if the queue is empty"""
+        return self._count == 0
 
-    def enqueue(self, data: T) -> None:
-        """Add data to the queue."""
-        self.data.append(data)
-        self.elements += 1
+    def enqueue(self, item: T) -> None:
+        """Add an item to the end of the queue"""
+        if self.head is None:
+            self.head = QueueNode(item)
+            self.tail = self.head
+        else:
+            self.tail.next = QueueNode(item)
+            self.tail = self.tail.next
+
+        self._count += 1
 
     def dequeue(self) -> T:
-        """Remove data from the queue."""
-        if self.is_empty():
-            raise QueueException('Queue is empty')
+        """Remove and return the item from the front of the queue"""
+        if self.head is None:
+            raise QueueException("Queue is empty")
 
-        data = self.data.pop(0)
-        self.elements -= 1
+        data = self.head.value
+        self.head = self.head.next
+
+        self._count -= 1
+
         return data
 
     def front(self) -> T:
-        """Get the last data from the queue."""
-        if self.is_empty():
-            raise QueueException('Queue is empty')
+        """Preview the item at the front of the queue"""
+        if self.head is None:
+            raise QueueException("Queue is empty")
 
-        return self.data[0]
+        return self.head.value
