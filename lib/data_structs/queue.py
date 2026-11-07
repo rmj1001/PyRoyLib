@@ -2,12 +2,14 @@ from typing import Iterable
 
 
 class QueueException(Exception):
+    """Exception raised when queue operations fail"""
     def __init__(self, message: str):
         self.message = message
         super().__init__(message)
 
 
 class QueueNode[T]:
+    """Data container for individual items in a Queue"""
     value: T
     next: QueueNode[T] | None
 
@@ -17,6 +19,7 @@ class QueueNode[T]:
 
 
 class Queue[T]:
+    """First-in first-out (FIFO) dynamic-size data structure, implemented as a single-linked list"""
     head: QueueNode[T] | None
     tail: QueueNode[T] | None
     _count: int

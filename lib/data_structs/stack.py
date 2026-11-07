@@ -2,12 +2,14 @@ from typing import Iterable
 
 
 class StackException(Exception):
+    """Exception raised when stack operations fail"""
     def __init__(self, message: str) -> None:
         self.message = message
         super().__init__(message)
 
 
 class StackNode[T]:
+    """Data container for individual items in a Stack"""
     value: T
     next: StackNode[T] | None
 
@@ -17,6 +19,7 @@ class StackNode[T]:
 
 
 class Stack[T]:
+    """Last-in first-out (LIFO) dynamic-size data structure, implemented as a single-linked list"""
     head: StackNode[T] | None
     _count: int
 
