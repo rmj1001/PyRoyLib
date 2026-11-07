@@ -17,18 +17,14 @@ class StackNode[T]:
 class Stack[T]:
     head: StackNode[T] | None
     _count: int
-    _current: StackNode[T] | None
 
     def __init__(self, initial_data: Iterable[T] | None = None) -> None:
         self.head = None
         self._count = 0
-        self._current = None
 
         if initial_data is not None:
             for item in initial_data:
                 self.push(item)
-
-            self._current = self.head
 
     def __len__(self) -> int:
         """Return the number of items in the stack"""
@@ -39,10 +35,10 @@ class Stack[T]:
         string: str = 'Stack('
         values: list[T] = []
 
-        self._current = self.head
-        while self._current is not None:
-            values.append(self._current.value)
-            self._current = self._current.next
+        current = self.head
+        while current is not None:
+            values.append(current.value)
+            current = current.next
 
         string += ', '.join([str(item) for item in values])
         string += ')'
@@ -57,11 +53,9 @@ class Stack[T]:
         """Add item to the top of the stack"""
         if self.head is None:
             self.head = StackNode(item)
-            self._current = self.head
         else:
             temp = self.head
             self.head = StackNode(item, temp)
-            self._current = self.head
 
         self._count += 1
 
