@@ -19,6 +19,7 @@ class TestQueue(unittest.TestCase):
         empty_queue.enqueue(3)
 
         self.assertEqual(empty_queue.front(), 1)
+        self.assertEqual(len(empty_queue), 3)
 
     def test_dequeue(self):
         empty_queue = Queue()
@@ -29,6 +30,7 @@ class TestQueue(unittest.TestCase):
 
         self.assertEqual(full_queue.dequeue(), 1)
         self.assertEqual(full_queue.front(), 2)
+        self.assertEqual(len(full_queue), 5)
 
     def test_front(self):
         empty_queue = Queue()
