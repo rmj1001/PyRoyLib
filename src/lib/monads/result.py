@@ -18,12 +18,9 @@ class ResultVariant(Enum):
 class Result[T, E]:
     """Rust-style result"""
 
-    _value = None
-    _state: ResultVariant = ResultVariant.ERR
-
     def __init__(self, value: T, state: ResultVariant = ResultVariant.OK):
-        self._value = value
-        self._state = state
+        self._value: T = value
+        self._state: ResultVariant = state
 
     def __str__(self):
         """String representation for Result[T,E]"""
@@ -44,10 +41,7 @@ class Result[T, E]:
         if self._value != other._value:
             return False
 
-        if self._state != other._state:
-            return False
-
-        return True
+        return self._state == other._state
 
     @classmethod
     def ok(cls, value: T, *args, **kwargs) -> "Result[T,E]":
@@ -63,6 +57,7 @@ class Result[T, E]:
         if isinstance(error, Callable):
             return cls(error(*args, **kwargs), ResultVariant.ERR)
 
+        # ignore reportArgumentType
         return cls(error, ResultVariant.ERR)
 
     def is_ok(self) -> bool:
@@ -102,7 +97,7 @@ class Result[T, E]:
 
         return ok(success(self._value))
 
-    def map_err(self, func: ErrMapFunc) -> "Result[T,ErrMapFunc]":
+    def map_err(self, func: ErrMapFunc) -> "Result[T, E] | Result[T,ErrMapFunc]":
         """Maps an Err value, leaving Ok untouched"""
         if self.is_ok():
             return self
@@ -123,14 +118,14 @@ class Result[T, E]:
 
         return self._value
 
-    def expect_err[V](self, message: V) -> E:
+    def expect_err(self, message: E) -> T:
         """Returns contained Err, or else raises exception if Ok"""
         if self.is_err():
             return self._value
 
         raise ResultException(message)
 
-    def unwrap_err(self) -> E:
+    def unwrap_err(self) -> T:
         """Returns contained Err, or else raises exception with Ok value"""
         if self.is_err():
             return self._value
@@ -145,28 +140,28 @@ class Result[T, E]:
         """Returns the contained Err, never raises exception"""
         return err(self._value)
 
-    def other_if_ok[V](self, res: Result[V, E]) -> "Result[T|V, E]":
+    def other_if_ok[V](self, res: "Result[V, E]") -> "Result[T, E] | Result[V, E]":
         """Result res if result is Ok, otherwise return Err of self"""
         if self.is_ok():
             return res
 
         return self
 
-    def and_then(self, func: Callable, *args, **kwargs) -> "Result[Callable, E]":
+    def and_then(self, func: Callable, *args, **kwargs) -> "Result[T, E] | Result[Callable, E]":
         """Calls func if result is Ok, otherwise returns Err of self"""
         if self.is_err():
             return self
 
         return ok(func(*args, **kwargs))
 
-    def other_if_err[V](self, res: Result[V, E]) -> Result[T | V, E]:
+    def other_if_err[V](self, res: "Result[V, E]") -> "Result[T, E] | Result[V, E]":
         """Returns res if result is Err, otherwise returns Ok value of self"""
         if self.is_ok():
             return self
 
         return res
 
-    def or_else(self, func: Callable, *args, **kwargs) -> Result[T, Callable]:
+    def or_else(self, func: Callable, *args, **kwargs) -> "Result[T, E] | Result[T, Callable]":
         """Calls func if result is Err, otherwise returns Ok of self"""
         if self.is_ok():
             return self
@@ -191,7 +186,7 @@ class Result[T, E]:
 def ok[T, E](value: T, *args, **kwargs) -> Result[T, E]:
     """Shorthand for Result.ok(), useful for pattern matching"""
     if isinstance(value, Callable):
-        return Result.ok(value, *args, **kwargs)
+        return Result.ok(value(*args, **kwargs))
 
     return Result.ok(value)
 
@@ -199,6 +194,6 @@ def ok[T, E](value: T, *args, **kwargs) -> Result[T, E]:
 def err[T, E](value: E, *args, **kwargs) -> Result[T, E]:
     """Shorthand for Result.err(), useful for pattern matching"""
     if isinstance(value, Callable):
-        return Result.err(value, *args, **kwargs)
+        return Result.err(value(*args, **kwargs))
 
     return Result.err(value)
