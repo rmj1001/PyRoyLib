@@ -1,7 +1,4 @@
 from lib.sorting.swap import swap
-from typing import TypeVar
-
-T = TypeVar('T')
 
 def bubble_up[T](arr: list[T], top_index: int) -> None:
     for j in range(0, top_index, 1):

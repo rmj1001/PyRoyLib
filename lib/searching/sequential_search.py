@@ -1,7 +1,4 @@
-from typing import Iterable, Callable, TypeVar
-
-T = TypeVar('T')
-Predicate = Callable[[T], bool]
+from lib.types.predicate import Predicate
 
 class SequentialSearchError(Exception):
     def __init__(self, message: str) -> None:

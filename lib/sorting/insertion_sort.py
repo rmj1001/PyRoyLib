@@ -1,5 +1,3 @@
-from lib.sorting.swap import swap
-
 def insertion_sort[T](arr: list[T]):
     n = len(arr)
 
