@@ -1,4 +1,5 @@
-from typing import Callable, TypeVar
+from typing import Callable, TypeAlias
 
-T = TypeVar('T')
-Predicate = Callable[[T], bool]
+from .generic import T
+
+Predicate: TypeAlias = Callable[[T], bool]
