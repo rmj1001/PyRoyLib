@@ -1,18 +1,8 @@
-from typing import TypeVar, Iterable, Callable
+from typing import Iterable
 
-from lib.data_structs.single_linked_list import LinkedListException
-
-T = TypeVar("T")
-Predicate = Callable[[T], bool]
-
-
-class DLLNode[T]:
-    """Node for a double-linked list"""
-
-    def __init__(self, data: T, previous: DLLNode | None = None):
-        self.data = data
-        self.previous = previous
-        self.next = None
+from lib.types.predicate import Predicate
+from .exceptions.linked_list_exception import LinkedListException
+from .nodes.double_linked_node import DoubleLinkedNode
 
 
 class DoubleLinkedList[T]:
@@ -20,8 +10,8 @@ class DoubleLinkedList[T]:
 
     def __init__(self, starting_data: Iterable[T] | None = None) -> None:
         """Constructor with optional parameter to populate list with items from iterable"""
-        self.head: DLLNode[T] | None = None
-        self.tail: DLLNode[T] | None = None
+        self.head: DoubleLinkedNode[T] | None = None
+        self.tail: DoubleLinkedNode[T] | None = None
         self._nodes = 0
         self._current = self.head
 
@@ -51,24 +41,6 @@ class DoubleLinkedList[T]:
 
         return output
 
-    def __iter__(self) -> Iterable[T]:
-        """Convert to Iterable"""
-        self._current = self.head
-
-        while self._current is not None:
-            data = self._current.data
-            self._current = self._current.next
-            yield data
-
-    def __next__(self) -> T:
-        """Yield the data in the current node, if current node is not None, else raise StopIteration"""
-        if self._current is not None:
-            output = self._current.data
-            self._current = self._current.next
-            yield output
-        else:
-            raise StopIteration
-
     def is_empty(self) -> bool:
         """Check if the list is empty"""
         return len(self) == 0
@@ -97,19 +69,19 @@ class DoubleLinkedList[T]:
     def add(self, data: T) -> None:
         """Add node to end of list while specifying its parent"""
         if self.head is None:
-            self.head = DLLNode(data)
+            self.head = DoubleLinkedNode(data)
             self.tail = self.head
             self._nodes += 1
             return
 
-        self.tail.next = DLLNode(data=data, previous=self.tail)
+        self.tail.next = DoubleLinkedNode(data=data, previous=self.tail)
 
         if self.tail is not None:
             self.tail = self.tail.next
 
         self._nodes += 1
 
-    def get_node(self, index: int) -> DLLNode[T]:
+    def get_node(self, index: int) -> DoubleLinkedNode[T]:
         """Get the node address at the provided index"""
         if self.head is None:
             raise LinkedListException("Double linked list is empty")
@@ -128,7 +100,7 @@ class DoubleLinkedList[T]:
 
         # Get other nodes
         current_index = 0
-        current_item: DLLNode[T] | None = self.head
+        current_item: DoubleLinkedNode[T] | None = self.head
 
         while current_index < index and current_item is not None:
             current_item = current_item.next

@@ -1,27 +1,14 @@
-from typing import TypeVar, Iterable, Callable
+from typing import Iterable
 
-T = TypeVar("T")
-Predicate = Callable[[T], bool]
-
-
-class LinkedListException(Exception):
-    def __init__(self, message: str) -> None:
-        self.message = message
-        super().__init__(self.message)
-
-
-class SLLNode[T]:
-    """Node for single-linked-list"""
-
-    def __init__(self, data: T) -> None:
-        self.data: T = data
-        self.next: SLLNode[T] | None = None
+from lib.types.predicate import Predicate
+from .exceptions.linked_list_exception import LinkedListException
+from .nodes.single_linked_node import SingleLinkedNode
 
 
 class SingleLinkedList[T]:
     """Single-linked list"""
-    head: SLLNode[T] | None
-    tail: SLLNode[T] | None
+    head: SingleLinkedNode[T] | None
+    tail: SingleLinkedNode[T] | None
     _nodes: int
 
     def __init__(self, starting_data: Iterable[T] | None = None) -> None:
@@ -57,24 +44,6 @@ class SingleLinkedList[T]:
 
         return output
 
-    def __iter__(self) -> Iterable[T]:
-        """Convert to Iterable"""
-        self._current = self.head
-
-        while self._current is not None:
-            data = self._current.data
-            self._current = self._current.next
-            yield data
-
-    def __next__(self) -> T:
-        """Yield the data in the current node, if current node is not None, else raise StopIteration"""
-        if self._current is not None:
-            output = self._current.data
-            self._current = self._current.next
-            yield output
-        else:
-            raise StopIteration
-
     def is_empty(self) -> bool:
         """Check if the list is empty"""
         return len(self) == 0
@@ -104,20 +73,20 @@ class SingleLinkedList[T]:
         """Add a new node to the end of the list with the provided data"""
         # New node is the head if a head didn't exist
         if self.head is None:
-            self.head = SLLNode(data)
+            self.head = SingleLinkedNode(data)
             self.tail = self.head
             self._nodes = 1
             return
 
         # Make new node the new tail
-        self.tail.next = SLLNode(data)
+        self.tail.next = SingleLinkedNode(data)
 
         if self.tail is not None:
             self.tail = self.tail.next
 
         self._nodes += 1
 
-    def get_node(self, index: int) -> SLLNode[T]:
+    def get_node(self, index: int) -> SingleLinkedNode[T]:
         """Get the node address at the provided index"""
         if self.head is None:
             raise LinkedListException("Single linked list is empty")
@@ -136,7 +105,7 @@ class SingleLinkedList[T]:
 
         # Get other nodes
         current_index = 0
-        current_item: SLLNode[T] | None = self.head
+        current_item: SingleLinkedNode[T] | None = self.head
 
         while current_index < index and current_item is not None:
             current_item = current_item.next

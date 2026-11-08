@@ -1,27 +1,13 @@
 from typing import Iterable
 
-
-class QueueException(Exception):
-    """Exception raised when queue operations fail"""
-    def __init__(self, message: str):
-        self.message = message
-        super().__init__(message)
-
-
-class QueueNode[T]:
-    """Data container for individual items in a Queue"""
-    value: T
-    next: QueueNode[T] | None
-
-    def __init__(self, value: T, next_node: QueueNode[T] | None = None):
-        self.value = value
-        self.next = next_node
+from .exceptions.queue_exception import QueueException
+from .nodes.single_linked_node import SingleLinkedNode
 
 
 class Queue[T]:
     """First-in first-out (FIFO) dynamic-size data structure, implemented as a single-linked list"""
-    head: QueueNode[T] | None
-    tail: QueueNode[T] | None
+    head: SingleLinkedNode[T] | None
+    tail: SingleLinkedNode[T] | None
     _count: int
 
     def __init__(self, initial_data: Iterable[T] | None = None):
@@ -59,10 +45,10 @@ class Queue[T]:
     def enqueue(self, item: T) -> None:
         """Add an item to the end of the queue"""
         if self.head is None:
-            self.head = QueueNode(item)
+            self.head = SingleLinkedNode(item)
             self.tail = self.head
         else:
-            self.tail.next = QueueNode(item)
+            self.tail.next = SingleLinkedNode(item)
             self.tail = self.tail.next
 
         self._count += 1

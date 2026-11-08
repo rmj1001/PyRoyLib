@@ -1,26 +1,12 @@
 from typing import Iterable
 
-
-class StackException(Exception):
-    """Exception raised when stack operations fail"""
-    def __init__(self, message: str) -> None:
-        self.message = message
-        super().__init__(message)
-
-
-class StackNode[T]:
-    """Data container for individual items in a Stack"""
-    value: T
-    next: StackNode[T] | None
-
-    def __init__(self, value: T, next_node: StackNode[T] | None = None) -> None:
-        self.value = value
-        self.next = next_node
+from .exceptions.stack_exception import StackException
+from .nodes.single_linked_node import SingleLinkedNode
 
 
 class Stack[T]:
     """Last-in first-out (LIFO) dynamic-size data structure, implemented as a single-linked list"""
-    head: StackNode[T] | None
+    head: SingleLinkedNode[T] | None
     _count: int
 
     def __init__(self, initial_data: Iterable[T] | None = None) -> None:
@@ -57,10 +43,10 @@ class Stack[T]:
     def push(self, item: T) -> None:
         """Add item to the top of the stack"""
         if self.head is None:
-            self.head = StackNode(item)
+            self.head = SingleLinkedNode(item)
         else:
             temp = self.head
-            self.head = StackNode(item, temp)
+            self.head = SingleLinkedNode(item, temp)
 
         self._count += 1
 
