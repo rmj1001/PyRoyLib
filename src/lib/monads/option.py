@@ -1,9 +1,9 @@
 from typing import Callable
 
-from lib.types.predicate import Predicate
-from lib.types.map_function import MapFunc
-from lib.monads.exceptions.option_exception import OptionException
-from lib.monads.result import Result
+from types.predicate import Predicate
+from types.map_function import MapFunc
+from monads.exceptions.option_exception import OptionException
+from monads.result import Result
 
 class Option[T]:
     """Rust-style option"""

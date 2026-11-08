@@ -1,4 +1,4 @@
-from lib.sorting.swap import swap
+from sorting.swap import swap
 
 
 def find_min(arr: list, start_index: int):

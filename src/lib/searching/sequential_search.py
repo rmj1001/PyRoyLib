@@ -1,4 +1,4 @@
-from lib.types.predicate import Predicate
+from types.predicate import Predicate
 
 class SequentialSearchError(Exception):
     def __init__(self, message: str) -> None:

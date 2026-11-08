@@ -1,12 +1,12 @@
 import unittest
 from random import randint
 
-from lib.sorting.swap import swap
-from lib.sorting.bubble_sort import bubble_sort
-from lib.sorting.insertion_sort import insertion_sort
-from lib.sorting.merge_sort import merge_sort
-from lib.sorting.quick_sort import quick_sort
-from lib.sorting.selection_sort import selection_sort
+from sorting.swap import swap
+from sorting.bubble_sort import bubble_sort
+from sorting.insertion_sort import insertion_sort
+from sorting.merge_sort import merge_sort
+from sorting.quick_sort import quick_sort
+from sorting.selection_sort import selection_sort
 
 def unsorted_arr() -> list[int]:
     return [randint(0, 100) for _ in range(10)]

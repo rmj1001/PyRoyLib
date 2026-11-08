@@ -1,6 +1,6 @@
 import unittest
 
-from lib.data_structs.queue import Queue, QueueException
+from queue import Queue, QueueException
 
 
 class TestQueue(unittest.TestCase):

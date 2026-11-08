@@ -1,9 +1,9 @@
 from enum import Enum
 from typing import Callable, TypeAlias
 
-from lib.monads.exceptions.result_exception import ResultException
-from lib.types.predicate import Predicate
-from lib.types.map_function import MapFunc
+from monads.exceptions.result_exception import ResultException
+from types.predicate import Predicate
+from types.map_function import MapFunc
 
 # Used for functions that pass an error to function and return another error
 ErrMapFunc: TypeAlias = MapFunc

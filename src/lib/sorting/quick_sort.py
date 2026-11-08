@@ -1,4 +1,4 @@
-from lib.sorting.swap import swap
+from sorting.swap import swap
 
 
 def split[T](arr: list[T], start: int, end: int) -> int:

@@ -1,34 +1,37 @@
 from typing import Iterable
 
-from lib.types.predicate import Predicate
+from types.predicate import Predicate
 from .exceptions.linked_list_exception import LinkedListException
-from .nodes.double_linked_node import DoubleLinkedNode
+from .nodes.single_linked_node import SingleLinkedNode
 
 
-class DoubleLinkedList[T]:
-    """Double linked list implementation"""
+class SingleLinkedList[T]:
+    """Single-linked list"""
+    head: SingleLinkedNode[T] | None
+    tail: SingleLinkedNode[T] | None
+    _nodes: int
 
     def __init__(self, starting_data: Iterable[T] | None = None) -> None:
-        """Constructor with optional parameter to populate list with items from iterable"""
-        self.head: DoubleLinkedNode[T] | None = None
-        self.tail: DoubleLinkedNode[T] | None = None
+        """Create a single-linked list with either no data or a list of starting data"""
+        self.head = None
         self._nodes = 0
         self._current = self.head
 
+        # If a list is provided, add each item in the list as a new node
         if starting_data is not None:
             for item in starting_data:
                 self.add(item)
 
     def __len__(self) -> int:
-        """Get number of nodes without traversal"""
+        """Get the number of nodes in the list without traversal"""
         return self._nodes
 
     def __str__(self) -> str:
         """Get the string representation of the list"""
         if self.head is None:
-            return "DLL()"
+            return "SLL()"
 
-        output = "DLL("
+        output = "SLL("
 
         current = self.head
 
@@ -67,26 +70,28 @@ class DoubleLinkedList[T]:
             raise IndexError("Index is out of range: Index is greater than the last element's index")
 
     def add(self, data: T) -> None:
-        """Add node to end of list while specifying its parent"""
+        """Add a new node to the end of the list with the provided data"""
+        # New node is the head if a head didn't exist
         if self.head is None:
-            self.head = DoubleLinkedNode(data)
+            self.head = SingleLinkedNode(data)
             self.tail = self.head
-            self._nodes += 1
+            self._nodes = 1
             return
 
-        self.tail.next = DoubleLinkedNode(data=data, previous=self.tail)
+        # Make new node the new tail
+        self.tail.next = SingleLinkedNode(data)
 
         if self.tail is not None:
             self.tail = self.tail.next
 
         self._nodes += 1
 
-    def get_node(self, index: int) -> DoubleLinkedNode[T]:
+    def get_node(self, index: int) -> SingleLinkedNode[T]:
         """Get the node address at the provided index"""
         if self.head is None:
-            raise LinkedListException("Double linked list is empty")
+            raise LinkedListException("Single linked list is empty")
 
-        # Convert negative indexes to positive and validate
+        # Convert negative indexes to positive ones and validate them
         index = self.process_index(index)
         self.valid_index(index)
 
@@ -100,7 +105,7 @@ class DoubleLinkedList[T]:
 
         # Get other nodes
         current_index = 0
-        current_item: DoubleLinkedNode[T] | None = self.head
+        current_item: SingleLinkedNode[T] | None = self.head
 
         while current_index < index and current_item is not None:
             current_item = current_item.next
@@ -109,17 +114,20 @@ class DoubleLinkedList[T]:
         if current_item is not None:
             return current_item
         else:
-            raise LinkedListException(f"Double linked list does not contain node at index {index}")
+            raise LinkedListException(f"Single linked list does not contain node at index {index}.")
 
     def get_data(self, index: int) -> T:
-        """Get data from node at given index"""
+        """Get the item at the provided index"""
+        if self.head is None:
+            raise LinkedListException("Single linked list is empty")
+
         node = self.get_node(index)
         return node.data
 
     def search(self, data: T = None, conditional: Predicate | None = None) -> int:
         """Get the index of the first item that matches the provided data"""
         if self.head is None:
-            raise LinkedListException("Double linked list is empty")
+            raise LinkedListException("Single linked list is empty")
 
         if data is None and conditional is None:
             raise LinkedListException("You must provide data or a conditional.")
@@ -143,9 +151,9 @@ class DoubleLinkedList[T]:
             raise LinkedListException(f"List did not contain data: {data if data is not None else 'None'}")
 
     def remove_at(self, index: int) -> None:
-        """Remove node from list at given index"""
+        """Remove the item at the provided index"""
         if self.head is None:
-            raise LinkedListException("Double linked list is empty")
+            raise LinkedListException("Single linked list is empty")
 
         # Convert negative indexes to positive ones and validate them
         index = self.process_index(index)
@@ -160,10 +168,6 @@ class DoubleLinkedList[T]:
 
         if index == 0 and len(self) > 1:
             self.head = self.head.next
-
-            if self.head is not None:
-                self.head.next.previous = None
-
             self._nodes -= 1
             return
 
@@ -176,10 +180,6 @@ class DoubleLinkedList[T]:
         # Remove node at the provided index, replacing it with next node if it exists, or setting it to None
         previous_node.next = previous_node.next.next if previous_node.next.next is not None else None
 
-        # Update the next node's previous field to the previous node
-        if previous_node.next is not None:
-            previous_node.next.previous = previous_node
-
         # Update tail address if necessary
         if self.is_tail(index):
             self.tail = previous_node.next if previous_node.next is not None else previous_node
@@ -190,7 +190,7 @@ class DoubleLinkedList[T]:
     def remove(self, data: T = None, conditional: Predicate | None = None) -> None:
         """Remove the first node with the provided data"""
         if self.head is None:
-            raise LinkedListException("Double linked list is empty")
+            raise LinkedListException("Single linked list is empty")
 
         index = self.search(data, conditional)
         self.remove_at(index)
@@ -198,7 +198,7 @@ class DoubleLinkedList[T]:
     def update(self, index: int, data: T) -> None:
         """Update the data of a node at a given index"""
         if self.head is None:
-            raise LinkedListException("Double linked list is empty")
+            raise LinkedListException("Single linked list is empty")
 
         node = self.get_node(index)
         node.data = data

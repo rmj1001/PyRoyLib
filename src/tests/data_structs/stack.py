@@ -1,5 +1,5 @@
 import unittest
-from lib.data_structs.stack import Stack, StackException
+from stack import Stack, StackException
 
 
 class TestStack(unittest.TestCase):
