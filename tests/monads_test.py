@@ -1,6 +1,8 @@
 import unittest
 
-from lib.monads import Option, some, nada, OptionException, Result, ok, err, ResultException, ResultVariant
+from lib.monads.option import Option, some, nada
+from lib.monads.exceptions.option_exception import OptionException
+from monads.result import Result, ok, err, ResultException, ResultVariant
 
 
 class TestOption(unittest.TestCase):

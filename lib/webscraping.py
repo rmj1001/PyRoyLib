@@ -1,6 +1,6 @@
 import sys
 
-from monads import Option, some, nada
+from lib.monads.option import Option, some, nada
 
 # Try to import necessary PIP packages
 try:
