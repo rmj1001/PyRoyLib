@@ -1,6 +1,6 @@
 import unittest
-from algorithms.searching.binary_search import binary_search, recursive_binary_search
-from algorithms.searching.sequential_search import sequential_search, sorted_sequential_search, SequentialSearchError
+from src.lib.algos.searching.binary_search import binary_search, recursive_binary_search
+from src.lib.algos.searching.sequential_search import sequential_search, sorted_sequential_search, SequentialSearchError
 
 class TestSearches(unittest.TestCase):
     def test_sequential_search(self):
