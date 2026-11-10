@@ -1,14 +1,17 @@
-from collections.abc import Callable, Iterable
+from collections.abc import Callable
+from src.lib.abstract.box import Box
 
 type MapFn[T] = Callable[[T], T]
+
 
 class FunctorException[T](Exception):
     def __init__(self, message: T):
         super().__init__(message)
 
-class Functor[T]:
+
+class Functor[T](Box):
     def __init__(self, value: T):
-        self.value = value
+        super().__init__(value)
 
     def __eq__(self, other: object) -> bool:
         if self.value is None and other is None:
@@ -54,24 +57,11 @@ class Functor[T]:
         """
         return self.flatten().map(fn)
 
-    def take(self) -> T:
+    def replace(self, new_value: T) -> 'Functor[T]':
         """
-        Return the contained value, replacing it with None inside the functor.
-        Raises FunctorException if self.value is None
-        :return: contained value
-        """
-        if self.value is None:
-            raise FunctorException(f'Value cannot be taken, it is None.')
-
-        tmp: T = self.value
-        self.value = None
-        return tmp
-
-    def replace(self, value: T) -> 'Functor[T]':
-        """
-        Replace contained value with a new value
-        :param value: The new value for Functor to contain
+        Replace contained item with new value
+        :param new_value: New functor value
         :return: self
         """
-        self.value = value
+        super().replace(new_value)
         return self
