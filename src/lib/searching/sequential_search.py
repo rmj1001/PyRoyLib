@@ -1,15 +1,19 @@
-from types.predicate import Predicate
+from collections.abc import Callable
+
+type Predicate[T] = Callable[[T], bool]
+
 
 class SequentialSearchError(Exception):
     def __init__(self, message: str) -> None:
         self.message = message
         super().__init__(self.message)
 
+
 def sequential_search[T](
         arr: list[T],
         target: T | None = None,
         condition: Predicate | None = None
-    ) -> int | None:
+) -> int | None:
     """Search each element in arr, return first index for element where condition returns True"""
     if target is None and condition is None:
         raise SequentialSearchError("Either target or condition is required")
@@ -21,6 +25,7 @@ def sequential_search[T](
             return index
 
     return None
+
 
 def sorted_sequential_search[T](
         arr: list[T],

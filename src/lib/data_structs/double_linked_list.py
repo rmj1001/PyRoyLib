@@ -1,8 +1,10 @@
+from collections.abc import Callable
 from typing import Iterable
 
-from types.predicate import Predicate
 from .exceptions.linked_list_exception import LinkedListException
 from .nodes.double_linked_node import DoubleLinkedNode
+
+type Predicate[T] = Callable[[T], bool]
 
 
 class DoubleLinkedList[T]:
