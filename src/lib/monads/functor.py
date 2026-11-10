@@ -55,6 +55,11 @@ class Functor[T]:
         return self.flatten().map(fn)
 
     def take(self) -> T:
+        """
+        Return the contained value, replacing it with None inside the functor.
+        Raises FunctorException if self.value is None
+        :return: contained value
+        """
         if self.value is None:
             raise FunctorException(f'Value cannot be taken, it is None.')
 
@@ -63,5 +68,10 @@ class Functor[T]:
         return tmp
 
     def replace(self, value: T) -> 'Functor[T]':
+        """
+        Replace contained value with a new value
+        :param value: The new value for Functor to contain
+        :return: self
+        """
         self.value = value
         return self
