@@ -6,9 +6,9 @@ type Neighbors[I] = dict[I, int]
 
 class GraphNode[I, T]:
     def __init__(self, node_id: I, value: T, neighbors: Neighbors | None = None) -> None:
-        self.node_id = node_id
-        self.value = value
-        self.neighbors = neighbors if neighbors is not None else {}
+        self.node_id: I = node_id
+        self.value: T = value
+        self.neighbors: Neighbors[I] = neighbors if neighbors is not None else {}
 
     def __len__(self) -> int:
         """
@@ -43,7 +43,7 @@ class GraphNode[I, T]:
         """
         return other_node in self.neighbors
 
-    def add_edge(self, other_node: I, weight: int) -> None:
+    def add_edge(self, other_node: I, weight: int = 0) -> None:
         """
         Add an edge between this node and another node
         :param other_node: ID of other node
@@ -63,3 +63,15 @@ class GraphNode[I, T]:
             raise GraphException(f'Unidirectional edge does not exist from {self.node_id} to {other_node}.')
 
         del self.neighbors[other_node]
+
+    def all_edges(self) -> list[tuple[I, I]]:
+        """
+        Get a list of all edges for this node, denoted by tuple[node_id, node_id]
+        :return: List of edges
+        """
+        edges: list[tuple[I, I]] = []
+
+        for neighbor in self.neighbors:
+            edges.append((self.node_id, neighbor))
+
+        return edges
