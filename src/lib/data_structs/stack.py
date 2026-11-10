@@ -28,7 +28,7 @@ class Stack[T]:
 
         current = self.head
         while current is not None:
-            values.append(current.value)
+            values.append(current.data)
             current = current.next
 
         string += ', '.join([str(item) for item in values])
@@ -55,7 +55,7 @@ class Stack[T]:
         if self.head is None:
             raise StackException("Stack is empty")
 
-        data = self.head.value
+        data = self.head.data
         self.head = self.head.next
         self._count -= 1
 
@@ -66,4 +66,4 @@ class Stack[T]:
         if self.head is None:
             raise StackException("Stack is empty")
         else:
-            return self.head.value
+            return self.head.data
