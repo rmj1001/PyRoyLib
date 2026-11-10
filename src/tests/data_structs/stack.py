@@ -15,7 +15,7 @@ class TestStack(unittest.TestCase):
 
         empty.push(1)
 
-        self.assertEqual(empty.head.value, 1)
+        self.assertEqual(empty.head.data, 1)
 
     def test_pop(self):
         empty = Stack()
@@ -25,7 +25,7 @@ class TestStack(unittest.TestCase):
             empty.pop()
 
         self.assertEqual(full.pop(), 6)
-        self.assertEqual(full.head.value, 5)
+        self.assertEqual(full.head.data, 5)
 
         full.pop()
         full.pop()
@@ -44,7 +44,7 @@ class TestStack(unittest.TestCase):
             empty.peek()
 
         self.assertEqual(full.peek(), 6)
-        self.assertEqual(full.head.value, 6)
+        self.assertEqual(full.head.data, 6)
 
     def test_len(self):
         empty = Stack()
