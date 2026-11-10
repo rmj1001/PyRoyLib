@@ -1,4 +1,4 @@
-from sorting.swap import swap
+from algorithms.sorting.swap import swap
 
 def bubble_up[T](arr: list[T], top_index: int) -> None:
     for j in range(0, top_index, 1):
