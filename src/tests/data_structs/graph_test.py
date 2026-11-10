@@ -1,6 +1,5 @@
 import unittest
 from src.lib.data_structs.graph import Graph, GraphException
-from src.lib.data_structs.nodes.graph_node import GraphNode
 from random import randint
 
 def create_random_graph(nodes: int = 10, edges: bool = False) -> Graph[int, int]:
