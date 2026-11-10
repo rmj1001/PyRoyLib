@@ -161,6 +161,15 @@ class Option[T](Functor):
 
         return first_opt, second_opt
 
+    def replace(self, new_value: T) -> "Option[T]":
+        """
+        Replace contained value in Option with new_value
+        :param new_value: New contained value
+        :return: self
+        """
+        super().replace(new_value)
+        return self
+
 
 def some[T](value: T, *args, **kwargs) -> Option[T]:
     """Shorthand for Option.some(value)"""

@@ -201,6 +201,15 @@ class Result[T, E](Functor):
 
         return func(*args, **kwargs)
 
+    def replace(self, new_value: T|E) -> "Result[T, E]":
+        """
+        Replace the contained value without changing state
+        :param new_value: The new value
+        :return: self
+        """
+        super().replace(new_value)
+        return self
+
 
 def ok[T, E](value: T, *args, **kwargs) -> Result[T, E]:
     """Shorthand for Result.ok(), useful for pattern matching"""
