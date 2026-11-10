@@ -1,7 +1,14 @@
 from typing import Iterable
 
-from .exceptions.stack_exception import StackException
 from .nodes.single_linked_node import SingleLinkedNode
+
+
+class StackException(Exception):
+    """Exception raised when stack operations fail"""
+
+    def __init__(self, message: str) -> None:
+        self.message = message
+        super().__init__(message)
 
 
 class Stack[T]:

@@ -1,7 +1,14 @@
 from typing import Iterable
 
-from .exceptions.queue_exception import QueueException
 from .nodes.single_linked_node import SingleLinkedNode
+
+
+class QueueException(Exception):
+    """Exception raised when queue operations fail"""
+
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(message)
 
 
 class Queue[T]:
