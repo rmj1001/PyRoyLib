@@ -1,8 +1,12 @@
 from .nodes.binary_tree_nodes import TreeNode
 
+
 class BinarySearchTree[T]:
     def __init__(self, root: TreeNode[T] | None = None) -> None:
         self.root: TreeNode[T] | None = root
+
+    def is_empty(self) -> bool:
+        return self.root is None
 
     def insert(self, value: T) -> TreeNode[T] | None:
         """
@@ -77,3 +81,42 @@ class BinarySearchTree[T]:
             return self.get_rec(node.right, value)
 
         return node
+
+    def pre_order(self) -> list[T]:
+        items: list[T] = []
+        self.pre_order_rec(self.root, items)
+        return items
+
+    def pre_order_rec(self, node: TreeNode[T] | None, items: list[T]) -> None:
+        if node is None:
+            return
+
+        items.append(node.value)
+        self.pre_order_rec(node.left, items)
+        self.pre_order_rec(node.right, items)
+
+    def in_order(self) -> list[T]:
+        items: list[T] = []
+        self.in_order_rec(self.root, items)
+        return items
+
+    def in_order_rec(self, node: TreeNode[T] | None, items: list[T]) -> None:
+        if node is None:
+            return
+
+        self.in_order_rec(node.left, items)
+        items.append(node.value)
+        self.in_order_rec(node.right, items)
+
+    def post_order(self) -> list[T]:
+        items: list[T] = []
+        self.post_order_rec(self.root, items)
+        return items
+
+    def post_order_rec(self, node: TreeNode[T] | None, items: list[T]) -> None:
+        if node is None:
+            return
+
+        self.post_order_rec(node.left, items)
+        self.post_order_rec(node.right, items)
+        items.append(node.value)
