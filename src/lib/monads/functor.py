@@ -1,6 +1,10 @@
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 
 type MapFn[T] = Callable[[T], T]
+
+class FunctorException[T](Exception):
+    def __init__(self, message: T):
+        super().__init__(message)
 
 class Functor[T]:
     def __init__(self, value: T):
@@ -24,7 +28,11 @@ class Functor[T]:
         if self.value is None:
             return self
 
-        self.value = fn(self.value)
+        try:
+            self.value = fn(self.value)
+        except Exception as e:
+            raise FunctorException(e)
+
         return self
 
     def flatten(self) -> 'Functor[T]':
@@ -45,3 +53,15 @@ class Functor[T]:
         :return: Self with flattened value changed to fn(self.value)
         """
         return self.flatten().map(fn)
+
+    def take(self) -> T:
+        if self.value is None:
+            raise FunctorException(f'Value cannot be taken, it is None.')
+
+        tmp: T = self.value
+        self.value = None
+        return tmp
+
+    def replace(self, value: T) -> 'Functor[T]':
+        self.value = value
+        return self
