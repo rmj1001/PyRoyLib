@@ -10,16 +10,55 @@ class GraphNode[I, T]:
         self.value = value
         self.neighbors = neighbors if neighbors is not None else {}
 
+    def __len__(self) -> int:
+        """
+        Alias for GraphNode.count_edges()
+        :return: Number of edges
+        """
+        return self.count_edges()
+
+    def __eq__(self, other: object) -> bool:
+        """
+        Check if values of two nodes are equal
+        :param other: Other node
+        :return: True if other object is GraphNode and values are equal, else False
+        """
+        if not isinstance(other, GraphNode):
+            return NotImplemented
+
+        return self.value == other.value
+
+    def count_edges(self):
+        """
+        Get the number of edges between this node and other nodes
+        :return: Number of edges
+        """
+        return len(self.neighbors)
+
     def is_edge(self, other_node: I) -> bool:
+        """
+        Check to see if other node has an edge with this node
+        :param other_node: ID of other node
+        :return: True if edge exists, else False
+        """
         return other_node in self.neighbors
 
     def add_edge(self, other_node: I, weight: int) -> None:
+        """
+        Add an edge between this node and another node
+        :param other_node: ID of other node
+        :param weight: The weight of the edge
+        """
         if other_node in self.neighbors:
             raise GraphException(f'Unidirectional edge exists from {self.node_id} to {other_node}.')
 
         self.neighbors[other_node] = weight
 
     def remove_edge(self, other_node: I) -> None:
+        """
+        Remove an edge between this node and another node
+        :param other_node: ID of other node
+        """
         if other_node not in self.neighbors:
             raise GraphException(f'Unidirectional edge does not exist from {self.node_id} to {other_node}.')
 
