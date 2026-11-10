@@ -6,12 +6,21 @@ class BinarySearchTree[T]:
         self.root: TreeNode[T] | None = root
 
     def __eq__(self, other: object) -> bool:
+        """
+        Compare the preorder lists of two binary search trees
+        :param other: Other binary search tree
+        :return: True if other is BST and preorder lists are equal, False otherwise
+        """
         if not isinstance(other, BinarySearchTree):
             return NotImplemented
 
         return self.pre_order() == other.pre_order()
 
     def is_empty(self) -> bool:
+        """
+        Check if tree has a root node
+        :return: True if tree has a root node, False otherwise
+        """
         return self.root is None
 
     def insert(self, value: T) -> TreeNode[T] | None:
