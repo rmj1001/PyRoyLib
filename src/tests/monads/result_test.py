@@ -19,8 +19,8 @@ class TestResult(unittest.TestCase):
         res1 = ok(1)
         res2 = err("Error")
 
-        self.assertEqual(str(res1), "ok(1)")
-        self.assertEqual(str(res2), "err(Error)")
+        self.assertEqual(str(res1), "Ok(1)")
+        self.assertEqual(str(res2), "Err(Error)")
 
     def test_bool(self):
         """Test bool(Result)"""

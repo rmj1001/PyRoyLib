@@ -2,6 +2,7 @@ import unittest
 
 from monads.exceptions.option_exception import OptionException
 from monads.option import Option, some, nada
+from monads.result import ok, err
 
 
 class TestOption(unittest.TestCase):
@@ -89,7 +90,7 @@ class TestOption(unittest.TestCase):
         # Should not raise exception
         self.assertEqual(opt.unwrap(), 1)
 
-        with self.assertRaises(OptionException) as cm:
+        with self.assertRaises(OptionException):
             opt2.unwrap()
 
     def test_unwrap_or(self):
