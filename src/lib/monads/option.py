@@ -136,17 +136,6 @@ class Option[T](Functor):
 
         return Option.some(result)
 
-    def take(self) -> T:
-        """Return the value in the Option and set it to Nada"""
-        value = self.unwrap()
-        self.value = None
-
-        return value
-
-    def replace(self, value: T) -> None:
-        """Replace the current value with another value"""
-        self.value = value
-
     def zip[V](self, other_option: "Option[V]") -> "Option[tuple[T, V]]":
         """Return tuple if both options are Some, else return Nada"""
         if self.is_some() and other_option.is_some():
