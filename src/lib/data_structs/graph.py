@@ -1,5 +1,7 @@
 from .nodes.graph_node import GraphNode
 
+type NodeEdge[I] = tuple[I, I]
+
 class GraphException[T](Exception):
     def __init__(self, message: T):
         super().__init__(message)
@@ -43,15 +45,16 @@ class Graph[I, T]:
 
         return edges
 
-    def insert(self, node: GraphNode[I, T]) -> None:
+    def insert(self, node_id: I, value: T) -> None:
         """
         Insert a node into the graph
-        :param node: The node to insert
+        :param node_id: The ID for the new node
+        :param value: The node's value
         """
-        if node.node_id in self.nodes:
-            raise GraphException(f'Node with id {node.node_id} already exists.')
+        if node_id in self.nodes:
+            raise GraphException(f'Node with id {node_id} already exists.')
 
-        self.nodes[node.node_id] = node
+        self.nodes[node_id] = GraphNode(node_id, value)
 
     def remove_node(self, node_id: I) -> None:
         """
@@ -63,9 +66,11 @@ class Graph[I, T]:
 
         del self.nodes[node_id]
 
-        for node in self.nodes:
-            if node_id in node.neighbors:
-                node.neighbors.remove(node)
+        for node in self.nodes.values():
+            try:
+                node.remove_edge(node_id)
+            except GraphException:
+                continue
 
     def is_bidirectional_edge(self, node_one: I, node_two: I) -> bool:
         """
@@ -79,7 +84,7 @@ class Graph[I, T]:
 
         return node_one.is_edge(node_two.node_id) and node_two.is_edge(node_one.node_id)
 
-    def add_bidirectional_edge(self, node_one: I, node_two: I, weight: int) -> None:
+    def add_bidirectional_edge(self, node_one: I, node_two: I, weight: int = 0) -> None:
         """
         Create two edges between two nodes so that each node connects to the other bidirectionally
         :param node_one: The first node's ID
@@ -108,10 +113,45 @@ class Graph[I, T]:
         node_one.remove_edge(node_two.node_id)
         node_two.remove_edge(node_one.node_id)
 
-    def get_node(self, value: T) -> GraphNode[I, T] | list[GraphNode[I, T]] | None:
+    def search(self, value: T) -> I | list[I] | None:
         """
-        Get a node by its contained value, multiple nodes if they match, or None if no node contains that value.
-        :param value:
-        :return:
+        Find ID(s) of nodes whose value matches the given value
+        :param value: The value to search for
+        :return: ID, list of IDs, or None, depending on how many IDs were found
         """
-        return self.nodes.get(lambda node: node.value == value, None)
+        nodes: list[I] = []
+
+        for node in self.nodes.values():
+            if node.value == value:
+                nodes.append(node.node_id)
+
+        if len(nodes) == 0:
+            return None
+        elif len(nodes) == 1:
+            return nodes[0]
+        else:
+            return nodes
+
+    def all_edges(self) -> list[NodeEdge]:
+        """
+        Get a list of all edges in the graph, denoted by tuple[node_id, node_id]
+        :return: List of edges
+        """
+        edges: list[NodeEdge] = []
+
+        for node in self.nodes.values():
+            edges.extend(node.all_edges())
+
+        return edges
+
+    def node_in_edges(self, node_id: I) -> bool:
+        """
+        Check to see if a node ID is contained in any edges
+        :param node_id: The ID of the node
+        :return: True if any edges contain the node ID, False otherwise
+        """
+        for node_one, node_two in self.all_edges():
+            if node_id == node_one or node_id == node_two:
+                return True
+
+        return False
