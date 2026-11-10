@@ -35,6 +35,26 @@ class TestTreeNode(unittest.TestCase):
 
 
 class TestBinarySearchTree(unittest.TestCase):
+    def test_equality(self):
+        tree1: BinarySearchTree = BinarySearchTree()
+        tree2: BinarySearchTree = BinarySearchTree()
+        tree3: BinarySearchTree = BinarySearchTree()
+
+        tree1.insert(1)
+        tree1.insert(2)
+        tree1.insert(3)
+
+        tree2.insert(1)
+        tree2.insert(2)
+        tree2.insert(3)
+
+        tree3.insert(0)
+        tree3.insert(1)
+        tree3.insert(2)
+
+        self.assertEqual(tree1, tree2)
+        self.assertNotEqual(tree1, tree3)
+
     def test_is_empty(self):
         tree: BinarySearchTree = BinarySearchTree()
         tree2: BinarySearchTree = BinarySearchTree()
@@ -107,6 +127,17 @@ class TestBinarySearchTree(unittest.TestCase):
         ordered: list[int] = [0, 3, 2, 1]
 
         self.assertEqual(tree.post_order(), ordered)
+
+    def test_minimum_maximum(self):
+        tree: BinarySearchTree = BinarySearchTree()
+
+        tree.insert(1)
+        tree.insert(2)
+        tree.insert(3)
+        tree.insert(0)
+
+        self.assertEqual(tree.minimum(), 0)
+        self.assertEqual(tree.maximum(), 3)
 
 
 if __name__ == '__main__':

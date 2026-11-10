@@ -5,6 +5,12 @@ class BinarySearchTree[T]:
     def __init__(self, root: TreeNode[T] | None = None) -> None:
         self.root: TreeNode[T] | None = root
 
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, BinarySearchTree):
+            return NotImplemented
+
+        return self.pre_order() == other.pre_order()
+
     def is_empty(self) -> bool:
         return self.root is None
 
@@ -83,11 +89,18 @@ class BinarySearchTree[T]:
         return node
 
     def pre_order(self) -> list[T]:
+        """
+        Return a list of values from the BST in pre-order.
+        :return: List of pre-order values
+        """
         items: list[T] = []
         self.pre_order_rec(self.root, items)
         return items
 
     def pre_order_rec(self, node: TreeNode[T] | None, items: list[T]) -> None:
+        """
+        Append a list of values from a node in pre-order.
+        """
         if node is None:
             return
 
@@ -96,11 +109,18 @@ class BinarySearchTree[T]:
         self.pre_order_rec(node.right, items)
 
     def in_order(self) -> list[T]:
+        """
+        Return a list of values from the BST in-order.
+        :return: List of in-order values
+        """
         items: list[T] = []
         self.in_order_rec(self.root, items)
         return items
 
     def in_order_rec(self, node: TreeNode[T] | None, items: list[T]) -> None:
+        """
+        Append a list of values from a node in-order.
+        """
         if node is None:
             return
 
@@ -109,14 +129,53 @@ class BinarySearchTree[T]:
         self.in_order_rec(node.right, items)
 
     def post_order(self) -> list[T]:
+        """
+        Return a list of values from the BST in post-order.
+        :return: List of post-order values
+        """
         items: list[T] = []
         self.post_order_rec(self.root, items)
         return items
 
     def post_order_rec(self, node: TreeNode[T] | None, items: list[T]) -> None:
+        """
+        Append a list of values from a node in post-order.
+        """
         if node is None:
             return
 
         self.post_order_rec(node.left, items)
         self.post_order_rec(node.right, items)
         items.append(node.value)
+
+    def minimum(self, node: TreeNode[T] | None = None) -> T:
+        """
+        Get the minimum value in BST
+        :param node: The starting node, or tree root if node is None
+        :return: The minimum value
+        """
+        if node is None:
+            node = self.root
+
+        current: TreeNode[T] | None = node
+
+        while current.left is not None:
+            current = current.left
+
+        return current.value
+
+    def maximum(self, node: TreeNode[T] | None = None) -> T:
+        """
+        Get the maximum value in BST
+        :param node: The starting node, or tree root if node is None
+        :return: The maximum value
+        """
+        if node is None:
+            node = self.root
+
+        current: TreeNode[T] | None = node
+
+        while current.right is not None:
+            current = current.right
+
+        return current.value
