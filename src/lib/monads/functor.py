@@ -1,5 +1,6 @@
-from src.lib.custom_types.map_function import MapFn
+from collections.abc import Callable
 
+type MapFn[T] = Callable[[T], T]
 
 class Functor[T]:
     def __init__(self, value: T):
