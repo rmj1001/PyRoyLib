@@ -2,7 +2,6 @@ from enum import StrEnum
 from typing import Callable
 
 from abstract.iequality import IEquality
-from abstract.ifunctor import IFunctor
 from abstract.irepr import IRepr
 from abstract.imonad import IMonad
 from monads.exceptions.result_exception import ResultException
@@ -21,7 +20,7 @@ class ResultVariant(StrEnum):
     ERR = 'Err'
 
 
-class Result[T, E](IRepr, IFunctor[T | E], IMonad[T], IEquality):
+class Result[T, E](IRepr, IMonad[T], IEquality):
     """Rust-style result"""
 
     def __init__(self, value: T | E, state: ResultVariant = ResultVariant.OK):

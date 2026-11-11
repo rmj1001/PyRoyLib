@@ -1,7 +1,6 @@
 from collections.abc import Callable
 
 from abstract.iequality import IEquality
-from abstract.ifunctor import IFunctor
 from abstract.irepr import IRepr
 from abstract.imonad import IMonad
 from monads.exceptions.option_exception import OptionException
@@ -12,7 +11,7 @@ type MapFn[T] = Callable[[T], T]
 type Predicate[T] = Callable[[T], bool]
 
 
-class Option[T](IRepr, IFunctor[T], IMonad[T], IEquality):
+class Option[T](IRepr, IMonad[T], IEquality):
     """Rust-style option"""
 
     def __init__(self, value: T | None):
