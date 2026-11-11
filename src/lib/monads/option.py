@@ -28,37 +28,7 @@ class Option[T](IRepr, IFunctor[T], IMonad[T]):
         """Return true if option is Some, false if Nada"""
         return self.is_some()
 
-    @classmethod
-    def some(cls, value: T, *args, **kwargs) -> "Option[T]":
-        """Create an option with Some variant"""
-        if isinstance(value, Callable):
-            return cls(value(*args, **kwargs))
-
-        return cls(value)
-
-    @classmethod
-    def nada(cls) -> "Option":
-        """Create an option with Nada variant"""
-        return cls(None)
-
-    def is_some(self) -> bool:
-        """Return true if variant is Some"""
-        return self.value is not None
-
-    def is_some_and(self, predicate: Predicate) -> bool:
-        """Return true if variant is Some and matches predicate"""
-        if self.is_nada():
-            return False
-
-        return predicate(self.value)
-
-    def is_nada(self) -> bool:
-        """Return true if variant is Nada"""
-        return self.value is None
-
-    def is_nada_or(self, predicate: Predicate) -> bool:
-        """Return true if variant is Nada or matches predicate"""
-        return self.is_nada() or predicate(self.value)
+    # --- IMonad Implementation
 
     def expect[E](self, message: E) -> T:
         """Get value if Some, else raise custom ValueError"""
@@ -99,6 +69,40 @@ class Option[T](IRepr, IFunctor[T], IMonad[T]):
             return Option.nada()
 
         return Option.some(result)
+
+    # --- END IMonad Implementation
+
+    @classmethod
+    def some(cls, value: T, *args, **kwargs) -> "Option[T]":
+        """Create an option with Some variant"""
+        if isinstance(value, Callable):
+            return cls(value(*args, **kwargs))
+
+        return cls(value)
+
+    @classmethod
+    def nada(cls) -> "Option":
+        """Create an option with Nada variant"""
+        return cls(None)
+
+    def is_some(self) -> bool:
+        """Return true if variant is Some"""
+        return self.value is not None
+
+    def is_some_and(self, predicate: Predicate) -> bool:
+        """Return true if variant is Some and matches predicate"""
+        if self.is_nada():
+            return False
+
+        return predicate(self.value)
+
+    def is_nada(self) -> bool:
+        """Return true if variant is Nada"""
+        return self.value is None
+
+    def is_nada_or(self, predicate: Predicate) -> bool:
+        """Return true if variant is Nada or matches predicate"""
+        return self.is_nada() or predicate(self.value)
 
     def ok_or[E](self, error: E) -> "Result[T,E]":
         """Return a result"""
