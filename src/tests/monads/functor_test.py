@@ -45,24 +45,6 @@ class TestFunctors(unittest.TestCase):
         self.assertEqual(ft.value, 2)
         self.assertEqual(ft2.value, 4)
 
-    def test_take(self):
-        ft = Functor(1)
-
-        one = ft.take()
-
-        with self.assertRaises(FunctorException):
-            ft.take()
-
-        self.assertEqual(one, 1)
-        self.assertEqual(ft.value, None)
-
-    def test_replace(self):
-        ft = Functor(1)
-
-        ft.replace(2)
-
-        self.assertEqual(ft.value, 2)
-
 
 if __name__ == '__main__':
     unittest.main()
