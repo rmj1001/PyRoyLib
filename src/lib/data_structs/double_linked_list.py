@@ -25,7 +25,7 @@ class DoubleLinkedList[T]:
         """Get number of nodes without traversal"""
         return self._nodes
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         """Get the string representation of the list"""
         if self.head is None:
             return "DLL()"

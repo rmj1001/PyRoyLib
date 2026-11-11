@@ -19,14 +19,14 @@ class ResultVariant(StrEnum):
     ERR = 'Err'
 
 
-class Result[T, E](IRepr[T | E], IFunctor[T | E]):
+class Result[T, E](IRepr, IFunctor[T | E]):
     """Rust-style result"""
 
     def __init__(self, value: T | E, state: ResultVariant = ResultVariant.OK):
         super().__init__(value)
         self.state: ResultVariant = state
 
-    def __str__(self):
+    def __repr__(self):
         """String representation for Result[T,E]"""
         return f'{self.state}({self.value})'
 

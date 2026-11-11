@@ -28,7 +28,7 @@ class Stack[T]:
         """Return the number of items in the stack"""
         return self._count
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         """Return a string representation of the stack"""
         string: str = 'Stack('
         values: list[T] = []

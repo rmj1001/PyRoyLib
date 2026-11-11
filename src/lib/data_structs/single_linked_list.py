@@ -28,7 +28,7 @@ class SingleLinkedList[T]:
         """Get the number of nodes in the list without traversal"""
         return self._nodes
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         """Get the string representation of the list"""
         if self.head is None:
             return "SLL()"

@@ -30,7 +30,7 @@ class Queue[T]:
         """Get the number of elements in the queue"""
         return self._count
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         """Get the string representation of the queue"""
         string: str = 'Queue('
         values: list[T] = []

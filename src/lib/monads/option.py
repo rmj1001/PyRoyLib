@@ -10,13 +10,13 @@ type MapFn[T] = Callable[[T], T]
 type Predicate[T] = Callable[[T], bool]
 
 
-class Option[T](IRepr[T], IFunctor[T]):
+class Option[T](IRepr, IFunctor[T]):
     """Rust-style option"""
 
     def __init__(self, value: T | None):
         super().__init__(value)
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         """Return string representation of option"""
         if self.is_some():
             return f"some({self.value})"
