@@ -3,7 +3,7 @@ from collections.abc import Callable
 from abstract.iequality import IEquality
 from abstract.ifunctor import IFunctor
 from abstract.irepr import IRepr
-from .imonad import IMonad
+from abstract.imonad import IMonad
 from monads.exceptions.option_exception import OptionException
 from monads.result import Result
 

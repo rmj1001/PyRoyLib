@@ -4,7 +4,7 @@ from typing import Callable
 from abstract.iequality import IEquality
 from abstract.ifunctor import IFunctor
 from abstract.irepr import IRepr
-from .imonad import IMonad
+from abstract.imonad import IMonad
 from monads.exceptions.result_exception import ResultException
 
 # Used for functions that pass an error to function and return another error
