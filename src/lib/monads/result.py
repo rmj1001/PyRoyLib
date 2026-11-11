@@ -3,6 +3,7 @@ from typing import Callable
 
 from abstract.ifunctor import IFunctor
 from abstract.irepr import IRepr
+from .imonad import IMonad
 from monads.exceptions.result_exception import ResultException
 
 # Used for functions that pass an error to function and return another error
@@ -19,7 +20,7 @@ class ResultVariant(StrEnum):
     ERR = 'Err'
 
 
-class Result[T, E](IRepr, IFunctor[T | E]):
+class Result[T, E](IRepr, IFunctor[T | E], IMonad[T]):
     """Rust-style result"""
 
     def __init__(self, value: T | E, state: ResultVariant = ResultVariant.OK):
@@ -160,7 +161,7 @@ class Result[T, E](IRepr, IFunctor[T | E]):
         """Returns the contained Err, never raises exception"""
         return err(self.value)
 
-    def other_if_ok[V](self, res: "Result[V, E]") -> "Result[T, E] | Result[V, E]":
+    def other_if_ok(self, res: "Result[T, E]") -> "Result[T, E]":
         """Result res if result is Ok, otherwise return Err of self"""
         if self.is_ok():
             return res
@@ -174,19 +175,19 @@ class Result[T, E](IRepr, IFunctor[T | E]):
 
         return ok(func(*args, **kwargs))
 
-    def other_if_err[V](self, res: "Result[V, E]") -> "Result[T, E] | Result[V, E]":
+    def other_if_err(self, res: "Result[T, E]") -> "Result[T, E]":
         """Returns res if result is Err, otherwise returns Ok value of self"""
         if self.is_ok():
             return self
 
         return res
 
-    def or_else(self, func: Callable, *args, **kwargs) -> "Result[T, E] | Result[T, Callable]":
+    def or_else(self, fn: Callable, *args, **kwargs) -> "Result[T, E] | Result[T, Callable]":
         """Calls func if result is Err, otherwise returns Ok of self"""
         if self.is_ok():
             return self
 
-        return err(func(*args, **kwargs))
+        return err(fn(*args, **kwargs))
 
     def unwrap_or[V](self, default: V) -> T | V:
         """Returns contained Ok value or default if Err"""
@@ -195,12 +196,12 @@ class Result[T, E](IRepr, IFunctor[T | E]):
 
         return self.value
 
-    def unwrap_or_else[R](self, func: Callable, *args, **kwargs) -> T | R:
+    def unwrap_or_else[R](self, fn: Callable, *args, **kwargs) -> T | R:
         """Returns contained Ok value or value from func if Err"""
         if self.is_ok():
             return self.value
 
-        return func(*args, **kwargs)
+        return fn(*args, **kwargs)
 
 
 def ok[T, E](value: T, *args, **kwargs) -> Result[T, E]:

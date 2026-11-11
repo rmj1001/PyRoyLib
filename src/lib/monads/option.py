@@ -2,6 +2,7 @@ from collections.abc import Callable
 
 from abstract.ifunctor import IFunctor
 from abstract.irepr import IRepr
+from .imonad import IMonad
 from monads.exceptions.option_exception import OptionException
 from monads.result import Result
 
@@ -10,7 +11,7 @@ type MapFn[T] = Callable[[T], T]
 type Predicate[T] = Callable[[T], bool]
 
 
-class Option[T](IRepr, IFunctor[T]):
+class Option[T](IRepr, IFunctor[T], IMonad[T]):
     """Rust-style option"""
 
     def __init__(self, value: T | None):
@@ -59,10 +60,10 @@ class Option[T](IRepr, IFunctor[T]):
         """Return true if variant is Nada or matches predicate"""
         return self.is_nada() or predicate(self.value)
 
-    def expect[E](self, error: E) -> T:
+    def expect[E](self, message: E) -> T:
         """Get value if Some, else raise custom ValueError"""
         if self.value is None:
-            raise OptionException(error)
+            raise OptionException(message)
 
         return self.value
 
@@ -111,14 +112,14 @@ class Option[T](IRepr, IFunctor[T]):
 
         return Option.nada()
 
-    def other_if_some[V](self, other_option: "Option[V]") -> "Option[T] | Option[V]":
+    def other_if_some(self, other_option: "Option[T]") -> "Option[T]":
         """Return Nada if option is Nada, otherwise return other_option"""
         if self.is_some():
             return other_option
 
         return self
 
-    def other_if_nada[V](self, other_option: "Option[V]") -> "Option[T] | Option[V]":
+    def other_if_nada(self, other_option: "Option[T]") -> "Option[T]":
         """Returns the option if it is Some, otherwise returns other_option"""
         if self.is_nada():
             return other_option
@@ -137,14 +138,14 @@ class Option[T](IRepr, IFunctor[T]):
 
         return Option.some(result)
 
-    def zip[V](self, other_option: "Option[V]") -> "Option[tuple[T, V]]":
+    def zip(self, other_option: "Option[T]") -> "Option[tuple[T, T]]":
         """Return tuple if both options are Some, else return Nada"""
         if self.is_some() and other_option.is_some():
             return Option.some((self.value, other_option.value))
 
         return Option.nada()
 
-    def unzip[V](self) -> "tuple[Option[T], Option[V]]":
+    def unzip(self) -> "tuple[Option[T], Option[T]]":
         """Unzips an option containing a tuple of values. Returns (Nada, Nada) if tuple not present."""
         if not isinstance(self.value, tuple):
             return Option.nada(), Option.nada()
