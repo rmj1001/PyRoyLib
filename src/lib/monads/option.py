@@ -16,7 +16,7 @@ class Option[T](IRepr, IFunctor[T], IMonad[T], IEquality):
     """Rust-style option"""
 
     def __init__(self, value: T | None):
-        super().__init__(value)
+        self.value: T | None = value
 
     def __bool__(self) -> bool:
         """Return true if option is Some, false if Nada"""
@@ -26,7 +26,7 @@ class Option[T](IRepr, IFunctor[T], IMonad[T], IEquality):
 
     def __repr__(self) -> str:
         """Return string representation of option"""
-        if self.is_some():
+        if self.value is not None:
             return f"some({self.value})"
 
         return "nada"
@@ -37,7 +37,7 @@ class Option[T](IRepr, IFunctor[T], IMonad[T], IEquality):
         if not isinstance(other, Option):
             return NotImplemented
 
-        return self.value == other.value
+        return (self.value == other.value) or (self.value is None and other.value is None)
 
     def __ne__(self, other: object) -> bool:
         if not isinstance(other, Option):
@@ -108,11 +108,8 @@ class Option[T](IRepr, IFunctor[T], IMonad[T], IEquality):
     # --- END Interface Implementations
 
     @classmethod
-    def some(cls, value: T, *args, **kwargs) -> "Option[T]":
+    def some(cls, value: T) -> "Option[T]":
         """Create an option with Some variant"""
-        if isinstance(value, Callable):
-            return cls(value(*args, **kwargs))
-
         return cls(value)
 
     @classmethod
@@ -203,11 +200,8 @@ class Option[T](IRepr, IFunctor[T], IMonad[T], IEquality):
         return first_opt, second_opt
 
 
-def some[T](value: T, *args, **kwargs) -> Option[T]:
+def some[T](value: T) -> Option[T]:
     """Shorthand for Option.some(value)"""
-    if isinstance(value, Callable):
-        return Option.some(value, *args, **kwargs)
-
     return Option.some(value)
 
 

@@ -25,7 +25,7 @@ class Result[T, E](IRepr, IFunctor[T | E], IMonad[T], IEquality):
     """Rust-style result"""
 
     def __init__(self, value: T | E, state: ResultVariant = ResultVariant.OK):
-        super().__init__(value)
+        self.value: T | E = value
         self.state: ResultVariant = state
 
     def __bool__(self) -> bool:

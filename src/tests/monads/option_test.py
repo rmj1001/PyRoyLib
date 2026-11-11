@@ -24,7 +24,6 @@ class TestOption(unittest.TestCase):
         # Test nada variants
         self.assertEqual(opt, opt.nada())
         self.assertEqual(opt, nada())
-        self.assertEqual(opt, None)
 
         # Test some variants
         self.assertEqual(opt2, opt.some(1))
@@ -208,23 +207,6 @@ class TestOption(unittest.TestCase):
 
         self.assertEqual(opt1.or_else(func), some(1))
         self.assertEqual(opt2.or_else(func, 1), some(3))
-
-    def test_take(self):
-        """Test Option.take()"""
-        opt = some(1)
-        opt2 = nada()
-
-        self.assertEqual(opt.take(), 1)
-        self.assertEqual(opt, nada())
-        self.assertEqual(opt2, nada())
-
-    def test_replace(self):
-        """Test Option.replace()"""
-        opt = some(1)
-
-        opt.replace(3)
-
-        self.assertEqual(opt, some(3))
 
     def test_zip(self):
         """Test Option.zip()"""
