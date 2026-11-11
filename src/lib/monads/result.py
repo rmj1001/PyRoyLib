@@ -1,8 +1,9 @@
 from enum import StrEnum
 from typing import Callable
 
+from abstract.ifunctor import IFunctor
+from abstract.irepr import IRepr
 from monads.exceptions.result_exception import ResultException
-from monads.functor import Functor
 
 # Used for functions that pass an error to function and return another error
 type MapFn[T] = Callable[[T], T]
@@ -18,7 +19,7 @@ class ResultVariant(StrEnum):
     ERR = 'Err'
 
 
-class Result[T, E](Functor):
+class Result[T, E](IRepr[T | E], IFunctor[T | E]):
     """Rust-style result"""
 
     def __init__(self, value: T | E, state: ResultVariant = ResultVariant.OK):
@@ -79,7 +80,7 @@ class Result[T, E](Functor):
         if self.is_err():
             return self
 
-        super().map(fn)
+        self.value = fn(self.value)
 
         return self
 
@@ -200,15 +201,6 @@ class Result[T, E](Functor):
             return self.value
 
         return func(*args, **kwargs)
-
-    def replace(self, new_value: T|E) -> "Result[T, E]":
-        """
-        Replace the contained value without changing state
-        :param new_value: The new value
-        :return: self
-        """
-        super().replace(new_value)
-        return self
 
 
 def ok[T, E](value: T, *args, **kwargs) -> Result[T, E]:

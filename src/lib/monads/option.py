@@ -1,7 +1,8 @@
 from collections.abc import Callable
 
+from abstract.ifunctor import IFunctor
+from abstract.irepr import IRepr
 from monads.exceptions.option_exception import OptionException
-from monads.functor import Functor
 from monads.result import Result
 
 # Map function type alias
@@ -9,7 +10,7 @@ type MapFn[T] = Callable[[T], T]
 type Predicate[T] = Callable[[T], bool]
 
 
-class Option[T](Functor):
+class Option[T](IRepr[T], IFunctor[T]):
     """Rust-style option"""
 
     def __init__(self, value: T | None):
@@ -161,14 +162,20 @@ class Option[T](Functor):
 
         return first_opt, second_opt
 
-    def replace(self, new_value: T) -> "Option[T]":
-        """
-        Replace contained value in Option with new_value
-        :param new_value: New contained value
-        :return: self
-        """
-        super().replace(new_value)
+    def flatten(self) -> 'Option[T]':
+        current = self.value
+
+        while isinstance(current, Option):
+            current = current.value
+
         return self
+
+    def map(self, fn: MapFn) -> 'Option[T]':
+        self.value = fn(self.value)
+        return self
+
+    def flatmap(self, fn: MapFn) -> 'Option[T]':
+        return self.flatten().map(fn)
 
 
 def some[T](value: T, *args, **kwargs) -> Option[T]:
