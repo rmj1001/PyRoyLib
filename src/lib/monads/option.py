@@ -1,5 +1,6 @@
 from collections.abc import Callable
 
+from abstract.iequality import IEquality
 from abstract.ifunctor import IFunctor
 from abstract.irepr import IRepr
 from .imonad import IMonad
@@ -11,11 +12,17 @@ type MapFn[T] = Callable[[T], T]
 type Predicate[T] = Callable[[T], bool]
 
 
-class Option[T](IRepr, IFunctor[T], IMonad[T]):
+class Option[T](IRepr, IFunctor[T], IMonad[T], IEquality):
     """Rust-style option"""
 
     def __init__(self, value: T | None):
         super().__init__(value)
+
+    def __bool__(self) -> bool:
+        """Return true if option is Some, false if Nada"""
+        return self.is_some()
+
+    # -- IRepr Implementation
 
     def __repr__(self) -> str:
         """Return string representation of option"""
@@ -24,9 +31,19 @@ class Option[T](IRepr, IFunctor[T], IMonad[T]):
 
         return "nada"
 
-    def __bool__(self) -> bool:
-        """Return true if option is Some, false if Nada"""
-        return self.is_some()
+    # -- IEquality Implementation
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Option):
+            return NotImplemented
+
+        return self.value == other.value
+
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, Option):
+            return NotImplemented
+
+        return self.value != other.value
 
     # --- IMonad Implementation
 
@@ -70,7 +87,25 @@ class Option[T](IRepr, IFunctor[T], IMonad[T]):
 
         return Option.some(result)
 
-    # --- END IMonad Implementation
+    # -- IFunctor Implementation
+
+    def flatten(self) -> 'Option[T]':
+        while isinstance(self.value, Option):
+            self.value = self.value.value
+
+        return self
+
+    def map(self, fn: MapFn) -> 'Option[T]':
+        if self.is_nada():
+            return self
+
+        self.value = fn(self.value)
+        return self
+
+    def flatmap(self, fn: MapFn) -> 'Option[T]':
+        return self.flatten().map(fn)
+
+    # --- END Interface Implementations
 
     @classmethod
     def some(cls, value: T, *args, **kwargs) -> "Option[T]":
@@ -166,21 +201,6 @@ class Option[T](IRepr, IFunctor[T], IMonad[T]):
             second_opt = Option.some(second)
 
         return first_opt, second_opt
-
-    def flatten(self) -> 'Option[T]':
-        current = self.value
-
-        while isinstance(current, Option):
-            current = current.value
-
-        return self
-
-    def map(self, fn: MapFn) -> 'Option[T]':
-        self.value = fn(self.value)
-        return self
-
-    def flatmap(self, fn: MapFn) -> 'Option[T]':
-        return self.flatten().map(fn)
 
 
 def some[T](value: T, *args, **kwargs) -> Option[T]:

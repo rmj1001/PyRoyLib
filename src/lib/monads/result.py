@@ -1,6 +1,7 @@
 from enum import StrEnum
 from typing import Callable
 
+from abstract.iequality import IEquality
 from abstract.ifunctor import IFunctor
 from abstract.irepr import IRepr
 from .imonad import IMonad
@@ -20,24 +21,109 @@ class ResultVariant(StrEnum):
     ERR = 'Err'
 
 
-class Result[T, E](IRepr, IFunctor[T | E], IMonad[T]):
+class Result[T, E](IRepr, IFunctor[T | E], IMonad[T], IEquality):
     """Rust-style result"""
 
     def __init__(self, value: T | E, state: ResultVariant = ResultVariant.OK):
         super().__init__(value)
         self.state: ResultVariant = state
 
-    def __repr__(self):
-        """String representation for Result[T,E]"""
-        return f'{self.state}({self.value})'
-
     def __bool__(self) -> bool:
         """Return True if Result[T,E] is Ok, else return False"""
         return self.is_ok()
 
+    # -- IRepr Implementation
+
+    def __repr__(self):
+        """String representation for Result[T,E]"""
+        return f'{self.state}({self.value})'
+
+    # -- IEquality Implementation
+
     def __eq__(self, other: object) -> bool:
         """Compare Result objects for equality"""
-        return isinstance(other, Result) and super().__eq__(other) and self.state == other.state
+        if not isinstance(other, Result):
+            return NotImplemented
+
+        return self.value == other.value and self.state == other.state
+
+    def __ne__(self, other: object) -> bool:
+        if not isinstance(other, Result):
+            return NotImplemented
+
+        return self.value != other.value or self.state != other.state
+
+    # -- IMonad Implementation
+
+    def expect(self, message: E) -> T:
+        """Returns Ok value or throws exception with custom error message"""
+        if self.is_err():
+            raise ResultException(message)
+
+        return self.value
+
+    def unwrap(self) -> T:
+        """Returns Ok value or throws exception with Err value"""
+        if self.is_err():
+            raise ResultException(self.value)
+
+        return self.value
+
+    def unwrap_or[V](self, default: V) -> T | V:
+        """Returns contained Ok value or default if Err"""
+        if self.is_err():
+            return default
+
+        return self.value
+
+    def unwrap_or_else[R](self, fn: Callable, *args, **kwargs) -> T | R:
+        """Returns contained Ok value or value from func if Err"""
+        if self.is_ok():
+            return self.value
+
+        return fn(*args, **kwargs)
+
+    def or_else(self, fn: Callable, *args, **kwargs) -> "Result[T, E] | Result[T, Callable]":
+        """Calls func if result is Err, otherwise returns Ok of self"""
+        if self.is_ok():
+            return self
+
+        return err(fn(*args, **kwargs))
+
+    # -- IFunctor Implementation
+
+    def flatten(self) -> "Result[T, E]":
+        """
+        Flatten nested Results until self.value is of type T or E
+        :return: self flattened
+        """
+        while isinstance(self.value, Result):
+            self.state = self.value.state
+            self.value = self.value.value
+
+        return self
+
+    def map(self, fn: MapFn) -> "Result[T, E]":
+        """
+        Apply function to contained Ok value, leaving Err value untouched.
+        :param fn: Function to apply to contained Ok value
+        :return: self with value changed by applied function
+        """
+        if self.is_err():
+            return self
+
+        self.value = fn(self.value)
+        return self
+
+    def flatmap(self, fn: MapFn) -> "Result[T, E]":
+        """
+        Flatten self, then apply function to internal value
+        :param fn: Function to apply to internal value
+        :return: self, flattened and function applied
+        """
+        return self.flatten().map(fn)
+
+    # -- END Interface Implementations
 
     @classmethod
     def ok(cls, value: T, *args, **kwargs) -> "Result[T,E]":
@@ -72,38 +158,6 @@ class Result[T, E](IRepr, IFunctor[T | E], IMonad[T]):
         """Return True if variant is ERR and predicate returns True"""
         return self.is_err() and predicate(self.value)
 
-    def map(self, fn: MapFn) -> "Result[T, E]":
-        """
-        Apply function to contained Ok value, leaving Err value untouched.
-        :param fn: Function to apply to contained Ok value
-        :return: self with value changed by applied function
-        """
-        if self.is_err():
-            return self
-
-        self.value = fn(self.value)
-
-        return self
-
-    def flatten(self) -> "Result[T, E]":
-        """
-        Flatten nested Results until self.value is of type T or E
-        :return: self flattened
-        """
-        while isinstance(self.value, Result):
-            self.state = self.value.state
-            self.value = self.value.value
-
-        return self
-
-    def flatmap(self, fn: MapFn) -> "Result[T, E]":
-        """
-        Flatten self, then apply function to internal value
-        :param fn: Function to apply to internal value
-        :return: self, flattened and function applied
-        """
-        return self.flatten().map(fn)
-
     def map_or[V](self, func: MapFn, default: V) -> "Result[MapFn|V,E]":
         """Returns the provided default if Err or applies func to value"""
         if self.is_err():
@@ -124,20 +178,6 @@ class Result[T, E](IRepr, IFunctor[T | E], IMonad[T]):
             return self
 
         return err(func(self.value))
-
-    def expect(self, message: E) -> T:
-        """Returns Ok value or throws exception with custom error message"""
-        if self.is_err():
-            raise ResultException(message)
-
-        return self.value
-
-    def unwrap(self) -> T:
-        """Returns Ok value or throws exception with Err value"""
-        if self.is_err():
-            raise ResultException(self.value)
-
-        return self.value
 
     def expect_err(self, message: E) -> T:
         """Returns contained Err, or else raises exception if Ok"""
@@ -181,27 +221,6 @@ class Result[T, E](IRepr, IFunctor[T | E], IMonad[T]):
             return self
 
         return res
-
-    def or_else(self, fn: Callable, *args, **kwargs) -> "Result[T, E] | Result[T, Callable]":
-        """Calls func if result is Err, otherwise returns Ok of self"""
-        if self.is_ok():
-            return self
-
-        return err(fn(*args, **kwargs))
-
-    def unwrap_or[V](self, default: V) -> T | V:
-        """Returns contained Ok value or default if Err"""
-        if self.is_err():
-            return default
-
-        return self.value
-
-    def unwrap_or_else[R](self, fn: Callable, *args, **kwargs) -> T | R:
-        """Returns contained Ok value or value from func if Err"""
-        if self.is_ok():
-            return self.value
-
-        return fn(*args, **kwargs)
 
 
 def ok[T, E](value: T, *args, **kwargs) -> Result[T, E]:
