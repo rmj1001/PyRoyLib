@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class IRepr[T](ABC):
-    value: T
-
+class IRepr(ABC):
     @abstractmethod
     def __str__(self) -> str:
         """String representation of the object."""

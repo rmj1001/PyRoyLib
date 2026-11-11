@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
 
 
-class IOrderable[T](ABC):
-    value: T
-
+class IOrderable(ABC):
     @abstractmethod
     def __ge__(self, other) -> bool:
         """Compare self >= other"""
