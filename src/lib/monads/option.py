@@ -88,6 +88,18 @@ class Option[T](IRepr, IFunctor[T], IMonad[T]):
 
         return fn(*args, **kwargs)
 
+    def or_else(self, fn: Callable, *args, **kwargs) -> "Option[T] | Option[MapFn]":
+        """Returns option if it is Some, else calls fn and returns result"""
+        if self.is_some():
+            return self
+
+        result = fn(*args, **kwargs)
+
+        if result is None:
+            return Option.nada()
+
+        return Option.some(result)
+
     def ok_or[E](self, error: E) -> "Result[T,E]":
         """Return a result"""
         if self.is_nada():
@@ -125,18 +137,6 @@ class Option[T](IRepr, IFunctor[T], IMonad[T]):
             return other_option
 
         return self
-
-    def or_else(self, fn: Callable, *args, **kwargs) -> "Option[T] | Option[MapFn]":
-        """Returns option if it is Some, else calls fn and returns result"""
-        if self.is_some():
-            return self
-
-        result = fn(*args, **kwargs)
-
-        if result is None:
-            return Option.nada()
-
-        return Option.some(result)
 
     def zip(self, other_option: "Option[T]") -> "Option[tuple[T, T]]":
         """Return tuple if both options are Some, else return Nada"""
