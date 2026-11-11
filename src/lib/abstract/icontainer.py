@@ -1,5 +1,7 @@
-from abc import ABC, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
 from collections.abc import Iterable
+
+from abstract.irepr import IRepr
 
 
 class ContainerException(Exception):
@@ -7,7 +9,7 @@ class ContainerException(Exception):
         super().__init__(message)
 
 
-class IContainer[T](ABC):
+class IContainer[T](ABC, IRepr[T]):
     value: T
 
     def __init__(self, value: T):
@@ -96,15 +98,15 @@ class IContainer[T](ABC):
     @abstractmethod
     def __contains__(self, item) -> bool:
         """Check if contents equal item, or if the contents contain the item"""
-        
+
     @abstractmethod
     def take(self) -> T:
         """Remove the contents and return it"""
-    
+
     @abstractmethod
     def replace(self, new_value: T) -> IContainer[T]:
         """Replace the contents and return self"""
-    
+
     @abstractmethod
     def peek(self) -> T:
         """Return the contents without removing it"""
