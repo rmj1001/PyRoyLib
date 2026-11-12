@@ -1,4 +1,9 @@
 def gnome_sort[T](items: list[T]) -> list[T]:
+    """
+    Sorting algorithm that works like a gnome sorting flowerpots
+    :param items: list of items to sort
+    :return: sorted list of items
+    """
     index = 0
 
     while index < len(items):
