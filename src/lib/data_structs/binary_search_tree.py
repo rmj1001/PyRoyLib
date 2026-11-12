@@ -188,3 +188,42 @@ class BinarySearchTree[T]:
             current = current.right
 
         return current.value
+
+    def delete(self, value: T) -> None:
+        """
+        Delete node with given value starting at root of tree
+        :param value: The value to delete
+        """
+        self.delete_rec(value, self.root)
+
+    def delete_rec(self, value: T, node: TreeNode[T] | None = None) -> TreeNode[T] | None:
+        """
+        Delete a node with given value, while preserving its descendants.
+        :param value: The value to delete
+        :param node: The current node
+        :return:
+        """
+        if node is None:
+            return node
+
+        if value < node.value:
+            node.left = self.delete_rec(value, node.left)
+        elif value > node.value:
+            node.right = self.delete_rec(value, node.right)
+        else:
+            # Handle cases where node has 0-1 children
+            if not node.left:
+                temp = node.right
+                node = None
+                return temp
+            if not node.right:
+                temp = node.left
+                node = None
+                return temp
+
+            # Handle cases where node has 2 children
+            # by replacing it with the in-order successor
+            node.value = self.minimum(node.right).value
+            node.right = self.delete_rec(node.value, node.right)
+
+        return node

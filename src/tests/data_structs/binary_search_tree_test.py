@@ -139,6 +139,22 @@ class TestBinarySearchTree(unittest.TestCase):
         self.assertEqual(tree.minimum(), 0)
         self.assertEqual(tree.maximum(), 3)
 
+    def test_delete(self):
+        tree: BinarySearchTree[float] = BinarySearchTree()
+
+        tree.insert(1.0)
+        tree.insert(2.0)
+        tree.insert(3.0)
+        tree.insert(0.0)
+        tree.insert(-1.0)
+        tree.insert(0.5)
+
+        self.assertEqual(tree.in_order(), [-1.0, 0.0, 0.5, 1.0, 2.0, 3.0])
+
+        tree.delete(0.5)
+
+        self.assertEqual(tree.in_order(), [-1.0, 0.0, 1.0, 2.0, 3.0])
+
 
 if __name__ == '__main__':
     unittest.main()
