@@ -1,6 +1,8 @@
 import unittest
 from src.lib.algos.searching.binary_search import binary_search, recursive_binary_search
 from src.lib.algos.searching.sequential_search import sequential_search, sorted_sequential_search, SequentialSearchError
+from src.lib.algos.sorting.gnome_sort import gnome_sort
+import random as rnd
 
 class TestSearches(unittest.TestCase):
     def test_sequential_search(self):
@@ -45,6 +47,16 @@ class TestSearches(unittest.TestCase):
 
         self.assertEqual(search_empty, None)
         self.assertEqual(search_full, 0)
+
+    def test_gnome_sort(self):
+        unsorted: list[int] = [rnd.randint(0, 100) for _ in range(10)]
+
+        gnomed = gnome_sort(unsorted.copy())
+
+        builtin_sorted: list[int] = unsorted.copy()
+        builtin_sorted.sort()
+
+        self.assertEqual(gnomed, builtin_sorted)
 
 
 if __name__ == '__main__':
