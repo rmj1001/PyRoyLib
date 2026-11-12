@@ -1,33 +1,32 @@
 import unittest
 
-from nodes.binary_tree_nodes import TreeNode
-from src.lib.data_structs.binary_search_tree import BinarySearchTree
+from src.lib.data_structs.binary_search_tree import BST, BSTNode
 
 
 class TestTreeNode(unittest.TestCase):
     def test_init(self):
-        node: TreeNode = TreeNode(1)
+        node: BSTNode = BSTNode(1)
 
         self.assertEqual(node.value, 1)
 
     def test_left_right(self):
-        node: TreeNode = TreeNode(2)
-        node.left = TreeNode(1)
+        node: BSTNode = BSTNode(2)
+        node.left = BSTNode(1)
 
         self.assertEqual(node.left.value, 1)
 
     def test_is_leaf_has_children(self):
-        node: TreeNode = TreeNode(2)
-        node.left = TreeNode(1)
+        node: BSTNode = BSTNode(2)
+        node.left = BSTNode(1)
 
-        node2 = TreeNode(2)
+        node2 = BSTNode(2)
 
         self.assertTrue(node.has_children())
         self.assertTrue(node2.is_leaf())
 
     def test_children(self):
-        node: TreeNode = TreeNode(2)
-        node.left = TreeNode(1)
+        node: BSTNode = BSTNode(2)
+        node.left = BSTNode(1)
 
         nodes = node.children()
 
@@ -36,9 +35,9 @@ class TestTreeNode(unittest.TestCase):
 
 class TestBinarySearchTree(unittest.TestCase):
     def test_equality(self):
-        tree1: BinarySearchTree = BinarySearchTree()
-        tree2: BinarySearchTree = BinarySearchTree()
-        tree3: BinarySearchTree = BinarySearchTree()
+        tree1: BST = BST()
+        tree2: BST = BST()
+        tree3: BST = BST()
 
         tree1.insert(1)
         tree1.insert(2)
@@ -56,8 +55,8 @@ class TestBinarySearchTree(unittest.TestCase):
         self.assertNotEqual(tree1, tree3)
 
     def test_is_empty(self):
-        tree: BinarySearchTree = BinarySearchTree()
-        tree2: BinarySearchTree = BinarySearchTree()
+        tree: BST = BST()
+        tree2: BST = BST()
 
         tree2.insert(1)
 
@@ -65,7 +64,7 @@ class TestBinarySearchTree(unittest.TestCase):
         self.assertFalse(tree2.is_empty())
 
     def test_insert(self):
-        tree: BinarySearchTree = BinarySearchTree()
+        tree: BST = BST()
 
         # Initialization works, so this mainly
         # tests tree node insertion
@@ -80,7 +79,7 @@ class TestBinarySearchTree(unittest.TestCase):
         self.assertEqual(tree.root.left.value, 0)
 
     def test_search_get(self):
-        tree: BinarySearchTree = BinarySearchTree()
+        tree: BST = BST()
 
         tree.insert(1)
         tree.insert(2)
@@ -93,7 +92,7 @@ class TestBinarySearchTree(unittest.TestCase):
         self.assertFalse(tree.search(-1))
 
     def test_in_order(self):
-        tree: BinarySearchTree = BinarySearchTree()
+        tree: BST = BST()
 
         tree.insert(1)
         tree.insert(2)
@@ -105,7 +104,7 @@ class TestBinarySearchTree(unittest.TestCase):
         self.assertEqual(tree.in_order(), ordered)
 
     def test_pre_order_traverse(self):
-        tree: BinarySearchTree = BinarySearchTree()
+        tree: BST = BST()
 
         tree.insert(1)
         tree.insert(2)
@@ -117,7 +116,7 @@ class TestBinarySearchTree(unittest.TestCase):
         self.assertEqual(tree.pre_order(), ordered)
 
     def test_post_order_traverse(self):
-        tree: BinarySearchTree = BinarySearchTree()
+        tree: BST = BST()
 
         tree.insert(1)
         tree.insert(2)
@@ -129,7 +128,7 @@ class TestBinarySearchTree(unittest.TestCase):
         self.assertEqual(tree.post_order(), ordered)
 
     def test_minimum_maximum(self):
-        tree: BinarySearchTree = BinarySearchTree()
+        tree: BST = BST()
 
         tree.insert(1)
         tree.insert(2)
@@ -140,7 +139,7 @@ class TestBinarySearchTree(unittest.TestCase):
         self.assertEqual(tree.maximum(), 3)
 
     def test_delete(self):
-        tree: BinarySearchTree[float] = BinarySearchTree()
+        tree: BST[float] = BST()
 
         tree.insert(1.0)
         tree.insert(2.0)

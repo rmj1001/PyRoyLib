@@ -1,9 +1,47 @@
-from .nodes.binary_tree_nodes import TreeNode
+class BSTException[T](Exception):
+    def __init__(self, message: T) -> None:
+        self.message = message
 
 
-class BinarySearchTree[T]:
-    def __init__(self, root: TreeNode[T] | None = None) -> None:
-        self.root: TreeNode[T] | None = root
+class BSTNode[T]:
+    def __init__(self, value: T):
+        self.value = value
+        self.left: "BSTNode[T] | None" = None
+        self.right: "BSTNode[T] | None" = None
+
+    def is_leaf(self):
+        """
+        Check if node doesn't have any children
+        :return: True if no children exist, False otherwise
+        """
+        return self.left is None and self.right is None
+
+    def has_children(self) -> bool:
+        """
+        Check if node has children
+        :return: True if children exist, False otherwise
+        """
+        return not self.is_leaf()
+
+    def children(self) -> list[BSTNode[T]]:
+        """
+        Create a list of child nodes
+        :return: List of child nodes
+        """
+        nodes = []
+
+        if self.left is not None:
+            nodes.append(self.left)
+
+        if self.right is not None:
+            nodes.append(self.right)
+
+        return nodes
+
+
+class BST[T]:
+    def __init__(self, root: BSTNode[T] | None = None) -> None:
+        self.root: BSTNode[T] | None = root
 
     def __eq__(self, other: object) -> bool:
         """
@@ -11,7 +49,7 @@ class BinarySearchTree[T]:
         :param other: Other binary search tree
         :return: True if other is BST and preorder lists are equal, False otherwise
         """
-        if not isinstance(other, BinarySearchTree):
+        if not isinstance(other, BST):
             return NotImplemented
 
         return self.pre_order() == other.pre_order()
@@ -23,7 +61,7 @@ class BinarySearchTree[T]:
         """
         return self.root is None
 
-    def insert(self, value: T) -> TreeNode[T] | None:
+    def insert(self, value: T) -> BSTNode[T] | None:
         """
         Insert node with given value at root of tree
         :param value: The value to insert
@@ -36,7 +74,7 @@ class BinarySearchTree[T]:
 
         return result
 
-    def insert_rec(self, node: TreeNode[T] | None, value: T) -> TreeNode[T]:
+    def insert_rec(self, node: BSTNode[T] | None, value: T) -> BSTNode[T]:
         """
         Recursively walk tree until space found to insert node
         :param node: The starting node to walk from
@@ -44,7 +82,7 @@ class BinarySearchTree[T]:
         :return: The inserted node
         """
         if node is None:
-            return TreeNode(value)
+            return BSTNode(value)
 
         if value < node.value:
             node.left = self.insert_rec(node.left, value)
@@ -62,7 +100,7 @@ class BinarySearchTree[T]:
         """
         return self.get(value) is not None
 
-    def search_rec(self, node: TreeNode[T] | None, value) -> bool:
+    def search_rec(self, node: BSTNode[T] | None, value) -> bool:
         """
         Determine if node or its descendants contain given value
         :param node: The node to start searching from
@@ -71,7 +109,7 @@ class BinarySearchTree[T]:
         """
         return self.get_rec(node, value) is not None
 
-    def get(self, value: T) -> TreeNode[T] | None:
+    def get(self, value: T) -> BSTNode[T] | None:
         """
         Get node from tree with given value
         :param value: The value to search for
@@ -79,7 +117,7 @@ class BinarySearchTree[T]:
         """
         return self.get_rec(self.root, value)
 
-    def get_rec(self, node: TreeNode[T] | None, value: T) -> TreeNode[T] | None:
+    def get_rec(self, node: BSTNode[T] | None, value: T) -> BSTNode[T] | None:
         """
         Get node or its descendant with given value
         :param node: The node to start searching from
@@ -106,7 +144,7 @@ class BinarySearchTree[T]:
         self.pre_order_rec(self.root, items)
         return items
 
-    def pre_order_rec(self, node: TreeNode[T] | None, items: list[T]) -> None:
+    def pre_order_rec(self, node: BSTNode[T] | None, items: list[T]) -> None:
         """
         Append a list of values from a node in pre-order.
         """
@@ -126,7 +164,7 @@ class BinarySearchTree[T]:
         self.in_order_rec(self.root, items)
         return items
 
-    def in_order_rec(self, node: TreeNode[T] | None, items: list[T]) -> None:
+    def in_order_rec(self, node: BSTNode[T] | None, items: list[T]) -> None:
         """
         Append a list of values from a node in-order.
         """
@@ -146,7 +184,7 @@ class BinarySearchTree[T]:
         self.post_order_rec(self.root, items)
         return items
 
-    def post_order_rec(self, node: TreeNode[T] | None, items: list[T]) -> None:
+    def post_order_rec(self, node: BSTNode[T] | None, items: list[T]) -> None:
         """
         Append a list of values from a node in post-order.
         """
@@ -157,7 +195,7 @@ class BinarySearchTree[T]:
         self.post_order_rec(node.right, items)
         items.append(node.value)
 
-    def minimum(self, node: TreeNode[T] | None = None) -> T:
+    def minimum(self, node: BSTNode[T] | None = None) -> T:
         """
         Get the minimum value in BST
         :param node: The starting node, or tree root if node is None
@@ -166,14 +204,14 @@ class BinarySearchTree[T]:
         if node is None:
             node = self.root
 
-        current: TreeNode[T] | None = node
+        current: BSTNode[T] | None = node
 
         while current.left is not None:
             current = current.left
 
         return current.value
 
-    def maximum(self, node: TreeNode[T] | None = None) -> T:
+    def maximum(self, node: BSTNode[T] | None = None) -> T:
         """
         Get the maximum value in BST
         :param node: The starting node, or tree root if node is None
@@ -182,7 +220,7 @@ class BinarySearchTree[T]:
         if node is None:
             node = self.root
 
-        current: TreeNode[T] | None = node
+        current: BSTNode[T] | None = node
 
         while current.right is not None:
             current = current.right
@@ -196,7 +234,7 @@ class BinarySearchTree[T]:
         """
         self.delete_rec(value, self.root)
 
-    def delete_rec(self, value: T, node: TreeNode[T] | None = None) -> TreeNode[T] | None:
+    def delete_rec(self, value: T, node: BSTNode[T] | None = None) -> BSTNode[T] | None:
         """
         Delete a node with given value, while preserving its descendants.
         :param value: The value to delete
