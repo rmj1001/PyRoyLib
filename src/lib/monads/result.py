@@ -264,12 +264,26 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 
     @classmethod
     def ok(cls, value: T) -> "Result[T,E]":
-        """Create a result with OK variant"""
+        """
+        Create a Result with Ok variant
+
+        Example: Result.ok(val) -> Result(val, ResultVariant.OK)
+
+        :param value: The value for Result to contain
+        :return: Result(value, ResultVariant.OK)
+        """
         return cls(value, ResultVariant.OK)
 
     @classmethod
     def err(cls, error: E) -> "Result[T,E]":
-        """Create a result with ERR variant"""
+        """
+        Create a Result with Err variant
+
+        Example: Result.err(val) -> Result(val, ResultVariant.ERR)
+
+        :param error: The error for Result to contain
+        :return: Result(value, ResultVariant.ERR)
+        """
         return cls(error, ResultVariant.ERR)
 
     def is_ok(self) -> bool:
