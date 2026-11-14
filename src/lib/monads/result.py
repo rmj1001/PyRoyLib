@@ -6,7 +6,7 @@ lazy from src.lib.abstract.iequality import IEquality
 lazy from src.lib.abstract.imonad import IMonad
 lazy from src.lib.abstract.irepr import IRepr
 lazy from src.lib.monads.exceptions.result_exception import ResultException
-lazy from src.lib.monads.option import Option, Some, Nada
+lazy from src.lib.monads.maybe import Maybe, Some, Nada
 
 
 class ResultVariant(StrEnum):
@@ -110,9 +110,9 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
             case _:
                 panic('Unreachable')
 
-    def err(self) -> Option[E]:
+    def err(self) -> Maybe[E]:
         """
-        Convert from Result[T, E] to Option[E]
+        Convert from Result[T, E] to Maybe[E]
 
         Examples:
 
@@ -470,16 +470,16 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
             case _:
                 panic('Unreachable')
 
-    def ok(self) -> Option[T]:
+    def ok(self) -> Maybe[T]:
         """
-        Converts from Result[T] to Option[T]
+        Converts from Result[T] to Maybe[T]
 
         Examples:
 
         - Ok(1).ok() -> Some(1)
         - Err(1).ok() -> Nada()
 
-        :return: Option
+        :return: Maybe
         """
         match self:
             case Ok(o):

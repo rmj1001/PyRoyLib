@@ -1,6 +1,6 @@
 import unittest
 
-lazy from src.lib.monads.option import Some, Nada
+lazy from src.lib.monads.maybe import Some, Nada
 lazy from src.lib.monads.result import Result, Ok, Err, ResultException, ResultVariant, resultify
 
 

@@ -1,7 +1,7 @@
 import unittest
 
 lazy from src.lib.monads.exceptions.option_exception import OptionException
-lazy from src.lib.monads.option import Option, Some, Nada
+lazy from src.lib.monads.maybe import Maybe, Some, Nada
 lazy from src.lib.monads.result import Ok, Err
 
 
@@ -10,16 +10,16 @@ class TestOption(unittest.TestCase):
 
     def test_init(self):
         """Tests option creation with some and Nada variants"""
-        opt = Option(None)
-        opt2 = Option(1)
+        opt = Maybe(None)
+        opt2 = Maybe(1)
 
-        self.assertIsInstance(opt, Option)
-        self.assertIsInstance(opt2, Option)
+        self.assertIsInstance(opt, Maybe)
+        self.assertIsInstance(opt2, Maybe)
 
     def test_eq(self):
         """Tests equality for variants"""
-        opt = Option(None)
-        opt2 = Option(1)
+        opt = Maybe(None)
+        opt2 = Maybe(1)
 
         # Test Nada variants
         self.assertEqual(opt, Nada())
@@ -36,9 +36,9 @@ class TestOption(unittest.TestCase):
 
     def test_bool(self):
         """Tests bool(Option)"""
-        self.assertEqual(bool(Option(True)), True)
-        self.assertEqual(bool(Option(False)), True)
-        self.assertEqual(bool(Option(None)), False)
+        self.assertEqual(bool(Maybe(True)), True)
+        self.assertEqual(bool(Maybe(False)), True)
+        self.assertEqual(bool(Maybe(None)), False)
 
     def test_is_some(self):
         """Tests Option.is_some()"""
@@ -223,8 +223,8 @@ class TestOption(unittest.TestCase):
 
     def test_match(self):
         """Test pattern matching"""
-        opt1: Option[int] = Some(1)
-        opt2: Option[int] = Nada()
+        opt1: Maybe[int] = Some(1)
+        opt2: Maybe[int] = Nada()
 
         match opt1:
             case Some(val):

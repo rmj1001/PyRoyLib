@@ -1,6 +1,6 @@
 import sys
 
-from monads.option import Option, some, nada
+from monads.maybe import Maybe, some, nada
 
 # Try to import necessary PIP packages
 try:
@@ -39,7 +39,7 @@ class Scraper:
 
         return True
 
-    def scrape_selector(self, selector: str) -> Option[str]:
+    def scrape_selector(self, selector: str) -> Maybe[str]:
         """Scrape a website and get text from an element using specified selector"""
 
         # Parse website as a BeautifulSoup object and get tags from the passed selector

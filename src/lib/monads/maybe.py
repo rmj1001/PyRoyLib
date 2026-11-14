@@ -8,7 +8,7 @@ lazy from src.lib.monads.exceptions.option_exception import OptionException
 lazy from src.lib.monads.result import Result, Ok, Err
 
 
-class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
+class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
     """Rust-style option"""
     __match_args__ = ('value',)
 
@@ -67,7 +67,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         :param other: Second Option to compare with
         :return: True if both Options values are equal, else False
         """
-        if not isinstance(other, Option):
+        if not isinstance(other, Maybe):
             return NotImplemented
 
         return (self.value == other.value) or (self.value is None and other.value is None)
@@ -89,7 +89,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         :param other: Second Option to compare with
         :return: True if both Options values are not equal, else False
         """
-        if not isinstance(other, Option):
+        if not isinstance(other, Maybe):
             return NotImplemented
 
         return self.value != other.value
@@ -169,7 +169,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         return fn(*args, **kwargs)
 
-    def or_else(self, fn: Callable, *args, **kwargs) -> "Option[T | Callable[[T], T]]":
+    def or_else(self, fn: Callable, *args, **kwargs) -> "Maybe[T | Callable[[T], T]]":
         """
         Returns an Option with Option.value being either original Option.value or the result of fn
 
@@ -196,7 +196,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
     # -- IFunctor Implementation
 
-    def flatten(self) -> 'Option[T]':
+    def flatten(self) -> 'Maybe[T]':
         """
         Return innermost Option in nested Options
 
@@ -213,14 +213,14 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         if self.is_nada():
             return Nada()
 
-        current: Option[T] = Some(self.value)
+        current: Maybe[T] = Some(self.value)
 
-        while isinstance(current.value, Option):
-            current: Option[T] = Some(current.value.value)
+        while isinstance(current.value, Maybe):
+            current: Maybe[T] = Some(current.value.value)
 
         return current
 
-    def map(self, fn: Callable[[T], T]) -> 'Option[T]':
+    def map(self, fn: Callable[[T], T]) -> 'Maybe[T]':
         """
         Create an Option where Option.value = fn(Option.value).
 
@@ -238,7 +238,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         return Some(fn(self.value))
 
-    def flatmap(self, fn: Callable[[T], T]) -> 'Option[Callable[[T], T]]':
+    def flatmap(self, fn: Callable[[T], T]) -> 'Maybe[Callable[[T], T]]':
         """
         Flatten an Option and map it with a function
 
@@ -258,7 +258,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
     # --- END Interface Implementations
 
     @classmethod
-    def some(cls, value: T) -> "Option[T]":
+    def some(cls, value: T) -> "Maybe[T]":
         """
         Create an Option with a non-None value
 
@@ -277,7 +277,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         return cls(value)
 
     @classmethod
-    def nada(cls) -> "Option[T]":
+    def nada(cls) -> "Maybe[T]":
         """
         Create an Option with None value
 
@@ -390,7 +390,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         return Ok(self.value)
 
-    def filter(self, predicate: Callable[[T], bool]) -> "Option[T]":
+    def filter(self, predicate: Callable[[T], bool]) -> "Maybe[T]":
         """
         Return Some(self.value) if predicate returns True, else return Nada()
 
@@ -413,7 +413,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         return Nada()
 
-    def other_if_some(self, other: "Option[T]") -> "Option[T]":
+    def other_if_some(self, other: "Maybe[T]") -> "Maybe[T]":
         """
         Return Nada() if Option.value is None, otherwise return a different Option
 
@@ -431,7 +431,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         return self
 
-    def other_if_nada(self, other: "Option[T]") -> "Option[T]":
+    def other_if_nada(self, other: "Maybe[T]") -> "Maybe[T]":
         """
         Return another Option if Option.value is None, otherwise return original Option
 
@@ -449,7 +449,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         return self
 
-    def zip(self, other: "Option[T]") -> "Option[tuple[T, T]]":
+    def zip(self, other: "Maybe[T]") -> "Maybe[tuple[T, T]]":
         """
         Return tuple in an Option if both Options are not Nada(), else return Nada()
 
@@ -471,7 +471,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         return Nada()
 
-    def unzip(self) -> "tuple[Option[T], Option[T]]":
+    def unzip(self) -> "tuple[Maybe[T], Maybe[T]]":
         """
         Return a tuple of Options from an Option with an internal tuple value
 
@@ -501,7 +501,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         return first_opt, second_opt
 
 
-class Some[T](Option[T]):
+class Some[T](Maybe[T]):
     """Creates an Option[T] with a non-None value"""
 
     def __init__(self, value: T):
@@ -511,7 +511,7 @@ class Some[T](Option[T]):
         super().__init__(value)
 
 
-class Nada[T](Option[T]):
+class Nada[T](Maybe[T]):
     """Creates an Option[T] with a None value"""
 
     def __init__(self):
