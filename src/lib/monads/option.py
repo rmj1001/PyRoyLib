@@ -67,6 +67,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         - Some(10) == Some(10) -> True
 
         - Nada() == Nada() -> True
+
         :param other: Second Option to compare with
         :return: True if both Options values are equal, else False
         """
