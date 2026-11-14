@@ -29,14 +29,11 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         Examples:
 
         - bool(Ok(10)) -> True
-
         - bool(Err(10)) -> False
 
         :return: True if state is Ok, else False
         """
         return self.is_ok()
-
-    # -- IRepr Implementation
 
     def __repr__(self):
         """
@@ -45,14 +42,11 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         Examples:
 
         - str(Ok(10)) -> 'Ok(10)'
-
         - str(Err(10)) -> 'Err(10)'
 
         :return: str(Result)
         """
         return f'{self.state.value}({self.value})'
-
-    # -- IEquality Implementation
 
     def __eq__(self, other: object) -> bool:
         """
@@ -61,11 +55,8 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         Examples:
 
         - Ok(10) == Ok(10) -> True
-
         - Ok(10) == Ok(15) -> False
-
         - Ok(10) == Err(10) -> False
-
         - Err(10) == Err(10) -> True
 
         :param other: Second Result to compare with
@@ -83,13 +74,9 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         Examples:
 
         - Ok(1) != Ok(10) -> True
-
         - Ok(1) != Ok(1) -> False
-
         - Err(1) != Err(10) -> True
-
         - Err(10) != Err(10) -> False
-
         - Ok(1) != Err(1) -> True
 
         :param other: Second Result to compare with
@@ -100,262 +87,212 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 
         return self.value != other.value or self.state != other.state
 
-    # -- IMonad Implementation
+    def and_then[U](self, fn: Callable[[T], Result[U, E]]) -> "Result[U,E]":
+        """
+        Return a new Result created from fn return if Result is Ok, else return self
 
-    def expect(self, message: E) -> T:
+        Examples:
+
+        - Ok(1).and_then(lambda x: x + 1) -> Ok(11)
+        - Err(1).and_then(lambda x: x + 1) -> Err(1)
+
+        :param fn: function to create new Result from
+        :return: self if self is Err, else Ok(fn(*args, **kwargs))
+        """
+        match self:
+            case Ok(o):
+                return fn(o)
+
+            case Err(_):
+                return self
+
+            case _:
+                raise ResultException('Unreachable')
+
+    def err(self) -> Option[E]:
+        """
+        Convert from Result[T, E] to Option[E]
+
+        Examples:
+
+
+        - Ok(1).err() -> Nada()
+        - Err(1).err() -> Some(1)
+
+        :return:
+        """
+        match self:
+            case Ok(_):
+                return Nada()
+            case Err(e):
+                return Some(e)
+            case _:
+                raise ResultException('Unreachable')
+
+    def expect(self, message: str) -> T:
         """
         Get Result.value if Result.state if Ok, else raise ResultException with custom message
 
         Examples:
 
         - Ok(1).expect('Error') -> 1
-
-        - Err(1).expect('Error') -> raise ResultException('Error')
+        - Err(1).expect('Error') -> ResultException('Error')
 
         :param message: Custom error message
         :return: Result.value
         """
         match self:
-            case Ok(value):
-                return value
-
+            case Ok(o):
+                return o
             case Err(_):
                 raise ResultException(message)
-
             case _:
                 raise ResultException('Unreachable')
 
-    def unwrap(self) -> T:
+    def expect_err(self, message: E) -> E:
         """
-        Get Result.value if Result.state is Ok, or raise a ResultException
+        Returns contained Err value, or raises ResultException with custom message
 
         Examples:
 
-        - Ok(1).unwrap() -> 1
+        - Ok(1).expect_err('Error') -> raise ResultException('Error')
+        - Err(1).expect_err('Error') -> 1
 
-        - Err('This is not OK.').unwrap() -> raise ResultException('This is not OK.')
-
-        :return: Result.value
-        """
-        match self:
-            case Ok(value):
-                return value
-
-            case Err(value):
-                raise ResultException(value)
-
-            case _:
-                raise ResultException('Unreachable')
-
-    def unwrap_or(self, default: T) -> T:
-        """
-        Get Result.value if Result.state is Ok, or else a default value
-
-        Examples:
-
-        - Ok(1).unwrap_or(5) -> 1
-
-        - Err('Error').unwrap_or(5) -> 5
-
-        :param default: Default value
-        :return: Result.value or default value
-        """
-        match self:
-            case Ok(value):
-                return value
-
-            case Err(_):
-                return default
-
-            case _:
-                raise ResultException('Unreachable')
-
-    def unwrap_or_else(self, fn: Callable, *args, **kwargs) -> T | Callable:
-        """
-        Get Result.value if Result.state is Ok, or else returned value of function
-
-        Examples:
-
-        - Ok(1).unwrap_or_else(lambda: 100 + 5) -> 1
-
-        - Err('Error').unwrap_or_else(lambda: 100 + 5) -> 105
-
-        :param fn: function to get a value from
-        :param args: sequential arguments to pass to fn
-        :param kwargs: keyword arguments to pass to fn
-        :return: Result.value or function return
-        """
-        match self:
-            case Ok(value):
-                return value
-
-            case Err(_):
-                return fn(*args, **kwargs)
-
-            case _:
-                raise ResultException('Unreachable')
-
-    def or_else(self, fn: Callable, *args, **kwargs) -> "Result[T, Callable]":
-        """
-        Returns Ok() with original value if Result is Ok, or else an Error with its
-        value sourced from called function
-
-        Example:
-
-        - Ok(1).or_else(lambda 100 + 50) -> Ok(1)
-
-        - Err(1).or_else(lambda 100 + 50) -> Err(150)
-
-        :param fn: function to get a value from
-        :param args: sequential arguments to pass to fn
-        :param kwargs: keyword arguments to pass to fn
-        :return: self or Err(fn(*args, **kwargs))
-        """
-        match self:
-            case Ok(value):
-                return Ok(value)
-
-            case Err(_):
-                return Err(fn(*args, **kwargs))
-
-            case _:
-                raise ResultException('Unreachable')
-
-    # -- IFunctor Implementation
-
-    def flatten(self) -> "Result[T, E]":
-        """
-        Return innermost Result in nested Results
-
-        Examples:
-
-        - Ok(Ok(Ok(1))).flatten() -> Ok(1)
-
-        - Ok(1).flatten() -> Ok(1)
-
-        - Err(Err(Err(1))).flatten() -> Err(1)
-
-        - Err(1).flatten() -> Err(1)
-
-        - Err(Ok(1)).flatten() -> Ok(1)
-
-        - Ok(Err(1)).flatten() -> Err(1)
-
-        :return: Innermost Result
-        """
-        current = Result(self.value, self.state)
-
-        while isinstance(current.value, Result):
-            current.state = current.value.state
-            current.value = current.value.value
-
-        return current
-
-    def map(self, fn: Callable[[T], T]) -> "Result[T, E]":
-        """
-        Create a Result where Result.value = fn(Result.value) if Result.state is Ok
-
-        Examples:
-
-        - Ok(1).map(lambda x: x + 1) -> Ok(2)
-
-        - Err(1).map(lambda x: x + 1) -> Err(1)
-
-        :param fn: Function that takes one argument T and returns another T
-        :return: Mapped Result
-        """
-        match self:
-            case Ok(value):
-                return Ok(fn(value))
-
-            case Err(value):
-                return Err(value)
-
-            case _:
-                raise ResultException('Unreachable')
-
-    def flatmap(self, fn: Callable[[T], T]) -> "Result[T, E]":
-        """
-        Flatten a Result and map it with a function
-
-        Examples:
-
-        - Ok(Ok(1)).flatmap(lambda x: x + 1) -> Ok(2)
-
-        - Ok(10).flatmap(lambda x: x + 1) -> Ok(11)
-
-        - Err(Err('Error')).flatmap(lambda x: x + 1) -> Error('Error')
-
-        :param fn: Function that takes one argument T and returns another T
-        :return: Flattened and Mapped Result
-        """
-        return self.flatten().map(fn)
-
-    # -- END Interface Implementations
-
-    @classmethod
-    def ok(cls, value: T) -> "Result[T,E]":
-        """
-        Create a Result with Ok variant
-
-        Example: Result.ok(val) -> Result(val, ResultVariant.OK)
-
-        :param value: The value for Result to contain
-        :return: Result(value, ResultVariant.OK)
-        """
-        return cls(value, ResultVariant.OK)
-
-    @classmethod
-    def err(cls, value: E) -> "Result[T,E]":
-        """
-        Create a Result with Err variant
-
-        Example: Result.err(val) -> Result(val, ResultVariant.ERR)
-
-        :param value: The error for Result to contain
-        :return: Result(value, ResultVariant.ERR)
-        """
-        return cls(value, ResultVariant.ERR)
-
-    def is_ok(self) -> bool:
-        """
-        Check that Result.state is Ok
-
-        Example:
-
-        - Ok(1).is_ok() -> True
-
-        - Err(1).is_ok() -> False
-
-        :return: True if Result.state is Ok, else False
+        :param message: Exception message
+        :return: Error value
         """
         match self:
             case Ok(_):
-                return True
+                raise ResultException(message)
 
-            case Err(_):
-                return False
+            case Err(e):
+                return e
 
             case _:
                 raise ResultException('Unreachable')
 
-    def is_ok_and(self, predicate: Callable[[T], bool]) -> bool:
+    def flatten(self, recurse: bool = False) -> "Result[T, E]":
         """
-        Check that Result.state is Ok, and predicate function
-        returns True.
+        Convert Result[Result[T,E],E] to Result[T,E].
+        Only flattens one layer at a time unless recurse is True
 
-        Examples
+        Examples:
 
-        - Ok(2).is_ok_and(lambda x: x % 2 == 0) -> True
+        - Ok(Ok(Ok(1))).flatten() -> Ok(Ok(1))
+        - Ok(Ok(Ok(1))).flatten(recurse=True) -> Ok(1)
+        - Ok(1).flatten() -> Ok(1)
+        - Err(Err(Err(1))).flatten() -> Err(Err(1))
+        - Err(1).flatten() -> Err(1)
+        - Err(Ok(1)).flatten() -> Ok(1)
+        - Ok(Err(1)).flatten() -> Err(1)
 
-        - Ok(5).is_ok_and(lambda x: x % 2 == 0) -> False
-
-        - Err().is_err_and(lambda x: x % 2 == 0) -> False
-
-        :param predicate: Function taking Result.value as only argument, returns bool
-        :return: True if Result.state is Ok and predicate returns True, else False
+        :return: Inner Result
         """
-        return self.is_ok() and predicate(self.value)
+
+        match self:
+            case Ok(o):
+                if recurse and isinstance(o, Result):
+                    return o.flatten(recurse)
+                elif isinstance(o, Result):
+                    return o
+                else:
+                    return self
+
+            case Err(e):
+                if recurse and isinstance(e, Result):
+                    return e.flatten(recurse)
+                elif isinstance(e, Result):
+                    return e
+                else:
+                    return self
+
+            case _:
+                raise ResultException('Unreachable')
+
+    def flatmap(self, fn: Callable[[T], T], recurse: bool) -> "Result[T, E]":
+        """
+        Flatten a Result and map it with a function
+
+        Ex. Function: add_one = lambda x: x + 1
+
+        Examples:
+
+        - Ok(Ok(1)).flatmap(add_one,True) -> Ok(2)
+        - Ok(10).flatmap(add_one) -> Ok(11)
+        - Err(Err('Error')).flatmap(add_one,True) -> Error('Error')
+
+        :param fn: Function that takes one argument T and returns another T
+        :param recurse: Recursively flatten or just flatten once
+        :return: Flattened and Mapped Result
+        """
+        return self.flatten(recurse).map(fn)
+
+    def inspect(self, fn: Callable[[T], None]) -> "Result[T, E]":
+        """
+        Calls fn with contained value if Ok. Always returns original Result.
+
+        Examples:
+
+        - Ok(1).inspect(lambda x: print(x)) -> prints 1 to STDOUT
+        - Err(1).inspect(lambda x: print(x)) -> does nothing
+
+        :param fn: function that takes one argument T and returns None
+        :return: Original result
+        """
+        match self:
+            case Ok(e):
+                fn(e)
+
+            case Err(_):
+                pass
+
+        return self
+
+    def inspect_err(self, fn: Callable[[E], None]) -> Result[T, E]:
+        """
+        Calls fn with contained value if Err. Always returns original Result.
+
+        Examples:
+
+        - Ok(1).inspect_err(lambda e: print(e)) -> Does nothing
+        - Err(1).inspect_err(lambda e: print(e)) -> prints 1 to STDOUT
+
+        :return: Original result
+        """
+        match self:
+            case Ok(_):
+                pass
+
+            case Err(e):
+                fn(e)
+
+        return self
+
+    def into_ok(self) -> "Result[T, E]":
+        """
+        Convert a Result to an Ok variant, regardless of its previous state.
+
+        Examples:
+
+        - Ok(1).into_ok() -> Ok(1)
+        - Err(1).into_ok() -> Ok(1)
+
+        :return: Ok()
+        """
+        return Ok(self.value)
+
+    def into_err(self) -> "Result[T, E]":
+        """
+        Convert a Result to an Err variant, regardless of its previous state.
+
+        Examples:
+
+        - Ok(1).into_err() -> Err(1)
+        - Err(1).into_err() -> Err(1)
+
+        :return: Ok()
+        """
+        return Err(self.value)
 
     def is_err(self) -> bool:
         """
@@ -364,7 +301,6 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         Example:
 
         - Ok(1).is_err() -> False
-
         - Err(1).is_err() -> True
 
         :return: True if Result.state is Err, else False
@@ -387,9 +323,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         Examples
 
         - Ok(2).is_err_and(lambda x: x % 2 == 0) -> False
-
         - Ok(5).is_err_and(lambda x: x % 2 == 0) -> False
-
         - Err('Error').is_err_and(lambda x: x == 'Error') -> True
 
         :param predicate: Function taking Result.value as only argument, returns bool
@@ -397,174 +331,181 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         """
         return self.is_err() and predicate(self.value)
 
-    def into_option(self) -> Option[T]:
+    def is_ok(self) -> bool:
         """
-        Create an Option from Result. Ok Results convert to Some Options,
-        Err Results convert to Nada Options
+        Check that Result.state is Ok
 
-        Examples:
+        Example:
 
-        - Ok(1).into_option() -> Some(1)
+        - Ok(1).is_ok() -> True
+        - Err(1).is_ok() -> False
 
-        - Err(1).into_option() -> Nada()
-
-        :return: Option
+        :return: True if Result.state is Ok, else False
         """
         match self:
-            case Ok(value):
-                return Some(value)
+            case Ok(_):
+                return True
 
             case Err(_):
-                return Nada()
+                return False
 
             case _:
                 raise ResultException('Unreachable')
 
-
-    def map_ok_or(self, fn: Callable[[T], T], default: T) -> "Result[T | Callable[[T], T],E]":
+    def is_ok_and(self, predicate: Callable[[T], bool]) -> bool:
         """
-        Convert Result to Ok(default) if Err, else map function to Result
+        Check if Result is Ok and predicate function returns True
+
+        Example Predicate: is_even = lambda x: x % 2 == 0
 
         Examples:
 
-        - Ok(1).map_or(lambda x: x + 1, 10) -> Ok(2)
+        - Ok(2).is_ok_and(is_even) -> True
+        - Ok(1).is_ok_and(is_even) -> False
+        - Err(1).is_ok_and(is_even) -> False
 
-        - Err(1).map_or(lambda x: x + 1, 10) -> Ok(10)
+        :param predicate: function that takes Result.value as only argument, returns bool
+        :return: True if Ok and predicate function returns True, else False
+        """
+        match self:
+            case Ok(o):
+                return predicate(o)
+            case Err(_):
+                return False
+            case _:
+                raise ResultException('Unreachable')
+
+    def map[U](self, fn: Callable[[T], U]) -> "Result[U, E]":
+        """
+        Create a Result where Result.value = fn(Result.value) if Result.state is Ok
+
+        Examples:
+
+        - Ok(1).map(lambda x: x + 1) -> Ok(2)
+        - Err(1).map(lambda x: x + 1) -> Err(1)
+
+        :param fn: Function that takes one argument T and returns another T
+        :return: Mapped Result
+        """
+        match self:
+            case Ok(o):
+                return Ok(fn(o))
+
+            case Err(_):
+                return self
+
+            case _:
+                raise ResultException('Unreachable')
+
+    def map_err[F](self, fn: Callable[[E], F]) -> "Result[T,F]":
+        """
+        Return self if Ok(), else map Result to Err(fn(Result.value))
+
+        Examples:
+
+        - Ok(1).map_err(lambda x: x + 1) -> 1
+        - Err(1).map_err(lambda x: x + 1) -> 2
+
+        :param fn: Function that takes one argument E and returns another E
+        :return: self or mapped Err Result
+        """
+        match self:
+            case Ok(_):
+                return self
+
+            case Err(e):
+                return Err(fn(e))
+
+            case _:
+                raise ResultException('Unreachable')
+
+    def map_or[U](self, fn: Callable[[T], U], default: U) -> U:
+        """
+        Convert Result to fn(T) if Ok, else convert to default
+
+        Examples:
+
+        - Ok(1).map_or(lambda x: x + 1, 3) -> 2
+        - Err(1).map_or(lambda x: x + 1, 3) -> 3
 
         :param fn: Function that takes one argument T and returns another T
         :param default: Default value
-        :return: Ok(default) or mapped Ok Result
+        :return: default or fn(Result.value)
         """
         match self:
-            case Ok(value):
-                return Ok(fn(value))
+            case Ok(o):
+                return fn(o)
 
             case Err(_):
-                return Ok(default)
+                return default
 
             case _:
                 raise ResultException('Unreachable')
 
-    def map_ok_or_else(self, fn: Callable[[T], T], default: Callable, *args,
-                       **kwargs) -> "Result[Callable[[T], T],Callable[[E], E]]":
+    def map_or_else[U](self, fn: Callable[[T], U], default: Callable[[E], U]) -> U:
         """
-        Convert Result to Ok(default(*args, **kwargs)) if Err, else map function to Result
+        Convert Result to default(Result.value) if Err, else fn(Result.value)
 
         Examples:
 
-        - Ok(1).map_or(lambda x: x + 1, lambda x: x + 5, 10) -> Ok(2)
-
-        - Err(1).map_or(lambda x: x + 1, lambda x: x + 5, 10) -> Ok(15)
+        - Ok(1).map_or(lambda x: x + 1, lambda x: x + 5) -> 2
+        - Err(1).map_or(lambda x: x + 1, lambda x: x + 5) -> 6
 
         :param fn: Function that takes one argument T and returns another T
         :param default: Default function with *args and **kwargs passed in
         :return: Ok(default(*args, **kwargs)) or mapped Ok Result
         """
         match self:
-            case Ok(value):
-                return Ok(fn(value))
+            case Ok(o):
+                return fn(o)
 
+            case Err(e):
+                return default(e)
+
+            case _:
+                raise ResultException('Unreachable')
+
+    def ok(self) -> Option[T]:
+        """
+        Converts from Result[T] to Option[T]
+
+        Examples:
+
+        - Ok(1).ok() -> Some(1)
+        - Err(1).ok() -> Nada()
+
+        :return: Option
+        """
+        match self:
+            case Ok(o):
+                return Some(o)
             case Err(_):
-                return Ok(default(*args, **kwargs))
-
+                return Nada()
             case _:
                 raise ResultException('Unreachable')
 
-    def map_err(self, fn: Callable[[E], E]) -> "Result[T, E | Callable[[E], E]]":
+    def or_else[F](self, fn: Callable[[E], Result[T, F]]) -> "Result[T, F]":
         """
-        Return self if Ok(), else map Result to Err(fn(Result.value))
+        Returns Ok() with original value if Result is Ok, or else an Error with its
+        value sourced from called function
 
-        Examples:
+        Example:
 
-        - Ok(1).map_err(lambda x: x + 1) -> Ok(1)
+        - Ok(1).or_else(lambda e: 150) -> Ok(1)
+        - Err(1).or_else(lambda e: 150) -> Err(150)
 
-        - Err(1).map_err(lambda x: x + 1) -> Err(2)
-
-        :param fn: Function that takes one argument E and returns another E
-        :return: self or mapped Err Result
+        :param fn: function to get a value from
+        :return: self or Err(fn(*args, **kwargs))
         """
         match self:
-            case Ok(value):
-                return Ok(value)
+            case Ok(o):
+                return Ok(o)
 
-            case Err(value):
-                return Err(fn(value))
-
-            case _:
-                raise ResultException('Unreachable')
-
-    def expect_err(self, message: E) -> E:
-        """
-        Return contained error if Err, else raises exception with message
-
-        Examples:
-
-        - Ok(1).expect_err('Not an error') -> raise ResultException('Not an error')
-
-        - Err(1).expect_err('Not an error') -> 1
-
-        :param message: Exception message
-        :return: Error value
-        """
-        match self:
-            case Ok(_):
-                raise ResultException(message)
-
-            case Err(value):
-                return value
+            case Err(e):
+                return fn(e)
 
             case _:
                 raise ResultException('Unreachable')
-
-    def unwrap_err(self) -> T:
-        """
-        Return contained error if Err, else raises exception
-
-        Examples:
-
-        - Ok(1).unwrap_err() -> raise ResultException('Result is not an error.')
-
-        - Err(1).unwrap_err() -> 1
-
-        :return: Error value
-        """
-        match self:
-            case Ok(_):
-                raise ResultException('Result is not an error.')
-
-            case Err(value):
-                return value
-
-            case _:
-                raise ResultException('Unreachable')
-
-    def into_ok(self) -> "Result[T, E]":
-        """
-        Convert a Result to an Ok variant, regardless of its previous state.
-
-        Examples:
-
-        - Ok(1).into_ok() -> Ok(1)
-
-        - Err(1).into_ok() -> Ok(1)
-
-        :return: Ok()
-        """
-        return Ok(self.value)
-
-    def into_err(self) -> "Result[T, E]":
-        """
-        Convert a Result to an Err variant, regardless of its previous state.
-
-        Examples:
-
-        - Ok(1).into_err() -> Err(1)
-
-        - Err(1).into_err() -> Err(1)
-
-        :return: Ok()
-        """
-        return Err(self.value)
 
     def other_if_ok(self, other: "Result[T, E]") -> "Result[T, E]":
         """
@@ -573,7 +514,6 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         Examples:
 
         - Ok(1).other_if_ok(Err(1)) -> Err(1)
-
         - Err(1).other_if_ok(Ok(1)) -> Err(1)
 
         :param other: Other Result
@@ -583,33 +523,8 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
             case Ok(_):
                 return other
 
-            case Err(value):
-                return Err(value)
-
-            case _:
-                raise ResultException('Unreachable')
-
-    def and_then(self, fn: Callable, *args, **kwargs) -> "Result[T | Callable, E]":
-        """
-        Return a new Result created from fn return if Result is Ok, else return self
-
-        Examples:
-
-        - Ok(1).and_then(lambda: 10) -> Ok(10)
-
-        - Err(1).and_then(lambda: 10) -> Err(1)
-
-        :param fn: function to create new Result from
-        :param args: Sequential arguments passed to fn
-        :param kwargs: Keyword arguments passed to fn
-        :return: self if self is Err, else Ok(fn(*args, **kwargs))
-        """
-        match self:
-            case Ok(_):
-                return Ok(fn(*args, **kwargs))
-
-            case Err(value):
-                return Err(value)
+            case Err(e):
+                return Err(e)
 
             case _:
                 raise ResultException('Unreachable')
@@ -621,18 +536,103 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         Examples:
 
         - Ok(1).other_if_err(Err(1)) -> Ok(1)
-
         - Err(1).other_if_err(Ok(1)) -> Ok(1)
 
         :param other: Other Result
         :return: other if self is Err, else self
         """
         match self:
-            case Ok(value):
-                return Ok(value)
+            case Ok(o):
+                return Ok(o)
 
             case Err(_):
                 return other
+
+            case _:
+                raise ResultException('Unreachable')
+
+    def unwrap(self) -> T:
+        """
+        Get Result.value if Result.state is Ok, or raise a ResultException
+
+        Examples:
+
+        - Ok(1).unwrap() -> 1
+        - Err('This is not OK.').unwrap() -> raise ResultException('This is not OK.')
+
+        :return: Result.value
+        """
+        match self:
+            case Ok(o):
+                return o
+
+            case Err(e):
+                raise ResultException(e)
+
+            case _:
+                raise ResultException('Unreachable')
+
+    def unwrap_err(self) -> E:
+        """
+        Return contained error if Err, else raises exception
+
+        Examples:
+
+        - Ok(1).unwrap_err() -> raise ResultException('Result is not an error.')
+        - Err(1).unwrap_err() -> 1
+
+        :return: Error value
+        """
+        match self:
+            case Ok(_):
+                raise ResultException('Result is not an error.')
+
+            case Err(e):
+                return e
+
+            case _:
+                raise ResultException('Unreachable')
+
+    def unwrap_or(self, default: T) -> T:
+        """
+        Get Result.value if Result.state is Ok, or else a default value
+
+        Examples:
+
+        - Ok(1).unwrap_or(5) -> 1
+        - Err('Error').unwrap_or(5) -> 5
+
+        :param default: Default value
+        :return: Result.value or default value
+        """
+        match self:
+            case Ok(o):
+                return o
+
+            case Err(_):
+                return default
+
+            case _:
+                raise ResultException('Unreachable')
+
+    def unwrap_or_else(self, fn: Callable[[E], T]) -> T:
+        """
+        Return contained Ok value or compute it from fn(Result.value)
+
+        Examples:
+
+        - Ok(1).unwrap_or_else(lambda x: x + 'Test') -> 1
+        - Err('Error').unwrap_or_else(lambda x: x + 'Test') -> 'ErrorTest'
+
+        :param fn: function to get a value from
+        :return: Result.value or fn(Result.value)
+        """
+        match self:
+            case Ok(o):
+                return o
+
+            case Err(e):
+                return fn(e)
 
             case _:
                 raise ResultException('Unreachable')

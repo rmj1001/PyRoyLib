@@ -42,15 +42,17 @@ class TestResult(unittest.TestCase):
 
     def test_ok(self):
         """Test Result.ok()"""
-        res = Result.ok(1)
+        res = Ok(1)
 
-        self.assertEqual(res, Ok(1))
+        self.assertEqual(res.value, 1)
+        self.assertEqual(res.state, ResultVariant.OK)
 
     def test_err(self):
         """Test Result.err()"""
-        res = Result.err("Error")
+        res = Err("Error")
 
-        self.assertEqual(res, Err("Error"))
+        self.assertEqual(res.value, 'Error')
+        self.assertEqual(res.state, ResultVariant.ERR)
 
     def test_is_ok(self):
         """Test Result.is_ok()"""
@@ -96,10 +98,14 @@ class TestResult(unittest.TestCase):
         ok3 = Ok(Err(1))
         err = Err(Ok(1))
 
-        self.assertEqual(ok1.flatten(), Ok(1))
-        self.assertEqual(ok2.flatten(), Ok(1))
-        self.assertEqual(ok3.flatten(), Err(1))
-        self.assertEqual(err.flatten(), Ok(1))
+        self.assertEqual(ok1.flatten(True), Ok(1))
+        self.assertEqual(ok2.flatten(True), Ok(1))
+        self.assertEqual(ok3.flatten(True), Err(1))
+        self.assertEqual(err.flatten(True), Ok(1))
+
+        ok4 = Ok(Ok(Err(5)))
+
+        self.assertEqual(ok4.flatten(False), Ok(Err(5)))
 
     def test_map(self):
         """Test Result.map()"""
@@ -114,19 +120,20 @@ class TestResult(unittest.TestCase):
         """Test Result.map_or()"""
         res1 = Ok(1)
         res2 = Err("Error")
-        func = lambda x: x * 3
+        success = lambda x: x * 3
 
-        self.assertEqual(res1.map_ok_or(func, 5), Ok(3))
-        self.assertEqual(res2.map_ok_or(func, 5), Ok(5))
+        self.assertEqual(res1.map_or(success, 5), 3)
+        self.assertEqual(res2.map_or(success, 5), 5)
 
     def test_map_or_else(self):
         """Test Result.map_or_else()"""
         res1 = Ok(1)
         res2 = Err("Error")
-        func = lambda x: x * 3
+        success = lambda x: x * 3
+        failure = lambda x: x + 'Test'
 
-        self.assertEqual(res1.map_ok_or_else(func, func, 5), Ok(3))
-        self.assertEqual(res2.map_ok_or_else(func, func, 5), Ok(15))
+        self.assertEqual(res1.map_or_else(success, failure), 3)
+        self.assertEqual(res2.map_or_else(success, failure), 'ErrorTest')
 
     def test_map_err(self):
         """Test Result.map_err()"""
@@ -210,8 +217,17 @@ class TestResult(unittest.TestCase):
         res2 = Err("Error")
         func = lambda x: x * 3
 
-        self.assertEqual(res1.and_then(func, 3), Ok(9))
-        self.assertEqual(res2.and_then(func, 3), Err("Error"))
+        self.assertEqual(res1.and_then(func), Ok(3))
+        self.assertEqual(res2.and_then(func), Err("Error"))
+
+    def test_or_else(self):
+        """Test Result.or_else()"""
+        res1 = Ok(1)
+        res2 = Err("Error")
+        func = lambda x: Ok(x * 3)
+
+        self.assertEqual(res1.or_else(func), Ok(1))
+        self.assertEqual(res2.or_else(func), Ok('ErrorErrorError'))
 
     def test_other_if_err(self):
         """Test Result.other_if_err()"""
@@ -221,15 +237,6 @@ class TestResult(unittest.TestCase):
 
         self.assertEqual(res1.other_if_err(res2), res1)
         self.assertEqual(res3.other_if_err(res2), res2)
-
-    def test_or_else(self):
-        """Test Result.or_else()"""
-        res1 = Ok(1)
-        res2 = Err("Error")
-        func = lambda x: x * 3
-
-        self.assertEqual(res1.or_else(func, 3), Ok(1))
-        self.assertEqual(res2.or_else(func, 3), Err(9))
 
     def test_unwrap_or(self):
         """Test Result.unwrap_or()"""
@@ -246,8 +253,8 @@ class TestResult(unittest.TestCase):
         res2 = Err("Error")
         func = lambda x: x * 3
 
-        self.assertEqual(res1.unwrap_or_else(func, 3), 1)
-        self.assertEqual(res2.unwrap_or_else(func, 3), 9)
+        self.assertEqual(res1.unwrap_or_else(func), 1)
+        self.assertEqual(res2.unwrap_or_else(func), 'ErrorErrorError')
 
     def test_pattern_matching(self):
         """Test pattern matching with Results"""
@@ -271,8 +278,25 @@ class TestResult(unittest.TestCase):
         r1 = Ok(1)
         r2 = Err("Error")
 
-        self.assertEqual(r1.into_option(), Some(1))
-        self.assertEqual(r2.into_option(), Nada())
+        self.assertEqual(r1.ok(), Some(1))
+        self.assertEqual(r2.ok(), Nada())
+        self.assertEqual(r1.err(), Nada())
+        self.assertEqual(r2.err(), Some('Error'))
+
+    def test_inspect(self):
+        """Test Result.inspect() and Result.inspect_err()"""
+        r1 = Ok(1)
+        r2 = Err("Error")
+
+        def printer(value: int):
+            print(f'test_inspect: {value}')
+
+        # The value is never updated with inspect() calls
+        self.assertEqual(r1.inspect(printer), Ok(1))
+        self.assertEqual(r2.inspect(printer), Err("Error"))  # does nothing
+
+        # inspect_err() only calls function on error variants
+        self.assertEqual(r2.inspect_err(printer), Err("Error"))
 
 
 if __name__ == '__main__':
