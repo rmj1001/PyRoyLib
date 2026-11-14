@@ -373,66 +373,177 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
                 raise ResultException('Unreachable')
 
 
-    def map_or(self, func: Callable[[T], T], default: T) -> "Result[Callable[[T], T],E]":
-        """Returns the provided default if Err or applies func to value"""
+    def map_ok_or(self, func: Callable[[T], T], default: T) -> "Result[T | Callable[[T], T],E]":
+        """
+        Convert Result to Ok(default) if Err, else map function to Result
+
+        Examples:
+
+        - Ok(1).map_or(lambda x: x + 1, 10) -> Ok(2)
+
+        - Err(1).map_or(lambda x: x + 1, 10) -> Ok(10)
+
+        :param func: Function that takes one argument T and returns another T
+        :param default: Default value
+        :return: Ok(default) or mapped Ok Result
+        """
         if self.is_err():
             return Ok(default)
 
         return Ok(func(self.value))
 
-    def map_or_else(self, success: Callable[[T], T], default: Callable, *args,
-                    **kwargs) -> "Result[Callable[[T], T],Callable[[E], E]]":
-        """Maps function if variant is Ok, else creates new Ok result with default function returned value"""
+    def map_ok_or_else(self, func: Callable[[T], T], default: Callable, *args,
+                       **kwargs) -> "Result[Callable[[T], T],Callable[[E], E]]":
+        """
+        Convert Result to Ok(default(*args, **kwargs)) if Err, else map function to Result
+
+        Examples:
+
+        - Ok(1).map_or(lambda x: x + 1, lambda x: x + 5, 10) -> Ok(2)
+
+        - Err(1).map_or(lambda x: x + 1, lambda x: x + 5, 10) -> Ok(15)
+
+        :param func: Function that takes one argument T and returns another T
+        :param default: Default function with *args and **kwargs passed in
+        :return: Ok(default(*args, **kwargs)) or mapped Ok Result
+        """
         if self.is_err():
             return Ok(default(*args, **kwargs))
 
-        return Ok(success(self.value))
+        return Ok(func(self.value))
 
     def map_err(self, func: Callable[[E], E]) -> "Result[T, E | Callable[[E], E]]":
-        """Maps an Err value, leaving Ok untouched"""
+        """
+        Return self if Ok(), else map Result to Err(func(Result.value))
+
+        Examples:
+
+        - Ok(1).map_err(lambda x: x + 1) -> Ok(1)
+
+        - Err(1).map_err(lambda x: x + 1) -> Err(2)
+
+        :param func: Function that takes one argument E and returns another E
+        :return: self or mapped Err Result
+        """
         if self.is_ok():
             return self
 
         return Err(func(self.value))
 
-    def expect_err(self, message: E) -> T:
-        """Returns contained Err, or else raises exception if Ok"""
+    def expect_err(self, message: E) -> E:
+        """
+        Return contained error if Err, else raises exception with message
+
+        Examples:
+
+        - Ok(1).expect_err('Not an error') -> raise ResultException('Not an error')
+
+        - Err(1).expect_err('Not an error') -> 1
+
+        :param message: Exception message
+        :return: Error value
+        """
         if self.is_err():
             return self.value
 
         raise ResultException(message)
 
     def unwrap_err(self) -> T:
-        """Returns contained Err, or else raises exception with Ok value"""
+        """
+        Return contained error if Err, else raises exception
+
+        Examples:
+
+        - Ok(1).unwrap_err() -> raise ResultException('Result is not an error.')
+
+        - Err(1).unwrap_err() -> 1
+
+        :return: Error value
+        """
         if self.is_err():
             return self.value
 
-        raise ResultException(self.value)
+        raise ResultException('Result is not an error.')
 
     def into_ok(self) -> "Result[T, E]":
-        """Returns the contained Ok, never raises exception"""
+        """
+        Convert a Result to an Ok variant, regardless of its previous state.
+
+        Examples:
+
+        - Ok(1).into_ok() -> Ok(1)
+
+        - Err(1).into_ok() -> Ok(1)
+
+        :return: Ok()
+        """
         return Ok(self.value)
 
     def into_err(self) -> "Result[T, E]":
-        """Returns the contained Err, never raises exception"""
+        """
+        Convert a Result to an Err variant, regardless of its previous state.
+
+        Examples:
+
+        - Ok(1).into_err() -> Err(1)
+
+        - Err(1).into_err() -> Err(1)
+
+        :return: Ok()
+        """
         return Err(self.value)
 
     def other_if_ok(self, res: "Result[T, E]") -> "Result[T, E]":
-        """Result res if result is Ok, otherwise return Err of self"""
+        """
+        Return another Result if current Result is Ok, else return self
+
+        Examples:
+
+        - Ok(1).other_if_ok(Err(1)) -> Err(1)
+
+        - Err(1).other_if_ok(Ok(1)) -> Err(1)
+
+        :param res: Other Result
+        :return: res if self is Ok, else self
+        """
         if self.is_ok():
             return res
 
         return self
 
     def and_then(self, func: Callable, *args, **kwargs) -> "Result[T | Callable, E]":
-        """Calls func if result is Ok, otherwise returns Err of self"""
+        """
+        Return a new Result created from func return if Result is Ok, else return self
+
+        Examples:
+
+        - Ok(1).and_then(lambda: 10) -> Ok(10)
+
+        - Err(1).and_then(lambda: 10) -> Err(1)
+
+        :param func: function to create new Result from
+        :param args: Sequential arguments passed to func
+        :param kwargs: Keyword arguments passed to func
+        :return: self if self is Err, else Ok(func(*args, **kwargs))
+        """
         if self.is_err():
             return self
 
         return Ok(func(*args, **kwargs))
 
     def other_if_err(self, res: "Result[T, E]") -> "Result[T, E]":
-        """Returns res if result is Err, otherwise returns Ok value of self"""
+        """
+        Return another Result if current Result is Err, else return self
+
+        Examples:
+
+        - Ok(1).other_if_err(Err(1)) -> Ok(1)
+
+        - Err(1).other_if_err(Ok(1)) -> Ok(1)
+
+        :param res: Other Result
+        :return: res if self is Err, else self
+        """
         if self.is_ok():
             return self
 
