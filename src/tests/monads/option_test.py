@@ -1,6 +1,7 @@
 import unittest
 
-lazy from src.lib.monads.exceptions.option_exception import OptionException
+lazy from src.lib.monads.exceptions.option_exception import MaybeException
+
 lazy from src.lib.monads.maybe import Maybe, Some, Nada
 lazy from src.lib.monads.result import Ok, Err
 
@@ -77,7 +78,7 @@ class TestOption(unittest.TestCase):
         self.assertEqual(opt.expect(message), 1)
 
         # Check to make sure custom message is contained in exception
-        with self.assertRaises(OptionException) as cm:
+        with self.assertRaises(MaybeException) as cm:
             opt2.expect(message)
             self.assertEqual(cm.msg, message)
 
@@ -89,7 +90,7 @@ class TestOption(unittest.TestCase):
         # Should not raise exception
         self.assertEqual(opt.unwrap(), 1)
 
-        with self.assertRaises(OptionException):
+        with self.assertRaises(MaybeException):
             opt2.unwrap()
 
     def test_unwrap_or(self):

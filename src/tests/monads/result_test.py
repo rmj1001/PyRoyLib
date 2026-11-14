@@ -308,6 +308,7 @@ class TestResult(unittest.TestCase):
         }
 
         def ok_effect(_): state['ok'] = True
+
         def err_effect(_): state['err'] = True
 
         # The value is never updated with inspect() calls
@@ -332,6 +333,7 @@ class TestResult(unittest.TestCase):
 
         self.assertEqual(raises(False).unwrap(), True)
         self.assertEqual(raises(True).unwrap_err().args[0], msg)
+
 
 if __name__ == '__main__':
     unittest.main()

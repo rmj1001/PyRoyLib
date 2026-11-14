@@ -5,8 +5,15 @@ from typing import Callable, NoReturn
 lazy from src.lib.abstract.iequality import IEquality
 lazy from src.lib.abstract.imonad import IMonad
 lazy from src.lib.abstract.irepr import IRepr
-lazy from src.lib.monads.exceptions.result_exception import ResultException
-lazy from src.lib.monads.maybe import Maybe, Some, Nada
+lazy from src.lib.monads.maybe import Maybe, Some, Nada, MaybeException
+
+
+class ResultException[E](Exception):
+    """Custom exception for Result type"""
+
+    def __init__(self, message: E) -> None:
+        self.message = message
+        super().__init__(self.message)
 
 
 class ResultVariant(StrEnum):
@@ -688,7 +695,7 @@ def resultify[T, **P](fn: Callable[P, T]) -> Callable[P, Result[T, Exception]]:
     return wrapper
 
 
-def panic(message: str) -> NoReturn:
+def panic(message: str, maybe: bool = False) -> NoReturn:
     """
     Raise a ResultException with the custom message string
 
@@ -697,6 +704,10 @@ def panic(message: str) -> NoReturn:
     - panic("at the disco") -> raise ResultException("at the disco")
 
     :param message: Exception message
+    :param maybe: Raise MaybeException instead of ResultException
     :return: Nothing
     """
-    raise ResultException(message)
+    if maybe:
+        raise MaybeException(message)
+    else:
+        raise ResultException(message)

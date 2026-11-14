@@ -4,8 +4,15 @@ lazy from src.lib.abstract.iequality import IEquality
 lazy from src.lib.abstract.ifunctor import IFunctor
 lazy from src.lib.abstract.imonad import IMonad
 lazy from src.lib.abstract.irepr import IRepr
-lazy from src.lib.monads.exceptions.option_exception import OptionException
 lazy from src.lib.monads.result import Result, Ok, Err
+
+
+class MaybeException[E](Exception):
+    """Custom exception for Option type"""
+
+    def __init__(self, message: E) -> None:
+        self.message = message
+        super().__init__(self.message)
 
 
 class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
@@ -110,7 +117,7 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         :return: Option.value
         """
         if self.value is None:
-            raise OptionException(message)
+            raise MaybeException(message)
 
         return self.value
 
@@ -127,7 +134,7 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         :return: Option.value
         """
         if self.value is None:
-            raise OptionException("Cannot unwrap Nada")
+            raise MaybeException("Cannot unwrap Nada")
 
         return self.value
 
@@ -272,7 +279,7 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         :return: Option(value)
         """
         if value is None:
-            raise OptionException('Option.some(value: T) cannot take None as a value argument')
+            raise MaybeException('Option.some(value: T) cannot take None as a value argument')
 
         return cls(value)
 
@@ -506,7 +513,7 @@ class Some[T](Maybe[T]):
 
     def __init__(self, value: T):
         if value is None:
-            raise OptionException('Some(value: T) cannot take None as a value argument')
+            raise MaybeException('Some(value: T) cannot take None as a value argument')
 
         super().__init__(value)
 
