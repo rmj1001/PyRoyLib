@@ -37,8 +37,8 @@ class TestResult(unittest.TestCase):
         res2 = Err("Error")
 
         self.assertNotEqual(res1, res2)
-        self.assertEqual(res1, Ok(1))
-        self.assertEqual(res2, Err("Error"))
+        self.assertEqual(res1, Result(1, ResultVariant.OK))
+        self.assertEqual(res2, Result("Error", ResultVariant.ERR))
 
     def test_ok(self):
         """Test Result.ok()"""
