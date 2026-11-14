@@ -1,10 +1,7 @@
 from collections.abc import Callable
+from functools import wraps
 
-lazy from src.lib.abstract.iequality import IEquality
-lazy from src.lib.abstract.ifunctor import IFunctor
-lazy from src.lib.abstract.imonad import IMonad
-lazy from src.lib.abstract.irepr import IRepr
-lazy from src.lib.monads.result import Result, Ok, Err
+lazy from src.lib.monads.result import Result, Ok, Err, panic
 
 
 class MaybeException[E](Exception):
@@ -15,7 +12,7 @@ class MaybeException[E](Exception):
         super().__init__(self.message)
 
 
-class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
+class Maybe[T]:
     """Rust-style option"""
     __match_args__ = ('value',)
 
@@ -35,8 +32,6 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         """
         return self.is_some()
 
-    # -- IRepr Implementation
-
     def __repr__(self) -> str:
         """
         String representation of Maybe
@@ -52,8 +47,6 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
             return f"Some({self.value})"
 
         return "Nada"
-
-    # -- IEquality Implementation
 
     def __eq__(self, other: object) -> bool:
         """
@@ -93,185 +86,158 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         return self.value != other.value
 
-    # --- IMonad Implementation
-
-    def expect[E](self, message: E) -> T:
+    def and_then[U](self, fn: "Callable[[T], Maybe[U]]") -> "Maybe[U]":
         """
-        Get Maybe.value if it is not None, or raise an OptionException with a custom message
+        Return a new Maybe created from fn return if Maybe is Some, else return Nada()
+
+        Examples:
+
+        - Some(1).and_then(lambda x: Some(x + 1)) -> Some(2)
+        - Nada().and_then(lambda x: Some(x + 1)) -> Nada()
+
+        :param fn: Function that takes one argument T and returns Maybe[U]
+        :return: Mapped Maybe
+        """
+        match self:
+            case Some(s):
+                return fn(s)
+            case Nada():
+                return Nada()
+            case _:
+                panic('Unreachable', maybe=True)
+
+    def expect(self, message: str) -> T:
+        """
+        Get Maybe.value if it is not None, or panic with a custom message
 
         Examples:
 
         - Some(1).expect('Not a number') -> 1
-        - Nada().expect('Not a number') -> raise OptionException('Not a number')
+        - Nada().expect('Not a number') -> panic('Not a number')
 
         :param message: Error message
         :return: Maybe.value
         """
-        if self.value is None:
-            raise MaybeException(message)
+        match self:
+            case Some(s):
+                return s
+            case Nada():
+                panic(message, maybe=True)
+            case _:
+                panic('Unreachable', maybe=True)
 
-        return self.value
-
-    def unwrap(self) -> T:
+    def filter(self, predicate: Callable[[T], bool]) -> "Maybe[T]":
         """
-        Get Maybe.value if it is not None, or raise an OptionException
+        Return Some(self.value) if predicate returns True, else return Nada()
 
         Examples:
 
-        - Some(1).unwrap() -> 1
-        - Nada().unwrap() -> raise OptionException("Cannot unwrap Nada")
+        - Some(10).filter(lambda x: x % 2 == 0) -> Some(10)
+        - Some(5).filter(lambda x: x % 2 == 0) -> Nada()
+        - Nada().filter(lambda x: x % 2 == 0) -> Nada()
 
-        :return: Maybe.value
+        :param predicate: Function that takes Maybe.value as only argument, returns bool
+        :return: Maybe
         """
-        if self.value is None:
-            raise MaybeException("Cannot unwrap Nada")
+        match self:
+            case Some(s):
+                if predicate(s):
+                    return Some(s)
+                else:
+                    return Nada()
+            case Nada():
+                return Nada()
+            case _:
+                panic('Unreachable', maybe=True)
 
-        return self.value
-
-    def unwrap_or(self, default: T) -> T:
-        """
-        Get Maybe.value if it is not None, or else a default value
-
-        Examples:
-
-        - Some(1).unwrap_or(10) -> 1
-        - Nada().unwrap_or(10) -> 10
-
-        :param default: Default value
-        :return: Maybe.value or default value
-        """
-        if self.value is None:
-            return default
-
-        return self.value
-
-    def unwrap_or_else(self, fn: Callable, *args, **kwargs) -> T | Callable:
-        """
-        Get Maybe.value if it is not None, or else the returned value of a function
-
-        Examples:
-
-        - Some(1).unwrap_or_else(lambda: 100 + 50) -> 1
-        - Nada().unwrap_or_else(lambda: 100 + 50) -> 150
-
-        :param fn: function to get a value from
-        :param args: sequential arguments to pass to fn
-        :param kwargs: keyword arguments to pass to fn
-        :return: Maybe.value or function return
-        """
-        if self.value is not None:
-            return self.value
-
-        return fn(*args, **kwargs)
-
-    def or_else(self, fn: Callable, *args, **kwargs) -> "Maybe[T | Callable[[T], T]]":
-        """
-        Returns a Maybe with Maybe.value being either original Maybe.value or the result of fn
-
-        Examples:
-
-        - Some(1).or_else(lambda: 100 + 50) -> Some(1)
-        - Nada().or_else(lambda: 100 + 50) -> Some(150)
-
-        :param fn: function to get a value from
-        :param args: sequential arguments to pass to fn
-        :param kwargs: keyword arguments to pass to fn
-        :return: self or Maybe(fn(*args, **kwargs))
-        """
-        if self.is_some():
-            return Some(self.value)
-
-        result = fn(*args, **kwargs)
-
-        if result is None:
-            return Nada()
-
-        return Some(result)
-
-    # -- IFunctor Implementation
-
-    def flatten(self) -> 'Maybe[T]':
+    def flatten(self, recursive: bool = False) -> "Maybe[T]":
         """
         Return innermost Maybe in nested Options
 
         Examples:
 
-        - Some(Some(Some(1))).flatten() -> Some(1)
-        - Some(1).flatten() -> Some(1)
+        - Some(Some(Some(1))).flatten(recursive=True) -> Some(1)
+        - Some(Some(1)).flatten() -> Some(1)
         - Nada().flatten() -> Nada()
 
+        :param recursive: Flattens all layers if True, otherwise flattens one layer
         :return: Innermost Maybe
         """
-        if self.is_nada():
-            return Nada()
+        match self:
+            case Some(s):
+                inner: T | None = s
 
-        current: Maybe[T] = Some(self.value)
+                if isinstance(inner, Maybe) and recursive:
+                    return inner.flatten(recursive)
+                elif isinstance(inner, Maybe):
+                    return inner
+                else:
+                    return Some(s)
+            case Nada():
+                return Nada()
+            case _:
+                panic('Unreachable', maybe=True)
 
-        while isinstance(current.value, Maybe):
-            current: Maybe[T] = Some(current.value.value)
-
-        return current
-
-    def map(self, fn: Callable[[T], T]) -> 'Maybe[T]':
+    def inspect(self, fn: Callable[[T], None]) -> "Maybe[T]":
         """
-        Create a Maybe where Maybe.value = fn(Maybe.value).
+        Calls fn with contained value if Some. Always returns original Maybe object.
 
         Examples:
 
-        - Some(1).map(lambda x: x + 1) -> Some(Some(2))
-        - Nada().map(lambda x: x + 1) -> Nada()
+        - Some(1).inspect(lambda x: print(x)) -> prints 1 to STDOUT
+        - Nada().inspect(lambda x: print(x)) -> does nothing
 
-        :param fn: Function that takes one argument T and returns another T
-        :return: Mapped Maybe
+        :param fn: function that takes one argument T and returns None
+        :return: Original Maybe
         """
-        if self.is_nada():
-            return Nada()
+        match self:
+            case Some(s):
+                fn(s)
+                return Some(s)
+            case Nada():
+                return Nada()
+            case _:
+                panic('Unreachable', maybe=True)
 
-        return Some(fn(self.value))
-
-    def flatmap(self, fn: Callable[[T], T]) -> 'Maybe[Callable[[T], T]]':
+    def is_nada(self) -> bool:
         """
-        Flatten a Maybe and map it with a function
+        Check that Maybe.value is None
 
         Examples:
 
-        - Some(Some(1)).flatmap(lambda x: x + 1) -> Some(2)
-        - Some(10).flatmap(lambda x: x + 1) -> Some(11)
-        - Nada().flatmap(lambda x: x + 1) -> Nada()
+        - Some(10).is_nada() -> False
+        - Nada().is_nada() -> True
 
-        :param fn: Function that takes one argument T and returns another T
-        :return: Flattened and Mapped Maybe
+        :return: True if value is None, else False
         """
-        return self.flatten().map(fn)
+        match self:
+            case Some(_):
+                return False
+            case Nada():
+                return True
+            case _:
+                panic('Unreachable', maybe=True)
 
-    # --- END Interface Implementations
-
-    @classmethod
-    def some(cls, value: T) -> "Maybe[T]":
+    def is_nada_or(self, predicate: Callable[[T], bool]) -> bool:
         """
-        Create a Maybe with a non-None value
+        Return True if Maybe.value is None, or predicate is True
 
         Examples:
 
-        - Maybe.some(10) -> Maybe[int]
-        - Maybe.some(None) -> Raises OptionException
+        - Nada().is_nada_or(lambda x: x % 2 == 0) -> True
+        - Some(10).is_nada_or(lambda x: x % 2 == 0) -> True
+        - Some(5).is_nada_or(lambda x: x % 2 == 0) -> False
 
-        :param value: Any non-None value
-        :return: Maybe(value)
+        :param predicate: Function taking Maybe.value as only argument, returns bool
+        :return: True if value is None or predicate returns True, else False
         """
-        if value is None:
-            raise MaybeException('Maybe.some(value: T) cannot take None as a value argument')
-
-        return cls(value)
-
-    @classmethod
-    def nada(cls) -> "Maybe[T]":
-        """
-        Create a Maybe with None value
-        Example: Maybe.nada() -> Maybe
-        :return: Maybe(None)
-        """
-        return cls(None)
+        match self:
+            case Some(s):
+                return predicate(s)
+            case Nada():
+                return True
+            case _:
+                panic('Unreachable', maybe=True)
 
     def is_some(self) -> bool:
         """
@@ -280,11 +246,17 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         Examples:
 
         - Some(10).is_some() -> True
-        - Nada() -> False
+        - Nada().is_some() -> False
 
         :return: True if Maybe.value is not None, else False
         """
-        return self.value is not None
+        match self:
+            case Some(_):
+                return True
+            case Nada():
+                return False
+            case _:
+                panic('Unreachable', maybe=True)
 
     def is_some_and(self, predicate: Callable[[T], bool]) -> bool:
         """
@@ -300,130 +272,299 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         :param predicate: Function taking Maybe.value as only argument, returns bool
         :return: True if Maybe.value is not None and predicate returns True, else False
         """
-        if self.is_nada():
-            return False
+        match self:
+            case Some(s):
+                return predicate(s)
+            case Nada():
+                return False
+            case _:
+                panic('Unreachable', maybe=True)
 
-        return predicate(self.value)
-
-    def is_nada(self) -> bool:
+    def map[U](self, fn: Callable[[T], U]) -> "Maybe[U]":
         """
-        Check that Maybe.value is None
+        Create a Maybe where Maybe.value = fn(Maybe.value).
 
         Examples:
 
-        - Some(10).is_nada() -> False
-        - Nada().is_nada() -> True
+        - Some(1).map(lambda x: x + 1) -> Some(2)
+        - Nada().map(lambda x: x + 1) -> Nada()
 
-        :return: True if value is None, else False
+        :param fn: Function that takes one argument T and returns another U
+        :return: Mapped Maybe
         """
-        return self.value is None
+        match self:
+            case Some(s):
+                return Some(fn(s))
+            case Nada():
+                return Nada()
+            case _:
+                panic('Unreachable', maybe=True)
 
-    def is_nada_or(self, predicate: Callable[[T], bool]) -> bool:
+    def map_or[U](self, default: U, fn: Callable[[T], U]) -> U:
         """
-        Return True if Maybe.value is None, or predicate is True
+        Convert Maybe to fn(T) if Some, else convert to default
 
         Examples:
 
-        - Nada().is_nada_or(lambda x: x % 2 == 0) -> True
-        - Some(10).is_nada_or(lambda x: x % 2 == 0) -> True
-        - Some(5).is_nada_or(lambda x: x % 2 == 0) -> False
+        - Some(1).map_or(3, lambda x: x + 1) -> 2
+        - Nada().map_or(3, lambda x: x + 1) -> 3
 
-        :param predicate: Function taking Maybe.value as only argument, returns bool
-        :return: True if value is None or predicate returns True, else False
+        :param default: Default value
+        :param fn: Function that takes one argument T and returns U
+        :return: default or fn(Maybe.value)
         """
-        return self.is_nada() or predicate(self.value)
+        match self:
+            case Some(s):
+                return fn(s)
+            case Nada():
+                return default
+            case _:
+                panic('Unreachable', maybe=True)
 
-    def ok_or[E](self, error: E) -> "Result[T,E]":
+    def map_or_else[U](self, default: Callable[[], U], fn: Callable[[T], U]) -> U:
+        """
+        Convert Maybe to default() if Nada, else fn(Maybe.value)
+
+        Examples:
+
+        - Some(1).map_or_else(lambda: 6, lambda x: x + 1) -> 2
+        - Nada().map_or_else(lambda: 6, lambda x: x + 1) -> 6
+
+        :param default: Default function taking no arguments
+        :param fn: Function that takes one argument T and returns U
+        :return: default() or fn(Maybe.value)
+        """
+        match self:
+            case Some(s):
+                return fn(s)
+            case Nada():
+                return default()
+            case _:
+                panic('Unreachable', maybe=True)
+
+    def ok_or[E](self, err: E) -> Result[T, E]:
         """
         Convert Maybe to Result.ok() if Maybe.value is Some, else Result.err() with custom error message.
 
         Examples:
 
-        - Some(10).ok_or('Maybe is None') -> ok(10)
-        - Nada().ok_or('Maybe is None') -> err('Maybe is None')
+        - Some(10).ok_or('Maybe is None') -> Ok(10)
+        - Nada().ok_or('Maybe is None') -> Err('Maybe is None')
 
-        :param error: Error message
+        :param err: Error message
         :return: Result
         """
-        if self.is_nada():
-            return Err(error)
+        match self:
+            case Some(s):
+                return Ok(s)
+            case Nada():
+                return Err(err)
+            case _:
+                panic('Unreachable', maybe=True)
 
-        return Ok(self.value)
-
-    def ok_or_else(self, fn: Callable, *args, **kwargs) -> "Result[T,Callable[[T], T]]":
+    def ok_or_else[E](self, fn: Callable[[], E]) -> Result[T, E]:
         """
-        Convert Maybe to Result.ok() if Maybe.value is Some, else Result.err() with value from
-        fn's return value
+        Convert Maybe to Result.ok() if Maybe.value is Some, else Result.err() with value from fn's return
 
         Examples:
 
-        - Some(10).ok_or_else(lambda x: f'Custom error: {x}', 10) -> ok(10)
-        - Nada().ok_or_else(lambda x: f'Custom error: {x}', 10) -> err('Custom error: 10')
+        - Some(10).ok_or_else(lambda: 'Custom error') -> Ok(10)
+        - Nada().ok_or_else(lambda: 'Custom error') -> Err('Custom error')
 
         :param fn: Function to create error content from
         :return: Result
         """
-        if self.is_nada():
-            return Err(fn(*args, **kwargs))
+        match self:
+            case Some(s):
+                return Ok(s)
+            case Nada():
+                return Err(fn())
+            case _:
+                panic('Unreachable', maybe=True)
 
-        return Ok(self.value)
-
-    def filter(self, predicate: Callable[[T], bool]) -> "Maybe[T]":
+    def or_else(self, fn: "Callable[[], Maybe[T]]") -> "Maybe[T]":
         """
-        Return Some(self.value) if predicate returns True, else return Nada()
+        Returns self if Maybe is Some, or else a new Maybe sourced from called function
 
         Examples:
 
-        - Some(10).filter(lambda x: x % 2 == 0) -> Some(10)
-        - Some(5).filter(lambda x: x % 2 == 0) -> Nada()
-        - Nada().filter(lambda x: x % 2 == 0) -> Nada()
+        - Some(1).or_else(lambda: Some(150)) -> Some(1)
+        - Nada().or_else(lambda: Some(150)) -> Some(150)
 
-        :param predicate: Function that takes Maybe.value as only argument, returns bool
-        :return: Maybe
+        :param fn: function to get a Maybe from
+        :return: self or fn()
         """
-        if self.is_nada():
-            return Nada()
+        match self:
+            case Some(s):
+                return Some(s)
+            case Nada():
+                return fn()
+            case _:
+                panic('Unreachable', maybe=True)
 
-        if predicate(self.value):
-            return Some(self.value)
-
-        return Nada()
-
-    def other_if_some(self, other: "Maybe[T]") -> "Maybe[T]":
+    def other_if_some[U](self, other: "Maybe[U]") -> "Maybe[T|U]":
         """
-        Return Nada() if Maybe.value is None, otherwise return a different Maybe
+        Returns Nada if self is Nada, else returns other Maybe object
 
         Examples:
 
-        - Some(10).other_if_some(Some(15)) -> Some(15)
-        - Nada().other_if_some(Some(15)) -> Nada()
+        - Some(1).other_if_some(Some(10)) -> Some(10)
+        - Nada().other_if_some(Some(10)) -> Nada()
 
-        :param other: Another Maybe instance
-        :return: Maybe
+        :param other: Other Maybe
+        :return: Maybe object
         """
-        if self.is_some():
-            return other
+        match self:
+            case Some(s):
+                return other
+            case Nada():
+                return Nada()
+            case _:
+                panic('Unreachable', maybe=True)
 
-        return self
-
-    def other_if_nada(self, other: "Maybe[T]") -> "Maybe[T]":
+    def other_if_nada[U](self, other: "Maybe[U]") -> "Maybe[T|U]":
         """
-        Return another Maybe if Maybe.value is None, otherwise return original Maybe
+        Returns self if self is Some, else returns other Maybe object
 
         Examples:
 
-        - Some(10).other_if_nada(Some(15)) -> Some(10)
-        - Nada().other_if_nada(Some(15)) -> Some(15)
+        - Some(1).other_if_nada(Some(10)) -> Some(1)
+        - Nada().other_if_nada(Some(10)) -> Some(10)
 
-        :param other: Another Maybe instance
-        :return: Maybe
+        :param other: Other Maybe
+        :return: Maybe object
         """
-        if self.is_nada():
-            return other
+        match self:
+            case Some(s):
+                return Some(s)
+            case Nada():
+                return other
+            case _:
+                panic('Unreachable', maybe=True)
 
-        return self
+    def reduce(self, other: "Maybe[T]", fn: Callable[[T, T], T]) -> "Maybe[T]":
+        """
+        Reduces two Options into one by applying a function.
+        If one is Nada, returns the other. If both are Nada, returns Nada.
 
-    def zip(self, other: "Maybe[T]") -> "Maybe[tuple[T, T]]":
+        Examples:
+        - Some(2).reduce(Some(3), lambda x, y: x + y) -> Some(5)
+        - Some(2).reduce(Nada(), lambda x, y: x + y) -> Some(2)
+        - Nada().reduce(Nada(), lambda x, y: x + y) -> Nada()
+        """
+        match self, other:
+            case Some(x), Some(y):
+                return Some(fn(x, y))
+            case Some(x), Nada():
+                return Some(x)
+            case Nada(), Some(y):
+                return Some(y)
+            case Nada(), Nada():
+                return Nada()
+            case _:
+                panic('Unreachable', maybe=True)
+
+    def unwrap(self) -> T:
+        """
+        Get Maybe.value if it is not None, or panic
+
+        Examples:
+
+        - Some(1).unwrap() -> 1
+        - Nada().unwrap() -> panic("Option is Nada")
+
+        :return: Maybe.value
+        """
+        match self:
+            case Some(s):
+                return s
+            case Nada():
+                panic('Option is Nada', maybe=True)
+            case _:
+                panic('Unreachable', maybe=True)
+
+    def unwrap_or(self, default: T) -> T:
+        """
+        Get Maybe.value if it is not None, or else a default value
+
+        Examples:
+
+        - Some(1).unwrap_or(10) -> 1
+        - Nada().unwrap_or(10) -> 10
+
+        :param default: Default value
+        :return: Maybe.value or default value
+        """
+        match self:
+            case Some(s):
+                return s
+            case Nada():
+                return default
+            case _:
+                panic('Unreachable', maybe=True)
+
+    def unwrap_or_else(self, fn: Callable[[], T]) -> T:
+        """
+        Get Maybe.value if it is not None, or else the returned value of a function
+
+        Examples:
+
+        - Some(1).unwrap_or_else(lambda: 150) -> 1
+        - Nada().unwrap_or_else(lambda: 150) -> 150
+
+        :param fn: function to get a default value from
+        :return: Maybe.value or function return
+        """
+        match self:
+            case Some(s):
+                return s
+            case Nada():
+                return fn()
+            case _:
+                panic('Unreachable', maybe=True)
+
+    def unzip[U](self: "Maybe[tuple[T, U]]") -> "tuple[Maybe[T], Maybe[U]]":
+        """
+        Return a tuple of Options from a Maybe with an internal tuple value
+
+        Examples:
+
+        - Some((10, 15)).unzip() -> (Some(10), Some(15))
+        - Nada().unzip() -> (Nada(), Nada())
+
+        :return: tuple(Maybe, Maybe)
+        """
+        match self:
+            case Some((x, y)):
+                return Some(x), Some(y)
+            case Nada():
+                return Nada(), Nada()
+            case _:
+                panic('Unreachable', maybe=True)
+
+    def xor(self, other: "Maybe[T]") -> "Maybe[T]":
+        """
+        Return Some if only self is Some or if only other is Some, else Nada
+
+        Examples:
+
+        - Some(10).xor(Nada()) -> Some(10)
+        - Nada().xor(Some(10)) -> Some(10)
+        - Some(10).xor(Some(20)) -> Nada()
+        - Nada().xor(Nada()) -> Nada()
+
+        :param other: Other Maybe object
+        :return: Maybe object
+        """
+        match self, other:
+            case Some(x), Nada():
+                return Some(x)
+            case Nada(), Some(x):
+                return Some(x)
+            case _:
+                return Nada()
+
+    def zip[U](self, other: "Maybe[U]") -> "Maybe[tuple[T, U]]":
         """
         Return tuple in a Maybe if both Options are not Nada(), else return Nada()
 
@@ -435,39 +576,17 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         - Nada().zip(Nada()) -> Nada()
 
         :param other: Another Maybe
-        :return: Some(tuple())
+        :return: Some(tuple()) or Nada()
         """
-        if self.is_some() and other.is_some():
-            return Some((self.value, other.value))
-
-        return Nada()
-
-    def unzip(self) -> "tuple[Maybe[T], Maybe[T]]":
-        """
-        Return a tuple of Options from a Maybe with an internal tuple value
-
-        Examples:
-
-        - Some((10, 15)).unzip() -> (Some(10), Some(15))
-        - Some((10, None)).unzip() -> (Some(10), Nada())
-        - Maybe((None, None)).unzip() -> (Nada(), Nada())
-
-        :return: tuple(Maybe, Maybe)
-        """
-        if not isinstance(self.value, tuple):
-            return Nada(), Nada()
-
-        first, second = self.value
-        first_opt = Nada()
-        second_opt = Nada()
-
-        if first is not None:
-            first_opt = Some(first)
-
-        if second is not None:
-            second_opt = Some(second)
-
-        return first_opt, second_opt
+        match self, other:
+            case Some(x), Some(y):
+                return Some((x, y))
+            case Nada(), _:
+                return Nada()
+            case _, Nada():
+                return Nada()
+            case _:
+                panic('Unreachable', maybe=True)
 
 
 class Some[T](Maybe[T]):
@@ -475,7 +594,7 @@ class Some[T](Maybe[T]):
 
     def __init__(self, value: T):
         if value is None:
-            raise MaybeException('Some(value: T) cannot take None as a value argument')
+            panic('Some(value: T) cannot take None as a value argument', maybe=True)
 
         super().__init__(value)
 
@@ -485,3 +604,34 @@ class Nada[T](Maybe[T]):
 
     def __init__(self):
         super().__init__(None)
+
+def maybeify[T, **P](fn: Callable[P, T | None]) -> Callable[P, Maybe[T]]:
+    """
+    Convert any function that could raise an Exception to a Maybe type,
+    with the Exception becoming Nada. Use as a decorator above a function.
+
+    Example
+    ==========
+
+    @maybeify
+
+    def raises(_) -> bool: ...
+
+
+    raises(False).unwrap() == True
+
+    raises(True) == Nada()
+
+    :param fn: function to wrap
+    :return: function converting exceptions to Maybe Nada types
+    """
+    @wraps(fn)
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> Maybe[T]:
+        try:
+            res = fn(*args, **kwargs)
+
+            return Nada() if res is None else Some(res)
+        except Exception as e:
+            return Nada()
+
+    return wrapper
