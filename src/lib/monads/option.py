@@ -145,6 +145,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         - Nada().unwrap_or(10) -> 10
 
+        :param default: Default value
         :return: Option.value or default value
         """
         if self.value is None:
@@ -201,17 +202,17 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
     def flatten(self) -> 'Option[T]':
         """
-        Create an Option with Option.value not containing nested Options.
+        Return innermost Option in nested Options
 
         Examples:
 
-        - Some(Some(Some(1))) -> Some(1)
+        - Some(Some(Some(1))).flatten() -> Some(1)
 
-        - Some(1) -> Some(1)
+        - Some(1).flatten() -> Some(1)
 
-        - Nada() -> Nada()
+        - Nada().flatten() -> Nada()
 
-        :return: Flattened Option
+        :return: Innermost Option
         """
         if self.is_nada():
             return self
