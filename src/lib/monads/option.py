@@ -14,6 +14,7 @@ type Predicate[T] = Callable[[T], bool]
 
 class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
     """Rust-style option"""
+    __match_args__ = ('value',)
 
     def __init__(self, value: T | None):
         self.value: T | None = value
@@ -24,9 +25,9 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         Examples:
 
-        - bool(some(10)) -> True
+        - bool(Some(10)) -> True
 
-        - bool(nada()) -> False
+        - bool(Nada()) -> False
 
         :return: True if internal value is not None, else False
         """
@@ -40,16 +41,16 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         Examples:
 
-        - str(some(10)) -> 'some(10)'
+        - str(Some(10)) -> 'Some(10)'
 
-        - str(nada()) -> 'nada'
+        - str(Nada()) -> 'Nada'
 
         :return: str(Option)
         """
         if self.value is not None:
-            return f"some({self.value})"
+            return f"Some({self.value})"
 
-        return "nada"
+        return "Nada"
 
     # -- IEquality Implementation
 
@@ -59,13 +60,13 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         Examples:
 
-        - some(1) == some(2) -> False
+        - Some(1) == Some(2) -> False
 
-        - some(10) == nada() -> False
+        - Some(10) == Nada() -> False
 
-        - some(10) == some(10) -> True
+        - Some(10) == Some(10) -> True
 
-        - nada() == nada() -> True
+        - Nada() == Nada() -> True
         :param other: Second Option to compare with
         :return: True if both Options values are equal, else False
         """
@@ -80,13 +81,13 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         Examples:
 
-        - some(1) != some(2) -> True
+        - Some(1) != Some(2) -> True
 
-        - some(10) != nada() -> True
+        - Some(10) != Nada() -> True
 
-        - some(10) != some(10) -> False
+        - Some(10) != Some(10) -> False
 
-        - nada() != nada() -> False
+        - Nada() != Nada() -> False
 
         :param other: Second Option to compare with
         :return: True if both Options values are not equal, else False
@@ -104,9 +105,9 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         Examples:
 
-        - some(1).expect('Not a number') -> 1
+        - Some(1).expect('Not a number') -> 1
 
-        - nada().expect('Not a number') -> raise OptionException('Not a number')
+        - Nada().expect('Not a number') -> raise OptionException('Not a number')
 
         :param message: Error message
         :return: Internal value
@@ -122,9 +123,9 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         Examples:
 
-        - some(1).unwrap() -> 1
+        - Some(1).unwrap() -> 1
 
-        - nada().unwrap() -> raise OptionException("Cannot unwrap Nada")
+        - Nada().unwrap() -> raise OptionException("Cannot unwrap Nada")
 
         :return: Internal value
         """
@@ -139,9 +140,9 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         Examples:
 
-        - some(1).unwrap_or(10) -> 1
+        - Some(1).unwrap_or(10) -> 1
 
-        - nada().unwrap_or(10) -> 10
+        - Nada().unwrap_or(10) -> 10
 
         :return: Internal or default value
         """
@@ -156,9 +157,9 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         Examples:
 
-        - some(1).unwrap_or_else(lambda: 100 + 50) -> 1
+        - Some(1).unwrap_or_else(lambda: 100 + 50) -> 1
 
-        - nada().unwrap_or_else(lambda: 100 + 50) -> 150
+        - Nada().unwrap_or_else(lambda: 100 + 50) -> 150
 
         :param fn: function to get a value from
         :param args: sequential arguments to pass to fn
@@ -176,9 +177,9 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         Examples:
 
-        - some(1).or_else(lambda: 100 + 50) -> some(1)
+        - Some(1).or_else(lambda: 100 + 50) -> Some(1)
 
-        - nada().or_else(lambda: 100 + 50) -> some(150)
+        - Nada().or_else(lambda: 100 + 50) -> Some(150)
 
         :param fn: function to get a value from
         :param args: sequential arguments to pass to fn
@@ -191,9 +192,9 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         result = fn(*args, **kwargs)
 
         if result is None:
-            return nada()
+            return Nada()
 
-        return some(result)
+        return Some(result)
 
     # -- IFunctor Implementation
 
@@ -203,21 +204,21 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         Examples:
 
-        - some(some(some(1))) -> some(1)
+        - Some(Some(Some(1))) -> Some(1)
 
-        - some(1) -> some(1)
+        - Some(1) -> Some(1)
 
-        - nada() -> nada()
+        - Nada() -> Nada()
 
         :return: Flattened Option
         """
         if self.is_nada():
             return self
 
-        current: Option[T] = some(self.value)
+        current: Option[T] = Some(self.value)
 
         while isinstance(current.value, Option):
-            current: Option[T] = some(current.value.value)
+            current: Option[T] = Some(current.value.value)
 
         return current
 
@@ -227,9 +228,9 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         Examples:
 
-        - some(1).map(lambda x: x + 1) -> some(2)
+        - Some(1).map(lambda x: x + 1) -> Some(2)
 
-        - nada().map(lambda x: x + 1) -> nada()
+        - Nada().map(lambda x: x + 1) -> Nada()
 
         :param fn: Function that takes one argument T and returns another T
         :return: Mapped Option
@@ -237,7 +238,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         if self.is_nada():
             return self
 
-        return some(fn(self.value))
+        return Some(fn(self.value))
 
     def flatmap(self, fn: MapFn) -> 'Option[T]':
         """
@@ -245,11 +246,11 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         Examples:
 
-        - some(some(1)).flatmap(lambda x: x + 1) -> some(2)
+        - Some(Some(1)).flatmap(lambda x: x + 1) -> Some(2)
 
-        - some(10).flatmap(lambda x: x + 1) -> some(11)
+        - Some(10).flatmap(lambda x: x + 1) -> Some(11)
 
-        - nada().flatmap(lambda x: x + 1) -> nada()
+        - Nada().flatmap(lambda x: x + 1) -> Nada()
 
         :param fn: Function that takes one argument T and returns another T
         :return: Flattened and Mapped Option
@@ -294,9 +295,9 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         Examples:
 
-        - some(10).is_some() -> True
+        - Some10).is_some() -> True
 
-        - nada() -> False
+        - Nada() -> False
 
         :return: True if internal value is not None, else False
         """
@@ -309,11 +310,11 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         Examples
 
-        - some(2).is_some_and(lambda x: x % 2 == 0) -> True
+        - Some(2).is_some_and(lambda x: x % 2 == 0) -> True
 
-        - some(5).is_some_and(lambda x: x % 2 == 0) -> False
+        - Some(5).is_some_and(lambda x: x % 2 == 0) -> False
 
-        - nada().is_some_and(lambda x: x % 2 == 0) -> False
+        - Nada().is_some_and(lambda x: x % 2 == 0) -> False
 
         :param predicate: Function taking internal value as only argument, returns bool
         :return: True if internal value is not None and predicate returns True, else False
@@ -329,9 +330,9 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         Examples:
 
-        - some(10).is_nada() -> False
+        - Some(10).is_nada() -> False
 
-        - nada().is_nada() -> True
+        - Nada().is_nada() -> True
 
         :return: True if value is None, else False
         """
@@ -343,11 +344,11 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         Examples:
 
-        - nada().is_nada_or(lambda x: x % 2 == 0) -> True
+        - Nada().is_nada_or(lambda x: x % 2 == 0) -> True
 
-        - some(10).is_nada_or(lambda x: x % 2 == 0) -> True
+        - Some(10).is_nada_or(lambda x: x % 2 == 0) -> True
 
-        - some(5).is_nada_or(lambda x: x % 2 == 0) -> False
+        - Some(5).is_nada_or(lambda x: x % 2 == 0) -> False
 
         :param predicate: Function taking internal value as only argument, returns bool
         :return: True if value is None or predicate returns True, else False
@@ -360,9 +361,9 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         Examples:
 
-        - some(10).ok_or('Option is None') -> ok(10)
+        - Some(10).ok_or('Option is None') -> ok(10)
 
-        - nada().ok_or('Option is None') -> err('Option is None')
+        - Nada().ok_or('Option is None') -> err('Option is None')
 
         :param error: Error message
         :return: Result
@@ -379,9 +380,9 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         Examples:
 
-        - some(10).ok_or_else(lambda x: f'Custom error: {x}', 10) -> ok(10)
+        - Some(10).ok_or_else(lambda x: f'Custom error: {x}', 10) -> ok(10)
 
-        - nada().ok_or_else(lambda x: f'Custom error: {x}', 10) -> err('Custom error: 10')
+        - Nada().ok_or_else(lambda x: f'Custom error: {x}', 10) -> err('Custom error: 10')
 
         :param fn: Function to create error content from
         :return: Result
@@ -393,15 +394,15 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
     def filter(self, predicate: Predicate) -> "Option[T]":
         """
-        Return some(self.value) if predicate returns True, else return nada()
+        Return Some(self.value) if predicate returns True, else return Nada()
 
         Examples:
 
-        - some(10).filter(lambda x: x % 2 == 0) -> some(10)
+        - Some(10).filter(lambda x: x % 2 == 0) -> Some(10)
 
-        - some(5).filter(lambda x: x % 2 == 0) -> nada()
+        - Some(5).filter(lambda x: x % 2 == 0) -> Nada()
 
-        - nada().filter(lambda x: x % 2 == 0) -> nada()
+        - Nada().filter(lambda x: x % 2 == 0) -> Nada()
 
         :param predicate: Function that takes internal value as only argument, returns bool
         :return: Option
@@ -410,19 +411,19 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
             return self
 
         if predicate(self.value):
-            return some(self.value)
+            return Some(self.value)
 
-        return nada()
+        return Nada()
 
     def other_if_some(self, other_option: "Option[T]") -> "Option[T]":
         """
-        Return nada() if Option's internal value is None, otherwise return a different Option
+        Return Nada() if Option's internal value is None, otherwise return a different Option
 
         Examples:
 
-        - some(10).other_if_some(some(15)) -> some(15)
+        - Some(10).other_if_some(Some(15)) -> Some(15)
 
-        - nada().other_if_some(some(15)) -> nada()
+        - Nada().other_if_some(Some(15)) -> Nada()
 
         :param other_option: Another Option
         :return: Option
@@ -438,9 +439,9 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         Examples:
 
-        - some(10).other_if_nada(some(15)) -> some(10)
+        - Some(10).other_if_nada(Some(15)) -> Some(10)
 
-        - nada().other_if_nada(some(15)) -> some(15)
+        - Nada().other_if_nada(Some(15)) -> Some(15)
 
         :param other_option: Another Option
         :return: Option
@@ -452,25 +453,25 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
     def zip(self, other_option: "Option[T]") -> "Option[tuple[T, T]]":
         """
-        Return tuple in an Option if both Options' internal values are not None, else return nada()
+        Return tuple in an Option if both Options' internal values are not None, else return Nada()
 
         Examples:
 
-        - some(10).zip(some(15)) -> some((10, 15))
+        - Some(10).zip(Some(15)) -> some((10, 15))
 
-        - some(10).zip(nada()) -> nada()
+        - Some(10).zip(Nada()) -> Nada()
 
-        - nada().zip(some(10)) -> nada()
+        - Nada().zip(Some(10)) -> Nada()
 
-        - nada().zip(nada()) -> nada()
+        - Nada().zip(Nada()) -> Nada()
 
         :param other_option: Another Option
-        :return: some(tuple())
+        :return: Some(tuple())
         """
         if self.is_some() and other_option.is_some():
-            return some((self.value, other_option.value))
+            return Some((self.value, other_option.value))
 
-        return nada()
+        return Nada()
 
     def unzip(self) -> "tuple[Option[T], Option[T]]":
         """
@@ -478,52 +479,37 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         Examples:
 
-        - some((10, 15)).unzip() -> (some(10), some(15))
+        - some((10, 15)).unzip() -> (Some(10), Some(15))
 
-        - some((10, None)).unzip() -> (some(10), nada())
+        - some((10, None)).unzip() -> (Some(10), Nada())
 
-        - Option((None, None)).unzip() -> (nada(), nada())
+        - Option((None, None)).unzip() -> (Nada(), Nada())
 
         :return: tuple(Option, Option)
         """
         if not isinstance(self.value, tuple):
-            return nada(), nada()
+            return Nada(), Nada()
 
         first, second = self.value
-        first_opt = nada()
-        second_opt = nada()
+        first_opt = Nada()
+        second_opt = Nada()
 
         if first is not None:
-            first_opt = some(first)
+            first_opt = Some(first)
 
         if second is not None:
-            second_opt = some(second)
+            second_opt = Some(second)
 
         return first_opt, second_opt
 
 
-def some[T](value: T) -> Option[T]:
-    """
-        Create an Option with a non-None value
-
-        Examples:
-
-        - some(10) -> Option[int]
-
-        - some(None) -> Raises OptionException
-
-        :param value: Any non-None value
-        :return: Option(value)
-        """
-    return Option.some(value)
+class Some[T](Option[T]):
+    """Creates an Option[T] with a non-None internal value"""
+    def __init__(self, value: T):
+        super().__init__(value)
 
 
-def nada() -> Option:
-    """
-        Create an Option with None value
-
-        Example: nada() -> Option
-
-        :return: Option(None)
-        """
-    return Option.nada()
+class Nada[T](Option[T]):
+    """Creates an Option[T] with a None internal value"""
+    def __init__(self):
+        super().__init__(None)
