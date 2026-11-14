@@ -2,16 +2,9 @@ from enum import StrEnum
 from typing import Callable
 
 from abstract.iequality import IEquality
-from abstract.irepr import IRepr
 from abstract.imonad import IMonad
+from abstract.irepr import IRepr
 from monads.exceptions.result_exception import ResultException
-
-# Used for functions that pass an error to function and return another error
-type MapFn[T] = Callable[[T], T]
-type MapErr[E] = Callable[[E], E]
-
-# Used for search functions where contained value is checked against condition to return True/False
-type Predicate[T] = Callable[[T], bool]
 
 
 class ResultVariant(StrEnum):
@@ -232,7 +225,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 
         return current
 
-    def map(self, fn: MapFn) -> "Result[T, E]":
+    def map(self, fn: Callable[[T], T]) -> "Result[T, E]":
         """
         Create a Result where Result.value = fn(Result.value) if Result.state is Ok
 
@@ -250,7 +243,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 
         return Ok(fn(self.value))
 
-    def flatmap(self, fn: MapFn) -> "Result[T, E]":
+    def flatmap(self, fn: Callable[[T], T]) -> "Result[T, E]":
         """
         Flatten a Result and map it with a function
 
@@ -283,7 +276,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         """Return True if variant is OK"""
         return self.state == ResultVariant.OK
 
-    def is_ok_and(self, predicate: Predicate) -> bool:
+    def is_ok_and(self, predicate: Callable[[T], bool]) -> bool:
         """Return True if variant is OK and predicate returns True"""
         return self.is_ok() and predicate(self.value)
 
@@ -291,25 +284,26 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         """Return True if variant is ERR"""
         return self.state == ResultVariant.ERR
 
-    def is_err_and(self, predicate: Predicate) -> bool:
+    def is_err_and(self, predicate: Callable[[T], bool]) -> bool:
         """Return True if variant is ERR and predicate returns True"""
         return self.is_err() and predicate(self.value)
 
-    def map_or[V](self, func: MapFn, default: V) -> "Result[MapFn|V,E]":
+    def map_or(self, func: Callable[[T], T], default: T) -> "Result[Callable[[T], T],E]":
         """Returns the provided default if Err or applies func to value"""
         if self.is_err():
             return Ok(default)
 
         return Ok(func(self.value))
 
-    def map_or_else(self, success: MapFn, default: Callable, *args, **kwargs) -> "Result[MapFn,MapErr]":
+    def map_or_else(self, success: Callable[[T], T], default: Callable, *args,
+                    **kwargs) -> "Result[Callable[[T], T],Callable[[E], E]]":
         """Maps function if variant is Ok, else creates new Ok result with default function returned value"""
         if self.is_err():
             return Ok(default(*args, **kwargs))
 
         return Ok(success(self.value))
 
-    def map_err(self, func: MapErr) -> "Result[T, E] | Result[T,MapErr]":
+    def map_err(self, func: Callable[[E], E]) -> "Result[T, E | Callable[[E], E]]":
         """Maps an Err value, leaving Ok untouched"""
         if self.is_ok():
             return self
@@ -345,7 +339,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 
         return self
 
-    def and_then(self, func: Callable, *args, **kwargs) -> "Result[T, E] | Result[Callable, E]":
+    def and_then(self, func: Callable, *args, **kwargs) -> "Result[T | Callable, E]":
         """Calls func if result is Ok, otherwise returns Err of self"""
         if self.is_err():
             return self
