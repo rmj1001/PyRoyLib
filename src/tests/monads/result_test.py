@@ -237,6 +237,17 @@ class TestResult(unittest.TestCase):
         self.assertEqual(res1.unwrap_or_else(func, 3), 1)
         self.assertEqual(res2.unwrap_or_else(func, 3), 9)
 
+    def test_flatten(self):
+        ok1 = Ok(Ok(Ok(1)))
+        ok2 = Ok(1)
+        ok3 = Ok(Err(1))
+        err = Err(Ok(1))
+
+        self.assertEqual(ok1.flatten(), Ok(1))
+        self.assertEqual(ok2.flatten(), Ok(1))
+        self.assertEqual(ok3.flatten(), Err(1))
+        self.assertEqual(err.flatten(), Ok(1))
+
     def test_pattern_matching(self):
         """Test pattern matching with Results"""
         r1 = Ok(1)
