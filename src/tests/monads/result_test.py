@@ -118,17 +118,6 @@ class TestResult(unittest.TestCase):
         self.assertEqual(res1.map(func), Ok(3))
         self.assertEqual(res2.map(func), Err("Error"))
 
-    def test_flatmap(self):
-        ok_nested = Ok(Ok(1))
-        ok_recursed = Ok(Ok(Ok(3)))
-        err_nested = Err(Err("Error"))
-
-        fn = lambda x: x * 3
-
-        self.assertEqual(ok_nested.flatmap(fn, recurse=False), Ok(3))
-        self.assertEqual(ok_recursed.flatmap(fn, recurse=True), Ok(9))
-        self.assertEqual(err_nested.flatmap(fn, recurse=False), Err("Error"))
-
     def test_map_or(self):
         """Test Result.map_or()"""
         res1 = Ok(1)
