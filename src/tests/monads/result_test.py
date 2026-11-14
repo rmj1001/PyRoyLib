@@ -237,6 +237,23 @@ class TestResult(unittest.TestCase):
         self.assertEqual(res1.unwrap_or_else(func, 3), 1)
         self.assertEqual(res2.unwrap_or_else(func, 3), 9)
 
+    def test_pattern_matching(self):
+        """Test pattern matching with Results"""
+        r1 = Ok(1)
+        r2 = Err("Error")
+
+        match r1:
+            case Ok(val):
+                self.assertEqual(val, 1)
+            case Err(_):
+                raise Exception()
+
+        match r2:
+            case Ok(_):
+                raise Exception()
+            case Err(val):
+                self.assertEqual(val, "Error")
+
 
 if __name__ == '__main__':
     unittest.main()
