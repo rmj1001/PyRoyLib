@@ -93,11 +93,11 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 
         Examples:
 
-        - Ok(1).and_then(lambda x: x + 1) -> Ok(11)
-        - Err(1).and_then(lambda x: x + 1) -> Err(1)
+        - Ok(1).and_then(lambda x: Ok(x + 1)) -> Ok(11)
+        - Err(1).and_then(lambda x: Ok(x + 1)) -> Err(1)
 
         :param fn: function to create new Result from
-        :return: self if self is Err, else Ok(fn(*args, **kwargs))
+        :return: self if self is Err, else fn(Result.value)
         """
         match self:
             case Ok(o):
@@ -388,7 +388,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         - Ok(1).map(lambda x: x + 1) -> Ok(2)
         - Err(1).map(lambda x: x + 1) -> Err(1)
 
-        :param fn: Function that takes one argument T and returns another T
+        :param fn: Function that takes one argument T and returns U
         :return: Mapped Result
         """
         match self:
@@ -410,7 +410,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         - Ok(1).map_err(lambda x: x + 1) -> 1
         - Err(1).map_err(lambda x: x + 1) -> 2
 
-        :param fn: Function that takes one argument E and returns another E
+        :param fn: Function that takes one argument E and returns F
         :return: self or mapped Err Result
         """
         match self:
@@ -432,7 +432,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         - Ok(1).map_or(lambda x: x + 1, 3) -> 2
         - Err(1).map_or(lambda x: x + 1, 3) -> 3
 
-        :param fn: Function that takes one argument T and returns another T
+        :param fn: Function that takes one argument T and returns U
         :param default: Default value
         :return: default or fn(Result.value)
         """
@@ -448,16 +448,16 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 
     def map_or_else[U](self, fn: Callable[[T], U], default: Callable[[E], U]) -> U:
         """
-        Convert Result to default(Result.value) if Err, else fn(Result.value)
+        Convert Result to default(Result.error) if Err, else fn(Result.value)
 
         Examples:
 
-        - Ok(1).map_or(lambda x: x + 1, lambda x: x + 5) -> 2
-        - Err(1).map_or(lambda x: x + 1, lambda x: x + 5) -> 6
+        - Ok(1).map_or_else(lambda x: x + 1, lambda e: e + 5) -> 2
+        - Err(1).map_or_else(lambda x: x + 1, lambda e: e + 5) -> 6
 
-        :param fn: Function that takes one argument T and returns another T
-        :param default: Default function with *args and **kwargs passed in
-        :return: Ok(default(*args, **kwargs)) or mapped Ok Result
+        :param fn: Function that takes one argument T and returns U
+        :param default: Default function that takes one argument E and returns U
+        :return: fn(Result.value) or default(Result.error)
         """
         match self:
             case Ok(o):
@@ -490,16 +490,15 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 
     def or_else[F](self, fn: Callable[[E], Result[T, F]]) -> "Result[T, F]":
         """
-        Returns Ok() with original value if Result is Ok, or else an Error with its
-        value sourced from called function
+        Returns self if Result is Ok, or else a new Result sourced from called function
 
         Example:
 
-        - Ok(1).or_else(lambda e: 150) -> Ok(1)
-        - Err(1).or_else(lambda e: 150) -> Err(150)
+        - Ok(1).or_else(lambda e: Err(150)) -> Ok(1)
+        - Err(1).or_else(lambda e: Err(150)) -> Err(150)
 
         :param fn: function to get a value from
-        :return: self or Err(fn(*args, **kwargs))
+        :return: self or fn(Result.error)
         """
         match self:
             case Ok(o):
@@ -621,7 +620,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 
     def unwrap_or_else(self, fn: Callable[[E], T]) -> T:
         """
-        Return contained Ok value or compute it from fn(Result.value)
+        Return contained Ok value or compute it from fn(Result.value) if Err
 
         Examples:
 
