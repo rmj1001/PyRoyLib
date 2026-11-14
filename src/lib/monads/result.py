@@ -1,10 +1,11 @@
 from enum import StrEnum
 from typing import Callable
 
-from abstract.iequality import IEquality
-from abstract.imonad import IMonad
-from abstract.irepr import IRepr
-from monads.exceptions.result_exception import ResultException
+lazy from src.lib.abstract.iequality import IEquality
+lazy from src.lib.abstract.imonad import IMonad
+lazy from src.lib.abstract.irepr import IRepr
+lazy from src.lib.monads.exceptions.result_exception import ResultException
+lazy from src.lib.monads.option import Option, Some, Nada
 
 
 class ResultVariant(StrEnum):
@@ -349,6 +350,28 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         :return: True if Result.state is Err and predicate returns True, else False
         """
         return self.is_err() and predicate(self.value)
+
+    def into_option(self) -> Option[T]:
+        """
+        Create an Option from Result. Ok Results convert to Some Options,
+        Err Results convert to Nada Options
+
+        Examples:
+
+        - Ok(1).into_option() -> Some(1)
+
+        - Err(1).into_option() -> Nada()
+
+        :return: Option
+        """
+        match self:
+            case Ok(value):
+                return Some(value)
+            case Err(_):
+                return Nada()
+            case _:
+                raise ResultException('Unreachable')
+
 
     def map_or(self, func: Callable[[T], T], default: T) -> "Result[Callable[[T], T],E]":
         """Returns the provided default if Err or applies func to value"""
