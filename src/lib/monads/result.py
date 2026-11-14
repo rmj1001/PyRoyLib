@@ -287,19 +287,67 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         return cls(error, ResultVariant.ERR)
 
     def is_ok(self) -> bool:
-        """Return True if variant is OK"""
+        """
+        Check that Result.state is Ok
+
+        Example:
+
+        - Ok(1).is_ok() -> True
+
+        - Err(1).is_ok() -> False
+
+        :return: True if Result.state is Ok, else False
+        """
         return self.state == ResultVariant.OK
 
     def is_ok_and(self, predicate: Callable[[T], bool]) -> bool:
-        """Return True if variant is OK and predicate returns True"""
+        """
+        Check that Result.state is Ok, and predicate function
+        returns True.
+
+        Examples
+
+        - Ok(2).is_ok_and(lambda x: x % 2 == 0) -> True
+
+        - Ok(5).is_ok_and(lambda x: x % 2 == 0) -> False
+
+        - Err().is_err_and(lambda x: x % 2 == 0) -> False
+
+        :param predicate: Function taking Result.value as only argument, returns bool
+        :return: True if Result.state is Ok and predicate returns True, else False
+        """
         return self.is_ok() and predicate(self.value)
 
     def is_err(self) -> bool:
-        """Return True if variant is ERR"""
+        """
+        Check that Result.state is Err
+
+        Example:
+
+        - Ok(1).is_err() -> False
+
+        - Err(1).is_err() -> True
+
+        :return: True if Result.state is Err, else False
+        """
         return self.state == ResultVariant.ERR
 
     def is_err_and(self, predicate: Callable[[T], bool]) -> bool:
-        """Return True if variant is ERR and predicate returns True"""
+        """
+        Check that Result.state is Err, and predicate function
+        returns True.
+
+        Examples
+
+        - Ok(2).is_err_and(lambda x: x % 2 == 0) -> False
+
+        - Ok(5).is_err_and(lambda x: x % 2 == 0) -> False
+
+        - Err('Error').is_err_and(lambda x: x == 'Error') -> True
+
+        :param predicate: Function taking Result.value as only argument, returns bool
+        :return: True if Result.state is Err and predicate returns True, else False
+        """
         return self.is_err() and predicate(self.value)
 
     def map_or(self, func: Callable[[T], T], default: T) -> "Result[Callable[[T], T],E]":
