@@ -103,8 +103,8 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
             case Ok(o):
                 return fn(o)
 
-            case Err(_):
-                return self
+            case Err(e):
+                return Err(e)
 
             case _:
                 raise ResultException('Unreachable')
@@ -196,7 +196,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
                 elif isinstance(o, Result):
                     return o
                 else:
-                    return self
+                    return Ok(o)
 
             case Err(e):
                 if recurse and isinstance(e, Result):
@@ -204,7 +204,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
                 elif isinstance(e, Result):
                     return e
                 else:
-                    return self
+                    return Err(e)
 
             case _:
                 raise ResultException('Unreachable')
@@ -240,13 +240,15 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         :return: Original result
         """
         match self:
-            case Ok(e):
-                fn(e)
+            case Ok(o):
+                fn(o)
+                return Ok(o)
 
-            case Err(_):
-                pass
+            case Err(e):
+                return Err(e)
 
-        return self
+            case _:
+                raise ResultException('Unreachable')
 
     def inspect_err(self, fn: Callable[[E], None]) -> Result[T, E]:
         """
@@ -260,13 +262,15 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         :return: Original result
         """
         match self:
-            case Ok(_):
-                pass
+            case Ok(o):
+                return Ok(o)
 
             case Err(e):
                 fn(e)
+                return Err(e)
 
-        return self
+            case _:
+                raise ResultException('Unreachable')
 
     def into_ok(self) -> "Result[T, E]":
         """
@@ -391,8 +395,8 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
             case Ok(o):
                 return Ok(fn(o))
 
-            case Err(_):
-                return self
+            case Err(e):
+                return Err(e)
 
             case _:
                 raise ResultException('Unreachable')
@@ -410,8 +414,8 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         :return: self or mapped Err Result
         """
         match self:
-            case Ok(_):
-                return self
+            case Ok(o):
+                return Ok(o)
 
             case Err(e):
                 return Err(fn(e))
