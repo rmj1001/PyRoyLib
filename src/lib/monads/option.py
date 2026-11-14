@@ -2,14 +2,10 @@ from collections.abc import Callable
 
 from abstract.iequality import IEquality
 from abstract.ifunctor import IFunctor
-from abstract.irepr import IRepr
 from abstract.imonad import IMonad
+from abstract.irepr import IRepr
 from monads.exceptions.option_exception import OptionException
 from monads.result import Result, Ok, Err
-
-# Map function type alias
-type MapFn[T] = Callable[[T], T]
-type Predicate[T] = Callable[[T], bool]
 
 
 class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
@@ -173,7 +169,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         return fn(*args, **kwargs)
 
-    def or_else(self, fn: Callable, *args, **kwargs) -> "Option[T | MapFn]":
+    def or_else(self, fn: Callable, *args, **kwargs) -> "Option[T | Callable[[T], T]]":
         """
         Returns an Option with Option.value being either original Option.value or the result of fn
 
@@ -224,7 +220,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         return current
 
-    def map(self, fn: MapFn) -> 'Option[T]':
+    def map(self, fn: Callable[[T], T]) -> 'Option[T]':
         """
         Create an Option where Option.value = fn(Option.value).
 
@@ -242,7 +238,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         return Some(fn(self.value))
 
-    def flatmap(self, fn: MapFn) -> 'Option[T]':
+    def flatmap(self, fn: Callable[[T], T]) -> 'Option[Callable[[T], T]]':
         """
         Flatten an Option and map it with a function
 
@@ -305,7 +301,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         """
         return self.value is not None
 
-    def is_some_and(self, predicate: Predicate) -> bool:
+    def is_some_and(self, predicate: Callable[[T], bool]) -> bool:
         """
         Check that Option.value is not None, and predicate function
         returns True.
@@ -340,7 +336,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         """
         return self.value is None
 
-    def is_nada_or(self, predicate: Predicate) -> bool:
+    def is_nada_or(self, predicate: Callable[[T], bool]) -> bool:
         """
         Return True if Option.value is None, or predicate is True
 
@@ -375,7 +371,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         return Ok(self.value)
 
-    def ok_or_else[E](self, fn: Callable, *args, **kwargs) -> "Result[T,E]":
+    def ok_or_else[E](self, fn: Callable, *args, **kwargs) -> "Result[T,Callable[[T], T]]":
         """
         Convert Option to Result.ok() if Option.value is Some, else Result.err() with value from
         fn's return value
@@ -394,7 +390,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         return Ok(self.value)
 
-    def filter(self, predicate: Predicate) -> "Option[T]":
+    def filter(self, predicate: Callable[[T], bool]) -> "Option[T]":
         """
         Return Some(self.value) if predicate returns True, else return Nada()
 
@@ -507,6 +503,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
 class Some[T](Option[T]):
     """Creates an Option[T] with a non-None value"""
+
     def __init__(self, value: T):
         if value is None:
             raise OptionException('Some(value: T) cannot take None as a value argument')
@@ -516,5 +513,6 @@ class Some[T](Option[T]):
 
 class Nada[T](Option[T]):
     """Creates an Option[T] with a None value"""
+
     def __init__(self):
         super().__init__(None)
