@@ -185,7 +185,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         :return: self or Option(fn(*args, **kwargs))
         """
         if self.is_some():
-            return self
+            return Some(self.value)
 
         result = fn(*args, **kwargs)
 
@@ -211,7 +211,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         :return: Innermost Option
         """
         if self.is_nada():
-            return self
+            return Nada()
 
         current: Option[T] = Some(self.value)
 
@@ -226,7 +226,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         Examples:
 
-        - Some(1).map(lambda x: x + 1) -> Some(2)
+        - Some(1).map(lambda x: x + 1) -> Some(Some(2))
 
         - Nada().map(lambda x: x + 1) -> Nada()
 
@@ -234,7 +234,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         :return: Mapped Option
         """
         if self.is_nada():
-            return self
+            return Nada()
 
         return Some(fn(self.value))
 
@@ -406,7 +406,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         :return: Option
         """
         if self.is_nada():
-            return self
+            return Nada()
 
         if predicate(self.value):
             return Some(self.value)
