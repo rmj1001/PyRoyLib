@@ -115,10 +115,15 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         :param message: Custom error message
         :return: Result.value
         """
-        if self.is_err():
-            raise ResultException(message)
+        match self:
+            case Ok(value):
+                return value
 
-        return self.value
+            case Err(_):
+                raise ResultException(message)
+
+            case _:
+                raise ResultException('Unreachable')
 
     def unwrap(self) -> T:
         """
@@ -132,10 +137,15 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 
         :return: Result.value
         """
-        if self.is_err():
-            raise ResultException(self.value)
+        match self:
+            case Ok(value):
+                return value
 
-        return self.value
+            case Err(value):
+                raise ResultException(value)
+
+            case _:
+                raise ResultException('Unreachable')
 
     def unwrap_or(self, default: T) -> T:
         """
@@ -150,10 +160,15 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         :param default: Default value
         :return: Result.value or default value
         """
-        if self.is_err():
-            return default
+        match self:
+            case Ok(value):
+                return value
 
-        return self.value
+            case Err(_):
+                return default
+
+            case _:
+                raise ResultException('Unreachable')
 
     def unwrap_or_else(self, fn: Callable, *args, **kwargs) -> T | Callable:
         """
@@ -170,10 +185,15 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         :param kwargs: keyword arguments to pass to fn
         :return: Result.value or function return
         """
-        if self.is_ok():
-            return self.value
+        match self:
+            case Ok(value):
+                return value
 
-        return fn(*args, **kwargs)
+            case Err(_):
+                return fn(*args, **kwargs)
+
+            case _:
+                raise ResultException('Unreachable')
 
     def or_else(self, fn: Callable, *args, **kwargs) -> "Result[T, Callable]":
         """
@@ -191,10 +211,15 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         :param kwargs: keyword arguments to pass to fn
         :return: self or Err(fn(*args, **kwargs))
         """
-        if self.is_ok():
-            return self
+        match self:
+            case Ok(value):
+                return Ok(value)
 
-        return Err(fn(*args, **kwargs))
+            case Err(_):
+                return Err(fn(*args, **kwargs))
+
+            case _:
+                raise ResultException('Unreachable')
 
     # -- IFunctor Implementation
 
@@ -239,10 +264,15 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         :param fn: Function that takes one argument T and returns another T
         :return: Mapped Result
         """
-        if self.is_err():
-            return self
+        match self:
+            case Ok(value):
+                return Ok(fn(value))
 
-        return Ok(fn(self.value))
+            case Err(value):
+                return Err(value)
+
+            case _:
+                raise ResultException('Unreachable')
 
     def flatmap(self, fn: Callable[[T], T]) -> "Result[T, E]":
         """
@@ -299,7 +329,15 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 
         :return: True if Result.state is Ok, else False
         """
-        return self.state == ResultVariant.OK
+        match self:
+            case Ok(_):
+                return True
+
+            case Err(_):
+                return False
+
+            case _:
+                raise ResultException('Unreachable')
 
     def is_ok_and(self, predicate: Callable[[T], bool]) -> bool:
         """
@@ -331,7 +369,15 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 
         :return: True if Result.state is Err, else False
         """
-        return self.state == ResultVariant.ERR
+        match self:
+            case Ok(_):
+                return False
+
+            case Err(_):
+                return True
+
+            case _:
+                raise ResultException('Unreachable')
 
     def is_err_and(self, predicate: Callable[[T], bool]) -> bool:
         """
@@ -367,8 +413,10 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         match self:
             case Ok(value):
                 return Some(value)
+
             case Err(_):
                 return Nada()
+
             case _:
                 raise ResultException('Unreachable')
 
@@ -387,10 +435,15 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         :param default: Default value
         :return: Ok(default) or mapped Ok Result
         """
-        if self.is_err():
-            return Ok(default)
+        match self:
+            case Ok(value):
+                return Ok(fn(value))
 
-        return Ok(fn(self.value))
+            case Err(_):
+                return Ok(default)
+
+            case _:
+                raise ResultException('Unreachable')
 
     def map_ok_or_else(self, fn: Callable[[T], T], default: Callable, *args,
                        **kwargs) -> "Result[Callable[[T], T],Callable[[E], E]]":
@@ -407,10 +460,15 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         :param default: Default function with *args and **kwargs passed in
         :return: Ok(default(*args, **kwargs)) or mapped Ok Result
         """
-        if self.is_err():
-            return Ok(default(*args, **kwargs))
+        match self:
+            case Ok(value):
+                return Ok(fn(value))
 
-        return Ok(fn(self.value))
+            case Err(_):
+                return Ok(default(*args, **kwargs))
+
+            case _:
+                raise ResultException('Unreachable')
 
     def map_err(self, fn: Callable[[E], E]) -> "Result[T, E | Callable[[E], E]]":
         """
@@ -425,10 +483,15 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         :param fn: Function that takes one argument E and returns another E
         :return: self or mapped Err Result
         """
-        if self.is_ok():
-            return self
+        match self:
+            case Ok(value):
+                return Ok(value)
 
-        return Err(fn(self.value))
+            case Err(value):
+                return Err(fn(value))
+
+            case _:
+                raise ResultException('Unreachable')
 
     def expect_err(self, message: E) -> E:
         """
@@ -443,10 +506,15 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         :param message: Exception message
         :return: Error value
         """
-        if self.is_err():
-            return self.value
+        match self:
+            case Ok(_):
+                raise ResultException(message)
 
-        raise ResultException(message)
+            case Err(value):
+                return value
+
+            case _:
+                raise ResultException('Unreachable')
 
     def unwrap_err(self) -> T:
         """
@@ -460,10 +528,15 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 
         :return: Error value
         """
-        if self.is_err():
-            return self.value
+        match self:
+            case Ok(_):
+                raise ResultException('Result is not an error.')
 
-        raise ResultException('Result is not an error.')
+            case Err(value):
+                return value
+
+            case _:
+                raise ResultException('Unreachable')
 
     def into_ok(self) -> "Result[T, E]":
         """
@@ -506,10 +579,15 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         :param other: Other Result
         :return: other if self is Ok, else self
         """
-        if self.is_ok():
-            return other
+        match self:
+            case Ok(_):
+                return other
 
-        return self
+            case Err(value):
+                return Err(value)
+
+            case _:
+                raise ResultException('Unreachable')
 
     def and_then(self, fn: Callable, *args, **kwargs) -> "Result[T | Callable, E]":
         """
@@ -526,10 +604,15 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         :param kwargs: Keyword arguments passed to fn
         :return: self if self is Err, else Ok(fn(*args, **kwargs))
         """
-        if self.is_err():
-            return self
+        match self:
+            case Ok(_):
+                return Ok(fn(*args, **kwargs))
 
-        return Ok(fn(*args, **kwargs))
+            case Err(value):
+                return Err(value)
+
+            case _:
+                raise ResultException('Unreachable')
 
     def other_if_err(self, other: "Result[T, E]") -> "Result[T, E]":
         """
@@ -544,10 +627,15 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         :param other: Other Result
         :return: other if self is Err, else self
         """
-        if self.is_ok():
-            return self
+        match self:
+            case Ok(value):
+                return Ok(value)
 
-        return other
+            case Err(_):
+                return other
+
+            case _:
+                raise ResultException('Unreachable')
 
 
 class Ok[T, E](Result[T, E]):
