@@ -116,8 +116,8 @@ class TestResult(unittest.TestCase):
         res2 = Err("Error")
         func = lambda x: x * 3
 
-        self.assertEqual(res1.map_or(func, 5), Ok(3))
-        self.assertEqual(res2.map_or(func, 5), Ok(5))
+        self.assertEqual(res1.map_ok_or(func, 5), Ok(3))
+        self.assertEqual(res2.map_ok_or(func, 5), Ok(5))
 
     def test_map_or_else(self):
         """Test Result.map_or_else()"""
@@ -125,8 +125,8 @@ class TestResult(unittest.TestCase):
         res2 = Err("Error")
         func = lambda x: x * 3
 
-        self.assertEqual(res1.map_or_else(func, func, 5), Ok(3))
-        self.assertEqual(res2.map_or_else(func, func, 5), Ok(15))
+        self.assertEqual(res1.map_ok_or_else(func, func, 5), Ok(3))
+        self.assertEqual(res2.map_ok_or_else(func, func, 5), Ok(15))
 
     def test_map_err(self):
         """Test Result.map_err()"""
