@@ -22,6 +22,7 @@ class ResultVariant(StrEnum):
 
 class Result[T, E](IRepr, IMonad[T], IEquality):
     """Rust-style result"""
+    __match_args__ = ('value',)
 
     def __init__(self, value: T | E, state: ResultVariant = ResultVariant.OK):
         self.value: T | E = value
