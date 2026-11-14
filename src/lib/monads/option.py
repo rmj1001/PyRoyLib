@@ -457,7 +457,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         Examples:
 
-        - Some(10).zip(Some(15)) -> some((10, 15))
+        - Some(10).zip(Some(15)) -> Some((10, 15))
 
         - Some(10).zip(Nada()) -> Nada()
 
@@ -479,9 +479,9 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         Examples:
 
-        - some((10, 15)).unzip() -> (Some(10), Some(15))
+        - Some((10, 15)).unzip() -> (Some(10), Some(15))
 
-        - some((10, None)).unzip() -> (Some(10), Nada())
+        - Some((10, None)).unzip() -> (Some(10), Nada())
 
         - Option((None, None)).unzip() -> (Nada(), Nada())
 
