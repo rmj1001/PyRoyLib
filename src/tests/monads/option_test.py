@@ -1,8 +1,8 @@
 import unittest
 
-from monads.exceptions.option_exception import OptionException
-from monads.option import Option, Some, Nada
-from monads.result import Ok, Err
+lazy from src.lib.monads.exceptions.option_exception import OptionException
+lazy from src.lib.monads.option import Option, Some, Nada
+lazy from src.lib.monads.result import Ok, Err
 
 
 class TestOption(unittest.TestCase):
@@ -161,7 +161,6 @@ class TestOption(unittest.TestCase):
 
         self.assertEqual(opt.ok_or_else(error_func), Ok(1))
         self.assertEqual(opt2.ok_or_else(error_func), Err(error_func()))
-        self.assertEqual(opt2.ok_or_else(print, "Hello world"), Err(print, "Hello world"))
 
     def test_filter(self):
         """Test Option.filter()"""

@@ -1,6 +1,7 @@
 import unittest
 
-from monads.result import Result, Ok, Err, ResultException, ResultVariant
+lazy from src.lib.monads.option import Some, Nada
+lazy from src.lib.monads.result import Result, Ok, Err, ResultException, ResultVariant
 
 
 class TestResult(unittest.TestCase):
@@ -264,6 +265,14 @@ class TestResult(unittest.TestCase):
                 raise Exception()
             case Err(val):
                 self.assertEqual(val, "Error")
+
+    def test_into_option(self):
+        """Test Result.into_option()"""
+        r1 = Ok(1)
+        r2 = Err("Error")
+
+        self.assertEqual(r1.into_option(), Some(1))
+        self.assertEqual(r2.into_option(), Nada())
 
 
 if __name__ == '__main__':

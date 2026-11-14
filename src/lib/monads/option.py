@@ -1,11 +1,11 @@
 from collections.abc import Callable
 
-from abstract.iequality import IEquality
-from abstract.ifunctor import IFunctor
-from abstract.imonad import IMonad
-from abstract.irepr import IRepr
-from monads.exceptions.option_exception import OptionException
-from monads.result import Result, Ok, Err
+lazy from src.lib.abstract.iequality import IEquality
+lazy from src.lib.abstract.ifunctor import IFunctor
+lazy from src.lib.abstract.imonad import IMonad
+lazy from src.lib.abstract.irepr import IRepr
+lazy from src.lib.monads.exceptions.option_exception import OptionException
+lazy from src.lib.monads.result import Result, Ok, Err
 
 
 class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
