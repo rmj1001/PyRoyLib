@@ -1,9 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Callable
 
-from abstract.ifunctor import IFunctor
-
-
 class IMonad[T](ABC):
     value: T
 
