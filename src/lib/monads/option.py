@@ -4,7 +4,7 @@ from abstract.iequality import IEquality
 from abstract.irepr import IRepr
 from abstract.imonad import IMonad
 from monads.exceptions.option_exception import OptionException
-from monads.result import Result
+from monads.result import Result, ok, err
 
 # Map function type alias
 type MapFn[T] = Callable[[T], T]
@@ -18,7 +18,10 @@ class Option[T](IRepr, IMonad[T], IEquality):
         self.value: T | None = value
 
     def __bool__(self) -> bool:
-        """Return true if option is Some, false if Nada"""
+        """
+        Convert Option to a truthy value
+        :return: True if internal value is not None, else False
+        """
         return self.is_some()
 
     # -- IRepr Implementation
@@ -74,7 +77,7 @@ class Option[T](IRepr, IMonad[T], IEquality):
 
         return fn(*args, **kwargs)
 
-    def or_else(self, fn: Callable, *args, **kwargs) -> "Option[T] | Option[MapFn]":
+    def or_else(self, fn: Callable, *args, **kwargs) -> "Option[T | MapFn]":
         """Returns option if it is Some, else calls fn and returns result"""
         if self.is_some():
             return self
@@ -82,24 +85,28 @@ class Option[T](IRepr, IMonad[T], IEquality):
         result = fn(*args, **kwargs)
 
         if result is None:
-            return Option.nada()
+            return nada()
 
-        return Option.some(result)
+        return some(result)
 
     # -- IFunctor Implementation
 
     def flatten(self) -> 'Option[T]':
-        while isinstance(self.value, Option):
-            self.value = self.value.value
+        if self.is_nada():
+            return self
 
-        return self
+        current: Option[T] = some(self.value)
+
+        while isinstance(current.value, Option):
+            current: Option[T] = some(current.value.value)
+
+        return current
 
     def map(self, fn: MapFn) -> 'Option[T]':
         if self.is_nada():
             return self
 
-        self.value = fn(self.value)
-        return self
+        return some(fn(self.value))
 
     def flatmap(self, fn: MapFn) -> 'Option[T]':
         return self.flatten().map(fn)
@@ -112,7 +119,7 @@ class Option[T](IRepr, IMonad[T], IEquality):
         return cls(value)
 
     @classmethod
-    def nada(cls) -> "Option":
+    def nada(cls) -> "Option[T]":
         """Create an option with Nada variant"""
         return cls(None)
 
@@ -138,16 +145,16 @@ class Option[T](IRepr, IMonad[T], IEquality):
     def ok_or[E](self, error: E) -> "Result[T,E]":
         """Return a result"""
         if self.is_nada():
-            return Result.err(error)
+            return err(error)
 
-        return Result.ok(self.value)
+        return ok(self.value)
 
     def ok_or_else[E](self, fn: Callable, *args, **kwargs) -> "Result[T,E]":
         """Return a result. If option is Nada, error will be the result of a function."""
         if self.is_nada():
-            return Result.err(fn(*args, **kwargs))
+            return err(fn(*args, **kwargs))
 
-        return Result.ok(self.value)
+        return ok(self.value)
 
     def filter(self, predicate: Predicate) -> "Option[T]":
         """Return Option.some(self.value) if predicate returns True, else return Option.none()"""
@@ -155,9 +162,9 @@ class Option[T](IRepr, IMonad[T], IEquality):
             return self
 
         if predicate(self.value):
-            return Option.some(self.value)
+            return some(self.value)
 
-        return Option.nada()
+        return nada()
 
     def other_if_some(self, other_option: "Option[T]") -> "Option[T]":
         """Return Nada if option is Nada, otherwise return other_option"""
@@ -176,34 +183,33 @@ class Option[T](IRepr, IMonad[T], IEquality):
     def zip(self, other_option: "Option[T]") -> "Option[tuple[T, T]]":
         """Return tuple if both options are Some, else return Nada"""
         if self.is_some() and other_option.is_some():
-            return Option.some((self.value, other_option.value))
+            return some((self.value, other_option.value))
 
-        return Option.nada()
+        return nada()
 
     def unzip(self) -> "tuple[Option[T], Option[T]]":
         """Unzips an option containing a tuple of values. Returns (Nada, Nada) if tuple not present."""
         if not isinstance(self.value, tuple):
-            return Option.nada(), Option.nada()
+            return nada(), nada()
 
-        first = self.value[0]
-        second = self.value[1]
-        first_opt = Option.nada()
-        second_opt = Option.nada()
+        first, second = self.value
+        first_opt = nada()
+        second_opt = nada()
 
         if first is not None:
-            first_opt = Option.some(first)
+            first_opt = some(first)
 
         if second is not None:
-            second_opt = Option.some(second)
+            second_opt = some(second)
 
         return first_opt, second_opt
 
 
 def some[T](value: T) -> Option[T]:
     """Shorthand for Option.some(value)"""
-    return Option.some(value)
+    return Option(value)
 
 
 def nada() -> Option:
     """Shorthand for Option.nada()"""
-    return Option.nada()
+    return Option(None)
