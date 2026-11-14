@@ -371,7 +371,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         return Ok(self.value)
 
-    def ok_or_else[E](self, fn: Callable, *args, **kwargs) -> "Result[T,Callable[[T], T]]":
+    def ok_or_else(self, fn: Callable, *args, **kwargs) -> "Result[T,Callable[[T], T]]":
         """
         Convert Option to Result.ok() if Option.value is Some, else Result.err() with value from
         fn's return value
@@ -413,7 +413,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         return Nada()
 
-    def other_if_some(self, other_option: "Option[T]") -> "Option[T]":
+    def other_if_some(self, other: "Option[T]") -> "Option[T]":
         """
         Return Nada() if Option.value is None, otherwise return a different Option
 
@@ -423,15 +423,15 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         - Nada().other_if_some(Some(15)) -> Nada()
 
-        :param other_option: Another Option
+        :param other: Another Option
         :return: Option
         """
         if self.is_some():
-            return other_option
+            return other
 
         return self
 
-    def other_if_nada(self, other_option: "Option[T]") -> "Option[T]":
+    def other_if_nada(self, other: "Option[T]") -> "Option[T]":
         """
         Return another Option if Option.value is None, otherwise return original Option
 
@@ -441,15 +441,15 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         - Nada().other_if_nada(Some(15)) -> Some(15)
 
-        :param other_option: Another Option
+        :param other: Another Option
         :return: Option
         """
         if self.is_nada():
-            return other_option
+            return other
 
         return self
 
-    def zip(self, other_option: "Option[T]") -> "Option[tuple[T, T]]":
+    def zip(self, other: "Option[T]") -> "Option[tuple[T, T]]":
         """
         Return tuple in an Option if both Options are not Nada(), else return Nada()
 
@@ -463,11 +463,11 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         - Nada().zip(Nada()) -> Nada()
 
-        :param other_option: Another Option
+        :param other: Another Option
         :return: Some(tuple())
         """
-        if self.is_some() and other_option.is_some():
-            return Some((self.value, other_option.value))
+        if self.is_some() and other.is_some():
+            return Some((self.value, other.value))
 
         return Nada()
 

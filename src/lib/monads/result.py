@@ -276,16 +276,16 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         return cls(value, ResultVariant.OK)
 
     @classmethod
-    def err(cls, error: E) -> "Result[T,E]":
+    def err(cls, value: E) -> "Result[T,E]":
         """
         Create a Result with Err variant
 
         Example: Result.err(val) -> Result(val, ResultVariant.ERR)
 
-        :param error: The error for Result to contain
+        :param value: The error for Result to contain
         :return: Result(value, ResultVariant.ERR)
         """
-        return cls(error, ResultVariant.ERR)
+        return cls(value, ResultVariant.ERR)
 
     def is_ok(self) -> bool:
         """
@@ -373,7 +373,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
                 raise ResultException('Unreachable')
 
 
-    def map_ok_or(self, func: Callable[[T], T], default: T) -> "Result[T | Callable[[T], T],E]":
+    def map_ok_or(self, fn: Callable[[T], T], default: T) -> "Result[T | Callable[[T], T],E]":
         """
         Convert Result to Ok(default) if Err, else map function to Result
 
@@ -383,16 +383,16 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 
         - Err(1).map_or(lambda x: x + 1, 10) -> Ok(10)
 
-        :param func: Function that takes one argument T and returns another T
+        :param fn: Function that takes one argument T and returns another T
         :param default: Default value
         :return: Ok(default) or mapped Ok Result
         """
         if self.is_err():
             return Ok(default)
 
-        return Ok(func(self.value))
+        return Ok(fn(self.value))
 
-    def map_ok_or_else(self, func: Callable[[T], T], default: Callable, *args,
+    def map_ok_or_else(self, fn: Callable[[T], T], default: Callable, *args,
                        **kwargs) -> "Result[Callable[[T], T],Callable[[E], E]]":
         """
         Convert Result to Ok(default(*args, **kwargs)) if Err, else map function to Result
@@ -403,18 +403,18 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 
         - Err(1).map_or(lambda x: x + 1, lambda x: x + 5, 10) -> Ok(15)
 
-        :param func: Function that takes one argument T and returns another T
+        :param fn: Function that takes one argument T and returns another T
         :param default: Default function with *args and **kwargs passed in
         :return: Ok(default(*args, **kwargs)) or mapped Ok Result
         """
         if self.is_err():
             return Ok(default(*args, **kwargs))
 
-        return Ok(func(self.value))
+        return Ok(fn(self.value))
 
-    def map_err(self, func: Callable[[E], E]) -> "Result[T, E | Callable[[E], E]]":
+    def map_err(self, fn: Callable[[E], E]) -> "Result[T, E | Callable[[E], E]]":
         """
-        Return self if Ok(), else map Result to Err(func(Result.value))
+        Return self if Ok(), else map Result to Err(fn(Result.value))
 
         Examples:
 
@@ -422,13 +422,13 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 
         - Err(1).map_err(lambda x: x + 1) -> Err(2)
 
-        :param func: Function that takes one argument E and returns another E
+        :param fn: Function that takes one argument E and returns another E
         :return: self or mapped Err Result
         """
         if self.is_ok():
             return self
 
-        return Err(func(self.value))
+        return Err(fn(self.value))
 
     def expect_err(self, message: E) -> E:
         """
@@ -493,7 +493,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         """
         return Err(self.value)
 
-    def other_if_ok(self, res: "Result[T, E]") -> "Result[T, E]":
+    def other_if_ok(self, other: "Result[T, E]") -> "Result[T, E]":
         """
         Return another Result if current Result is Ok, else return self
 
@@ -503,17 +503,17 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 
         - Err(1).other_if_ok(Ok(1)) -> Err(1)
 
-        :param res: Other Result
-        :return: res if self is Ok, else self
+        :param other: Other Result
+        :return: other if self is Ok, else self
         """
         if self.is_ok():
-            return res
+            return other
 
         return self
 
-    def and_then(self, func: Callable, *args, **kwargs) -> "Result[T | Callable, E]":
+    def and_then(self, fn: Callable, *args, **kwargs) -> "Result[T | Callable, E]":
         """
-        Return a new Result created from func return if Result is Ok, else return self
+        Return a new Result created from fn return if Result is Ok, else return self
 
         Examples:
 
@@ -521,17 +521,17 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 
         - Err(1).and_then(lambda: 10) -> Err(1)
 
-        :param func: function to create new Result from
-        :param args: Sequential arguments passed to func
-        :param kwargs: Keyword arguments passed to func
-        :return: self if self is Err, else Ok(func(*args, **kwargs))
+        :param fn: function to create new Result from
+        :param args: Sequential arguments passed to fn
+        :param kwargs: Keyword arguments passed to fn
+        :return: self if self is Err, else Ok(fn(*args, **kwargs))
         """
         if self.is_err():
             return self
 
-        return Ok(func(*args, **kwargs))
+        return Ok(fn(*args, **kwargs))
 
-    def other_if_err(self, res: "Result[T, E]") -> "Result[T, E]":
+    def other_if_err(self, other: "Result[T, E]") -> "Result[T, E]":
         """
         Return another Result if current Result is Err, else return self
 
@@ -541,13 +541,13 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 
         - Err(1).other_if_err(Ok(1)) -> Ok(1)
 
-        :param res: Other Result
-        :return: res if self is Err, else self
+        :param other: Other Result
+        :return: other if self is Err, else self
         """
         if self.is_ok():
             return self
 
-        return res
+        return other
 
 
 class Ok[T, E](Result[T, E]):
