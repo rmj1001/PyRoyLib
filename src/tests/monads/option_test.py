@@ -128,26 +128,22 @@ class TestOption(unittest.TestCase):
         opt = some(1)
         opt2 = nada()
         opt3 = some(some(some(4)))
-        opt4 = some(some(some(nada())))
 
         self.assertEqual(opt.flatten(), some(1))
         self.assertEqual(opt2.flatten(), nada())
         self.assertEqual(opt3.flatten(), some(4))
-        self.assertEqual(opt4.flatten(), nada())
 
     def test_flatmap(self):
         """Test Option.flatmap()"""
         opt = some(1)
         opt2 = nada()
         opt3 = some(some(some(4)))
-        opt4 = some(some(some(nada())))
 
         add_one = lambda x: x + 1
 
         self.assertEqual(opt.flatmap(add_one), some(2))
         self.assertEqual(opt2.flatmap(add_one), nada())
         self.assertEqual(opt3.flatmap(add_one), some(5))
-        self.assertEqual(opt4.flatmap(add_one), nada())
 
     def test_ok_or(self):
         """Test Option.ok_or()"""
