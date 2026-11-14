@@ -3,6 +3,7 @@ import unittest
 from monads.exceptions.option_exception import OptionException
 from monads.option import Option, some, nada
 from monads.result import ok, err
+from src.lib.abstract import iequality, imonad, irepr
 
 
 class TestOption(unittest.TestCase):

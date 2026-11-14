@@ -4,7 +4,7 @@ from typing import Callable
 from abstract.ifunctor import IFunctor
 
 
-class IMonad[T](ABC, IFunctor[T]):
+class IMonad[T](ABC):
     value: T
 
     @abstractmethod
