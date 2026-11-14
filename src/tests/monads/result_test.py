@@ -215,7 +215,7 @@ class TestResult(unittest.TestCase):
         """Test Result.and_then()"""
         res1 = Ok(1)
         res2 = Err("Error")
-        func = lambda x: x * 3
+        func = lambda x: Ok(x * 3)
 
         self.assertEqual(res1.and_then(func), Ok(3))
         self.assertEqual(res2.and_then(func), Err("Error"))
