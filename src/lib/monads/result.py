@@ -109,35 +109,94 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
     # -- IMonad Implementation
 
     def expect(self, message: E) -> T:
-        """Returns Ok value or throws exception with custom error message"""
+        """
+        Get Result.value if Result.state if Ok, else raise ResultException with custom message
+
+        Examples:
+
+        - Ok(1).expect('Error') -> 1
+
+        - Err(1).expect('Error') -> raise ResultException('Error')
+
+        :param message: Custom error message
+        :return: Result.value
+        """
         if self.is_err():
             raise ResultException(message)
 
         return self.value
 
     def unwrap(self) -> T:
-        """Returns Ok value or throws exception with Err value"""
+        """
+        Get Result.value if Result.state is Ok, or raise a ResultException
+
+        Examples:
+
+        - Ok(1).unwrap() -> 1
+
+        - Err('This is not OK.').unwrap() -> raise ResultException('This is not OK.')
+
+        :return: Result.value
+        """
         if self.is_err():
             raise ResultException(self.value)
 
         return self.value
 
-    def unwrap_or[V](self, default: V) -> T | V:
-        """Returns contained Ok value or default if Err"""
+    def unwrap_or(self, default: T) -> T:
+        """
+        Get Result.value if Result.state is Ok, or else a default value
+
+        Examples:
+
+        - Ok(1).unwrap_or(5) -> 1
+
+        - Err('Error').unwrap_or(5) -> 5
+
+        :param default: Default value
+        :return: Result.value or default value
+        """
         if self.is_err():
             return default
 
         return self.value
 
-    def unwrap_or_else[R](self, fn: Callable, *args, **kwargs) -> T | R:
-        """Returns contained Ok value or value from func if Err"""
+    def unwrap_or_else(self, fn: Callable, *args, **kwargs) -> T | Callable:
+        """
+        Get Result.value if Result.state is Ok, or else returned value of function
+
+        Examples:
+
+        - Ok(1).unwrap_or_else(lambda: 100 + 5) -> 1
+
+        - Err('Error').unwrap_or_else(lambda: 100 + 5) -> 105
+
+        :param fn: function to get a value from
+        :param args: sequential arguments to pass to fn
+        :param kwargs: keyword arguments to pass to fn
+        :return: Result.value or function return
+        """
         if self.is_ok():
             return self.value
 
         return fn(*args, **kwargs)
 
-    def or_else(self, fn: Callable, *args, **kwargs) -> "Result[T, E] | Result[T, Callable]":
-        """Calls func if result is Err, otherwise returns Ok of self"""
+    def or_else(self, fn: Callable, *args, **kwargs) -> "Result[T, Callable]":
+        """
+        Returns Ok() with original value if Result is Ok, or else an Error with its
+        value sourced from called function
+
+        Example:
+
+        - Ok(1).or_else(lambda 100 + 50) -> Ok(1)
+
+        - Err(1).or_else(lambda 100 + 50) -> Err(150)
+
+        :param fn: function to get a value from
+        :param args: sequential arguments to pass to fn
+        :param kwargs: keyword arguments to pass to fn
+        :return: self or Err(fn(*args, **kwargs))
+        """
         if self.is_ok():
             return self
 
@@ -147,52 +206,77 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 
     def flatten(self) -> "Result[T, E]":
         """
-        Flatten nested Results until self.value is of type T or E
-        :return: self flattened
-        """
-        while isinstance(self.value, Result):
-            self.state = self.value.state
-            self.value = self.value.value
+        Return innermost Result in nested Results
 
-        return self
+        Examples:
+
+        - Ok(Ok(Ok(1))).flatten() -> Ok(1)
+
+        - Ok(1).flatten() -> Ok(1)
+
+        - Err(Err(Err(1))).flatten() -> Err(1)
+
+        - Err(1).flatten() -> Err(1)
+
+        - Err(Ok(1)).flatten() -> Ok(1)
+
+        - Ok(Err(1)).flatten() -> Err(1)
+
+        :return: Innermost Result
+        """
+        current = Result(self.value, self.state)
+
+        while isinstance(current.value, Result):
+            current.state = current.value.state
+            current.value = current.value.value
+
+        return current
 
     def map(self, fn: MapFn) -> "Result[T, E]":
         """
-        Apply function to contained Ok value, leaving Err value untouched.
-        :param fn: Function to apply to contained Ok value
-        :return: self with value changed by applied function
+        Create a Result where Result.value = fn(Result.value) if Result.state is Ok
+
+        Examples:
+
+        - Ok(1).map(lambda x: x + 1) -> Ok(2)
+
+        - Err(1).map(lambda x: x + 1) -> Err(1)
+
+        :param fn: Function that takes one argument T and returns another T
+        :return: Mapped Result
         """
         if self.is_err():
             return self
 
-        self.value = fn(self.value)
-        return self
+        return Ok(fn(self.value))
 
     def flatmap(self, fn: MapFn) -> "Result[T, E]":
         """
-        Flatten self, then apply function to internal value
-        :param fn: Function to apply to internal value
-        :return: self, flattened and function applied
+        Flatten a Result and map it with a function
+
+        Examples:
+
+        - Ok(Ok(1)).flatmap(lambda x: x + 1) -> Ok(2)
+
+        - Ok(10).flatmap(lambda x: x + 1) -> Ok(11)
+
+        - Err(Err('Error')).flatmap(lambda x: x + 1) -> Error('Error')
+
+        :param fn: Function that takes one argument T and returns another T
+        :return: Flattened and Mapped Result
         """
         return self.flatten().map(fn)
 
     # -- END Interface Implementations
 
     @classmethod
-    def ok(cls, value: T, *args, **kwargs) -> "Result[T,E]":
+    def ok(cls, value: T) -> "Result[T,E]":
         """Create a result with OK variant"""
-        if isinstance(value, Callable):
-            return cls(value(*args, **kwargs), ResultVariant.OK)
-
         return cls(value, ResultVariant.OK)
 
     @classmethod
-    def err(cls, error: E, *args, **kwargs) -> "Result[T,E]":
+    def err(cls, error: E) -> "Result[T,E]":
         """Create a result with ERR variant"""
-        if isinstance(error, Callable):
-            return cls(error(*args, **kwargs), ResultVariant.ERR)
-
-        # ignore reportArgumentType
         return cls(error, ResultVariant.ERR)
 
     def is_ok(self) -> bool:
@@ -279,12 +363,12 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 class Ok[T, E](Result[T, E]):
     """Create a Result[T, E] with an Ok variant"""
 
-    def __init__(self, value: T, *args, **kwargs) -> None:
-        super().__init__(value, *args, **kwargs)
+    def __init__(self, value: T) -> None:
+        super().__init__(value, ResultVariant.OK)
 
 
 class Err[T, E](Result[T, E]):
     """Create a Result[T, E] with an Err variant"""
 
-    def __init__(self, error: E, *args, **kwargs) -> None:
-        super().__init__(error, *args, **kwargs)
+    def __init__(self, error: E) -> None:
+        super().__init__(error, ResultVariant.ERR)
