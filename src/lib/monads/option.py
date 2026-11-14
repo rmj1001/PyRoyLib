@@ -295,7 +295,7 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
         Examples:
 
-        - Some10).is_some() -> True
+        - Some(10).is_some() -> True
 
         - Nada() -> False
 
