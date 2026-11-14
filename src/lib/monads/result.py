@@ -29,25 +29,78 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         self.state: ResultVariant = state
 
     def __bool__(self) -> bool:
-        """Return True if Result[T,E] is Ok, else return False"""
+        """
+        Convert Result to a truthy value
+
+        Examples:
+
+        - bool(Ok(10)) -> True
+
+        - bool(Err(10)) -> False
+
+        :return: True if state is Ok, else False
+        """
         return self.is_ok()
 
     # -- IRepr Implementation
 
     def __repr__(self):
-        """String representation for Result[T,E]"""
-        return f'{self.state}({self.value})'
+        """
+        String representation for Result[T,E]
+
+        Examples:
+
+        - str(Ok(10)) -> 'Ok(10)'
+
+        - str(Err(10)) -> 'Err(10)'
+
+        :return: str(Result)
+        """
+        return f'{self.state.value}({self.value})'
 
     # -- IEquality Implementation
 
     def __eq__(self, other: object) -> bool:
-        """Compare Result objects for equality"""
+        """
+        Check if two Results are equal
+
+        Examples:
+
+        - Ok(10) == Ok(10) -> True
+
+        - Ok(10) == Ok(15) -> False
+
+        - Ok(10) == Err(10) -> False
+
+        - Err(10) == Err(10) -> True
+
+        :param other: Second Result to compare with
+        :return: True if both Results have equal values and states, else False
+        """
         if not isinstance(other, Result):
             return NotImplemented
 
         return self.value == other.value and self.state == other.state
 
     def __ne__(self, other: object) -> bool:
+        """
+        Check if two Results are not equal
+
+        Examples:
+
+        - Ok(1) != Ok(10) -> True
+
+        - Ok(1) != Ok(1) -> False
+
+        - Err(1) != Err(10) -> True
+
+        - Err(10) != Err(10) -> False
+
+        - Ok(1) != Err(1) -> True
+
+        :param other: Second Result to compare with
+        :return: True if either Result's value or state doesn't match the other, else False
+        """
         if not isinstance(other, Result):
             return NotImplemented
 
