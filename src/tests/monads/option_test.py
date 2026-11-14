@@ -2,7 +2,7 @@ import unittest
 
 from monads.exceptions.option_exception import OptionException
 from monads.option import Option, Some, Nada
-from monads.result import ok, err
+from monads.result import Ok, Err
 
 
 class TestOption(unittest.TestCase):
@@ -150,8 +150,8 @@ class TestOption(unittest.TestCase):
         opt2 = Nada()
         error = "Error"
 
-        self.assertEqual(opt.ok_or(error), ok(1))
-        self.assertEqual(opt2.ok_or(error), err(error))
+        self.assertEqual(opt.ok_or(error), Ok(1))
+        self.assertEqual(opt2.ok_or(error), Err(error))
 
     def test_ok_or_else(self):
         """Test Option.ok_or_else()"""
@@ -159,9 +159,9 @@ class TestOption(unittest.TestCase):
         opt2 = Nada()
         error_func = lambda: str("Error")
 
-        self.assertEqual(opt.ok_or_else(error_func), ok(1))
-        self.assertEqual(opt2.ok_or_else(error_func), err(error_func()))
-        self.assertEqual(opt2.ok_or_else(print, "Hello world"), err(print, "Hello world"))
+        self.assertEqual(opt.ok_or_else(error_func), Ok(1))
+        self.assertEqual(opt2.ok_or_else(error_func), Err(error_func()))
+        self.assertEqual(opt2.ok_or_else(print, "Hello world"), Err(print, "Hello world"))
 
     def test_filter(self):
         """Test Option.filter()"""

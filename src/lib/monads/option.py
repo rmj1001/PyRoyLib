@@ -5,7 +5,7 @@ from abstract.ifunctor import IFunctor
 from abstract.irepr import IRepr
 from abstract.imonad import IMonad
 from monads.exceptions.option_exception import OptionException
-from monads.result import Result, ok, err
+from monads.result import Result, Ok, Err
 
 # Map function type alias
 type MapFn[T] = Callable[[T], T]
@@ -369,9 +369,9 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         :return: Result
         """
         if self.is_nada():
-            return err(error)
+            return Err(error)
 
-        return ok(self.value)
+        return Ok(self.value)
 
     def ok_or_else[E](self, fn: Callable, *args, **kwargs) -> "Result[T,E]":
         """
@@ -388,9 +388,9 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         :return: Result
         """
         if self.is_nada():
-            return err(fn(*args, **kwargs))
+            return Err(fn(*args, **kwargs))
 
-        return ok(self.value)
+        return Ok(self.value)
 
     def filter(self, predicate: Predicate) -> "Option[T]":
         """

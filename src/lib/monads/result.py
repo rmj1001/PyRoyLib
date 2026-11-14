@@ -87,7 +87,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         if self.is_ok():
             return self
 
-        return err(fn(*args, **kwargs))
+        return Err(fn(*args, **kwargs))
 
     # -- IFunctor Implementation
 
@@ -160,23 +160,23 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
     def map_or[V](self, func: MapFn, default: V) -> "Result[MapFn|V,E]":
         """Returns the provided default if Err or applies func to value"""
         if self.is_err():
-            return ok(default)
+            return Ok(default)
 
-        return ok(func(self.value))
+        return Ok(func(self.value))
 
     def map_or_else(self, success: MapFn, default: Callable, *args, **kwargs) -> "Result[MapFn,MapErr]":
         """Maps function if variant is Ok, else creates new Ok result with default function returned value"""
         if self.is_err():
-            return ok(default(*args, **kwargs))
+            return Ok(default(*args, **kwargs))
 
-        return ok(success(self.value))
+        return Ok(success(self.value))
 
     def map_err(self, func: MapErr) -> "Result[T, E] | Result[T,MapErr]":
         """Maps an Err value, leaving Ok untouched"""
         if self.is_ok():
             return self
 
-        return err(func(self.value))
+        return Err(func(self.value))
 
     def expect_err(self, message: E) -> T:
         """Returns contained Err, or else raises exception if Ok"""
@@ -194,11 +194,11 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 
     def into_ok(self) -> "Result[T, E]":
         """Returns the contained Ok, never raises exception"""
-        return ok(self.value)
+        return Ok(self.value)
 
     def into_err(self) -> "Result[T, E]":
         """Returns the contained Err, never raises exception"""
-        return err(self.value)
+        return Err(self.value)
 
     def other_if_ok(self, res: "Result[T, E]") -> "Result[T, E]":
         """Result res if result is Ok, otherwise return Err of self"""
@@ -212,7 +212,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         if self.is_err():
             return self
 
-        return ok(func(*args, **kwargs))
+        return Ok(func(*args, **kwargs))
 
     def other_if_err(self, res: "Result[T, E]") -> "Result[T, E]":
         """Returns res if result is Err, otherwise returns Ok value of self"""
@@ -222,11 +222,15 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         return res
 
 
-def ok[T, E](value: T, *args, **kwargs) -> Result[T, E]:
-    """Shorthand for Result.ok(), useful for pattern matching"""
-    return Result.ok(value, *args, **kwargs)
+class Ok[T, E](Result[T, E]):
+    """Create a Result[T, E] with an Ok variant"""
+
+    def __init__(self, value: T, *args, **kwargs) -> None:
+        super().__init__(value, *args, **kwargs)
 
 
-def err[T, E](value: E, *args, **kwargs) -> Result[T, E]:
-    """Shorthand for Result.err(), useful for pattern matching"""
-    return Result.err(value, *args, **kwargs)
+class Err[T, E](Result[T, E]):
+    """Create a Result[T, E] with an Err variant"""
+
+    def __init__(self, error: E, *args, **kwargs) -> None:
+        super().__init__(error, *args, **kwargs)
