@@ -1,7 +1,7 @@
 import unittest
 
 lazy from src.lib.monads.option import Some, Nada
-lazy from src.lib.monads.result import Result, Ok, Err, ResultException, ResultVariant
+lazy from src.lib.monads.result import Result, Ok, Err, ResultException, ResultVariant, resultify
 
 
 class TestResult(unittest.TestCase):
@@ -320,6 +320,18 @@ class TestResult(unittest.TestCase):
         self.assertEqual(r2.inspect_err(err_effect), Err("Error"))
         self.assertEqual(state['err'], True)
 
+    def test_resultify(self):
+        msg: str = 'I was told to raise this.'
+
+        @resultify
+        def raises(do_raise: bool) -> bool:
+            if do_raise:
+                raise Exception(msg)
+            else:
+                return True
+
+        self.assertEqual(raises(False).unwrap(), True)
+        self.assertEqual(raises(True).unwrap_err().args[0], msg)
 
 if __name__ == '__main__':
     unittest.main()

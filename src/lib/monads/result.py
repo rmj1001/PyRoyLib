@@ -1,5 +1,6 @@
 from enum import StrEnum
-from typing import Callable
+from functools import wraps
+from typing import Callable, NoReturn
 
 lazy from src.lib.abstract.iequality import IEquality
 lazy from src.lib.abstract.imonad import IMonad
@@ -107,7 +108,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
                 return Err(e)
 
             case _:
-                raise ResultException('Unreachable')
+                panic('Unreachable')
 
     def err(self) -> Option[E]:
         """
@@ -127,11 +128,11 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
             case Err(e):
                 return Some(e)
             case _:
-                raise ResultException('Unreachable')
+                panic('Unreachable')
 
     def expect(self, message: str) -> T:
         """
-        Get Result.value if Result.state if Ok, else raise ResultException with custom message
+        Get Result.value if Result.state if Ok, else panic with custom message
 
         Examples:
 
@@ -145,9 +146,9 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
             case Ok(o):
                 return o
             case Err(_):
-                raise ResultException(message)
+                panic(message)
             case _:
-                raise ResultException('Unreachable')
+                panic('Unreachable')
 
     def expect_err(self, message: E) -> E:
         """
@@ -155,7 +156,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 
         Examples:
 
-        - Ok(1).expect_err('Error') -> raise ResultException('Error')
+        - Ok(1).expect_err('Error') -> panic('Error')
         - Err(1).expect_err('Error') -> 1
 
         :param message: Exception message
@@ -163,13 +164,13 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         """
         match self:
             case Ok(_):
-                raise ResultException(message)
+                panic(message)
 
             case Err(e):
                 return e
 
             case _:
-                raise ResultException('Unreachable')
+                panic('Unreachable')
 
     def flatten(self, recurse: bool = False) -> "Result[T, E]":
         """
@@ -207,7 +208,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
                     return Err(e)
 
             case _:
-                raise ResultException('Unreachable')
+                panic('Unreachable')
 
     def flatmap(self, fn: Callable[[T], T], recurse: bool) -> "Result[T, E]":
         """
@@ -248,7 +249,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
                 return Err(e)
 
             case _:
-                raise ResultException('Unreachable')
+                panic('Unreachable')
 
     def inspect_err(self, fn: Callable[[E], None]) -> Result[T, E]:
         """
@@ -270,7 +271,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
                 return Err(e)
 
             case _:
-                raise ResultException('Unreachable')
+                panic('Unreachable')
 
     def into_ok(self) -> "Result[T, E]":
         """
@@ -317,7 +318,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
                 return True
 
             case _:
-                raise ResultException('Unreachable')
+                panic('Unreachable')
 
     def is_err_and(self, predicate: Callable[[T], bool]) -> bool:
         """
@@ -354,7 +355,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
                 return False
 
             case _:
-                raise ResultException('Unreachable')
+                panic('Unreachable')
 
     def is_ok_and(self, predicate: Callable[[T], bool]) -> bool:
         """
@@ -377,7 +378,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
             case Err(_):
                 return False
             case _:
-                raise ResultException('Unreachable')
+                panic('Unreachable')
 
     def map[U](self, fn: Callable[[T], U]) -> "Result[U, E]":
         """
@@ -399,7 +400,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
                 return Err(e)
 
             case _:
-                raise ResultException('Unreachable')
+                panic('Unreachable')
 
     def map_err[F](self, fn: Callable[[E], F]) -> "Result[T,F]":
         """
@@ -421,7 +422,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
                 return Err(fn(e))
 
             case _:
-                raise ResultException('Unreachable')
+                panic('Unreachable')
 
     def map_or[U](self, fn: Callable[[T], U], default: U) -> U:
         """
@@ -444,7 +445,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
                 return default
 
             case _:
-                raise ResultException('Unreachable')
+                panic('Unreachable')
 
     def map_or_else[U](self, fn: Callable[[T], U], default: Callable[[E], U]) -> U:
         """
@@ -467,7 +468,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
                 return default(e)
 
             case _:
-                raise ResultException('Unreachable')
+                panic('Unreachable')
 
     def ok(self) -> Option[T]:
         """
@@ -486,7 +487,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
             case Err(_):
                 return Nada()
             case _:
-                raise ResultException('Unreachable')
+                panic('Unreachable')
 
     def or_else[F](self, fn: Callable[[E], Result[T, F]]) -> "Result[T, F]":
         """
@@ -508,7 +509,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
                 return fn(e)
 
             case _:
-                raise ResultException('Unreachable')
+                panic('Unreachable')
 
     def other_if_ok(self, other: "Result[T, E]") -> "Result[T, E]":
         """
@@ -530,7 +531,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
                 return Err(e)
 
             case _:
-                raise ResultException('Unreachable')
+                panic('Unreachable')
 
     def other_if_err(self, other: "Result[T, E]") -> "Result[T, E]":
         """
@@ -552,7 +553,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
                 return other
 
             case _:
-                raise ResultException('Unreachable')
+                panic('Unreachable')
 
     def unwrap(self) -> T:
         """
@@ -561,7 +562,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
         Examples:
 
         - Ok(1).unwrap() -> 1
-        - Err('This is not OK.').unwrap() -> raise ResultException('This is not OK.')
+        - Err('This is not OK.').unwrap() -> panic('This is not OK.')
 
         :return: Result.value
         """
@@ -570,10 +571,10 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
                 return o
 
             case Err(e):
-                raise ResultException(e)
+                panic(e)
 
             case _:
-                raise ResultException('Unreachable')
+                panic('Unreachable')
 
     def unwrap_err(self) -> E:
         """
@@ -581,20 +582,20 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 
         Examples:
 
-        - Ok(1).unwrap_err() -> raise ResultException('Result is not an error.')
+        - Ok(1).unwrap_err() -> panic('Result is not an error.')
         - Err(1).unwrap_err() -> 1
 
         :return: Error value
         """
         match self:
             case Ok(_):
-                raise ResultException('Result is not an error.')
+                panic('Result is not an error.')
 
             case Err(e):
                 return e
 
             case _:
-                raise ResultException('Unreachable')
+                panic('Unreachable')
 
     def unwrap_or(self, default: T) -> T:
         """
@@ -616,7 +617,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
                 return default
 
             case _:
-                raise ResultException('Unreachable')
+                panic('Unreachable')
 
     def unwrap_or_else(self, fn: Callable[[E], T]) -> T:
         """
@@ -638,7 +639,7 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
                 return fn(e)
 
             case _:
-                raise ResultException('Unreachable')
+                panic('Unreachable')
 
 
 class Ok[T, E](Result[T, E]):
@@ -653,3 +654,49 @@ class Err[T, E](Result[T, E]):
 
     def __init__(self, error: E) -> None:
         super().__init__(error, ResultVariant.ERR)
+
+
+def resultify[T, **P](fn: Callable[P, T]) -> Callable[P, Result[T, Exception]]:
+    """
+    Convert any function that could raise an Exception to a Result type,
+    with the Exception passed as the Error variant. Use as a decorator
+    above a function.
+
+    Example
+    ==========
+
+    @resultify
+
+    def raises(_) -> bool: ...
+
+
+    raises(False).unwrap() == True
+
+    raises(True).unwrap_err().args[0] == 'Hello'
+
+    :param fn: function to wrap
+    :return: function converting exceptions to Result Err types
+    """
+
+    @wraps(fn)
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> Result[T, Exception]:
+        try:
+            return Ok(fn(*args, **kwargs))
+        except Exception as e:
+            return Err(e)
+
+    return wrapper
+
+
+def panic(message: str) -> NoReturn:
+    """
+    Raise a ResultException with the custom message string
+
+    Examples:
+
+    - panic("at the disco") -> raise ResultException("at the disco")
+
+    :param message: Exception message
+    :return: Nothing
+    """
+    raise ResultException(message)
