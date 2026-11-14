@@ -2,9 +2,6 @@ from enum import StrEnum
 from functools import wraps
 from typing import Callable, NoReturn
 
-lazy from src.lib.abstract.iequality import IEquality
-lazy from src.lib.abstract.imonad import IMonad
-lazy from src.lib.abstract.irepr import IRepr
 lazy from src.lib.monads.maybe import Maybe, Some, Nada, MaybeException
 
 
@@ -22,7 +19,7 @@ class ResultVariant(StrEnum):
     ERR = 'Err'
 
 
-class Result[T, E](IRepr, IMonad[T], IEquality):
+class Result[T, E]:
     """Rust-style result"""
     __match_args__ = ('value',)
 
@@ -216,24 +213,6 @@ class Result[T, E](IRepr, IMonad[T], IEquality):
 
             case _:
                 panic('Unreachable')
-
-    def flatmap(self, fn: Callable[[T], T], recurse: bool) -> "Result[T, E]":
-        """
-        Flatten a Result and map it with a function
-
-        Ex. Function: add_one = lambda x: x + 1
-
-        Examples:
-
-        - Ok(Ok(1)).flatmap(add_one,True) -> Ok(2)
-        - Ok(10).flatmap(add_one) -> Ok(11)
-        - Err(Err('Error')).flatmap(add_one,True) -> Error('Error')
-
-        :param fn: Function that takes one argument T and returns another T
-        :param recurse: Recursively flatten or just flatten once
-        :return: Flattened and Mapped Result
-        """
-        return self.flatten(recurse).map(fn)
 
     def inspect(self, fn: Callable[[T], None]) -> "Result[T, E]":
         """
