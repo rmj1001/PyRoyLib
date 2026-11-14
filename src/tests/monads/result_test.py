@@ -16,12 +16,12 @@ class TestResult(unittest.TestCase):
         self.assertEqual(res2, Err("Error"))
 
     def test_str(self):
-        """Test str(Result)"""
+        """Test repr(Result)"""
         res1 = Ok(1)
         res2 = Err("Error")
 
-        self.assertEqual(str(res1), "Ok(1)")
-        self.assertEqual(str(res2), "Err(Error)")
+        self.assertEqual(repr(res1), "Ok(1)")
+        self.assertEqual(repr(res2), "Err(Error)")
 
     def test_bool(self):
         """Test bool(Result)"""
@@ -39,6 +39,8 @@ class TestResult(unittest.TestCase):
         self.assertNotEqual(res1, res2)
         self.assertEqual(res1, Result(1, ResultVariant.OK))
         self.assertEqual(res2, Result("Error", ResultVariant.ERR))
+        self.assertNotEqual(res1, 'Ok(1)')
+        self.assertNotEqual(res2, 'Err("Error")')
 
     def test_ok(self):
         """Test Result.ok()"""
@@ -116,6 +118,17 @@ class TestResult(unittest.TestCase):
         self.assertEqual(res1.map(func), Ok(3))
         self.assertEqual(res2.map(func), Err("Error"))
 
+    def test_flatmap(self):
+        ok_nested = Ok(Ok(1))
+        ok_recursed = Ok(Ok(Ok(3)))
+        err_nested = Err(Err("Error"))
+
+        fn = lambda x: x * 3
+
+        self.assertEqual(ok_nested.flatmap(fn, recurse=False), Ok(3))
+        self.assertEqual(ok_recursed.flatmap(fn, recurse=True), Ok(9))
+        self.assertEqual(err_nested.flatmap(fn, recurse=False), Err("Error"))
+
     def test_map_or(self):
         """Test Result.map_or()"""
         res1 = Ok(1)
@@ -153,7 +166,8 @@ class TestResult(unittest.TestCase):
 
         with self.assertRaises(ResultException) as cm:
             res2.expect("Default")
-            self.assertEqual(cm.msg, "Default")
+
+        self.assertEqual(str(cm.exception), "Default")
 
     def test_unwrap(self):
         """Test Result.unwrap()"""
@@ -172,8 +186,8 @@ class TestResult(unittest.TestCase):
 
         with self.assertRaises(ResultException) as cm:
             res1.expect_err("Is not an error")
-            self.assertEqual(cm.msg, "Is not an error")
 
+        self.assertEqual(str(cm.exception), "Is not an error")
         self.assertEqual(res2.expect_err("Is not an error"), "Error")
 
     def test_unwrap_err(self):
@@ -288,15 +302,23 @@ class TestResult(unittest.TestCase):
         r1 = Ok(1)
         r2 = Err("Error")
 
-        def printer(value: int):
-            print(f'test_inspect: {value}')
+        state = {
+            'ok': False,
+            'err': False,
+        }
+
+        def ok_effect(_): state['ok'] = True
+        def err_effect(_): state['err'] = True
 
         # The value is never updated with inspect() calls
-        self.assertEqual(r1.inspect(printer), Ok(1))
-        self.assertEqual(r2.inspect(printer), Err("Error"))  # does nothing
+        self.assertEqual(r1.inspect(ok_effect), Ok(1))
+        self.assertEqual(r2.inspect(err_effect), Err("Error"))  # does nothing
+        self.assertEqual(state['ok'], True)
+        self.assertEqual(state['err'], False)
 
         # inspect_err() only calls function on error variants
-        self.assertEqual(r2.inspect_err(printer), Err("Error"))
+        self.assertEqual(r2.inspect_err(err_effect), Err("Error"))
+        self.assertEqual(state['err'], True)
 
 
 if __name__ == '__main__':
