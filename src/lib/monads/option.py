@@ -507,6 +507,9 @@ class Option[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 class Some[T](Option[T]):
     """Creates an Option[T] with a non-None internal value"""
     def __init__(self, value: T):
+        if value is None:
+            raise OptionException('Some(value: T) cannot take None as a value argument')
+
         super().__init__(value)
 
 
