@@ -8,7 +8,7 @@ lazy from src.lib.monads.result import Result, Ok, Err
 
 
 class MaybeException[E](Exception):
-    """Custom exception for Option type"""
+    """Custom exception for Maybe type"""
 
     def __init__(self, message: E) -> None:
         self.message = message
@@ -24,15 +24,14 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
     def __bool__(self) -> bool:
         """
-        Convert Option to a truthy value
+        Convert Maybe to a truthy value
 
         Examples:
 
         - bool(Some(10)) -> True
-
         - bool(Nada()) -> False
 
-        :return: True if Option.value is not None, else False
+        :return: True if Maybe.value is not None, else False
         """
         return self.is_some()
 
@@ -40,15 +39,14 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
     def __repr__(self) -> str:
         """
-        String representation of Option
+        String representation of Maybe
 
         Examples:
 
         - str(Some(10)) -> 'Some(10)'
-
         - str(Nada()) -> 'Nada'
 
-        :return: str(Option)
+        :return: str(Maybe)
         """
         if self.value is not None:
             return f"Some({self.value})"
@@ -64,14 +62,11 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         Examples:
 
         - Some(1) == Some(2) -> False
-
         - Some(10) == Nada() -> False
-
         - Some(10) == Some(10) -> True
-
         - Nada() == Nada() -> True
 
-        :param other: Second Option to compare with
+        :param other: Second Maybe to compare with
         :return: True if both Options values are equal, else False
         """
         if not isinstance(other, Maybe):
@@ -86,14 +81,11 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         Examples:
 
         - Some(1) != Some(2) -> True
-
         - Some(10) != Nada() -> True
-
         - Some(10) != Some(10) -> False
-
         - Nada() != Nada() -> False
 
-        :param other: Second Option to compare with
+        :param other: Second Maybe to compare with
         :return: True if both Options values are not equal, else False
         """
         if not isinstance(other, Maybe):
@@ -105,16 +97,15 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
     def expect[E](self, message: E) -> T:
         """
-        Get Option.value if it is not None, or raise an OptionException with a custom message
+        Get Maybe.value if it is not None, or raise an OptionException with a custom message
 
         Examples:
 
         - Some(1).expect('Not a number') -> 1
-
         - Nada().expect('Not a number') -> raise OptionException('Not a number')
 
         :param message: Error message
-        :return: Option.value
+        :return: Maybe.value
         """
         if self.value is None:
             raise MaybeException(message)
@@ -123,15 +114,14 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
     def unwrap(self) -> T:
         """
-        Get Option.value if it is not None, or raise an OptionException
+        Get Maybe.value if it is not None, or raise an OptionException
 
         Examples:
 
         - Some(1).unwrap() -> 1
-
         - Nada().unwrap() -> raise OptionException("Cannot unwrap Nada")
 
-        :return: Option.value
+        :return: Maybe.value
         """
         if self.value is None:
             raise MaybeException("Cannot unwrap Nada")
@@ -140,16 +130,15 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
     def unwrap_or(self, default: T) -> T:
         """
-        Get Option.value if it is not None, or else a default value
+        Get Maybe.value if it is not None, or else a default value
 
         Examples:
 
         - Some(1).unwrap_or(10) -> 1
-
         - Nada().unwrap_or(10) -> 10
 
         :param default: Default value
-        :return: Option.value or default value
+        :return: Maybe.value or default value
         """
         if self.value is None:
             return default
@@ -158,18 +147,17 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
     def unwrap_or_else(self, fn: Callable, *args, **kwargs) -> T | Callable:
         """
-        Get Option.value if it is not None, or else the returned value of a function
+        Get Maybe.value if it is not None, or else the returned value of a function
 
         Examples:
 
         - Some(1).unwrap_or_else(lambda: 100 + 50) -> 1
-
         - Nada().unwrap_or_else(lambda: 100 + 50) -> 150
 
         :param fn: function to get a value from
         :param args: sequential arguments to pass to fn
         :param kwargs: keyword arguments to pass to fn
-        :return: Option.value or function return
+        :return: Maybe.value or function return
         """
         if self.value is not None:
             return self.value
@@ -178,18 +166,17 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
     def or_else(self, fn: Callable, *args, **kwargs) -> "Maybe[T | Callable[[T], T]]":
         """
-        Returns an Option with Option.value being either original Option.value or the result of fn
+        Returns a Maybe with Maybe.value being either original Maybe.value or the result of fn
 
         Examples:
 
         - Some(1).or_else(lambda: 100 + 50) -> Some(1)
-
         - Nada().or_else(lambda: 100 + 50) -> Some(150)
 
         :param fn: function to get a value from
         :param args: sequential arguments to pass to fn
         :param kwargs: keyword arguments to pass to fn
-        :return: self or Option(fn(*args, **kwargs))
+        :return: self or Maybe(fn(*args, **kwargs))
         """
         if self.is_some():
             return Some(self.value)
@@ -205,17 +192,15 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
     def flatten(self) -> 'Maybe[T]':
         """
-        Return innermost Option in nested Options
+        Return innermost Maybe in nested Options
 
         Examples:
 
         - Some(Some(Some(1))).flatten() -> Some(1)
-
         - Some(1).flatten() -> Some(1)
-
         - Nada().flatten() -> Nada()
 
-        :return: Innermost Option
+        :return: Innermost Maybe
         """
         if self.is_nada():
             return Nada()
@@ -229,16 +214,15 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
     def map(self, fn: Callable[[T], T]) -> 'Maybe[T]':
         """
-        Create an Option where Option.value = fn(Option.value).
+        Create a Maybe where Maybe.value = fn(Maybe.value).
 
         Examples:
 
         - Some(1).map(lambda x: x + 1) -> Some(Some(2))
-
         - Nada().map(lambda x: x + 1) -> Nada()
 
         :param fn: Function that takes one argument T and returns another T
-        :return: Mapped Option
+        :return: Mapped Maybe
         """
         if self.is_nada():
             return Nada()
@@ -247,18 +231,16 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
     def flatmap(self, fn: Callable[[T], T]) -> 'Maybe[Callable[[T], T]]':
         """
-        Flatten an Option and map it with a function
+        Flatten a Maybe and map it with a function
 
         Examples:
 
         - Some(Some(1)).flatmap(lambda x: x + 1) -> Some(2)
-
         - Some(10).flatmap(lambda x: x + 1) -> Some(11)
-
         - Nada().flatmap(lambda x: x + 1) -> Nada()
 
         :param fn: Function that takes one argument T and returns another T
-        :return: Flattened and Mapped Option
+        :return: Flattened and Mapped Maybe
         """
         return self.flatten().map(fn)
 
@@ -267,62 +249,56 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
     @classmethod
     def some(cls, value: T) -> "Maybe[T]":
         """
-        Create an Option with a non-None value
+        Create a Maybe with a non-None value
 
         Examples:
 
-        - Option.some(10) -> Option[int]
-
-        - Option.some(None) -> Raises OptionException
+        - Maybe.some(10) -> Maybe[int]
+        - Maybe.some(None) -> Raises OptionException
 
         :param value: Any non-None value
-        :return: Option(value)
+        :return: Maybe(value)
         """
         if value is None:
-            raise MaybeException('Option.some(value: T) cannot take None as a value argument')
+            raise MaybeException('Maybe.some(value: T) cannot take None as a value argument')
 
         return cls(value)
 
     @classmethod
     def nada(cls) -> "Maybe[T]":
         """
-        Create an Option with None value
-
-        Example: Option.nada() -> Option
-
-        :return: Option(None)
+        Create a Maybe with None value
+        Example: Maybe.nada() -> Maybe
+        :return: Maybe(None)
         """
         return cls(None)
 
     def is_some(self) -> bool:
         """
-        Check that Option.value is not None
+        Check that Maybe.value is not None
 
         Examples:
 
         - Some(10).is_some() -> True
-
         - Nada() -> False
 
-        :return: True if Option.value is not None, else False
+        :return: True if Maybe.value is not None, else False
         """
         return self.value is not None
 
     def is_some_and(self, predicate: Callable[[T], bool]) -> bool:
         """
-        Check that Option.value is not None, and predicate function
+        Check that Maybe.value is not None, and predicate function
         returns True.
 
         Examples
 
         - Some(2).is_some_and(lambda x: x % 2 == 0) -> True
-
         - Some(5).is_some_and(lambda x: x % 2 == 0) -> False
-
         - Nada().is_some_and(lambda x: x % 2 == 0) -> False
 
-        :param predicate: Function taking Option.value as only argument, returns bool
-        :return: True if Option.value is not None and predicate returns True, else False
+        :param predicate: Function taking Maybe.value as only argument, returns bool
+        :return: True if Maybe.value is not None and predicate returns True, else False
         """
         if self.is_nada():
             return False
@@ -331,12 +307,11 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
     def is_nada(self) -> bool:
         """
-        Check that Option.value is None
+        Check that Maybe.value is None
 
         Examples:
 
         - Some(10).is_nada() -> False
-
         - Nada().is_nada() -> True
 
         :return: True if value is None, else False
@@ -345,30 +320,27 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
     def is_nada_or(self, predicate: Callable[[T], bool]) -> bool:
         """
-        Return True if Option.value is None, or predicate is True
+        Return True if Maybe.value is None, or predicate is True
 
         Examples:
 
         - Nada().is_nada_or(lambda x: x % 2 == 0) -> True
-
         - Some(10).is_nada_or(lambda x: x % 2 == 0) -> True
-
         - Some(5).is_nada_or(lambda x: x % 2 == 0) -> False
 
-        :param predicate: Function taking Option.value as only argument, returns bool
+        :param predicate: Function taking Maybe.value as only argument, returns bool
         :return: True if value is None or predicate returns True, else False
         """
         return self.is_nada() or predicate(self.value)
 
     def ok_or[E](self, error: E) -> "Result[T,E]":
         """
-        Convert Option to Result.ok() if Option.value is Some, else Result.err() with custom error message.
+        Convert Maybe to Result.ok() if Maybe.value is Some, else Result.err() with custom error message.
 
         Examples:
 
-        - Some(10).ok_or('Option is None') -> ok(10)
-
-        - Nada().ok_or('Option is None') -> err('Option is None')
+        - Some(10).ok_or('Maybe is None') -> ok(10)
+        - Nada().ok_or('Maybe is None') -> err('Maybe is None')
 
         :param error: Error message
         :return: Result
@@ -380,13 +352,12 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
     def ok_or_else(self, fn: Callable, *args, **kwargs) -> "Result[T,Callable[[T], T]]":
         """
-        Convert Option to Result.ok() if Option.value is Some, else Result.err() with value from
+        Convert Maybe to Result.ok() if Maybe.value is Some, else Result.err() with value from
         fn's return value
 
         Examples:
 
         - Some(10).ok_or_else(lambda x: f'Custom error: {x}', 10) -> ok(10)
-
         - Nada().ok_or_else(lambda x: f'Custom error: {x}', 10) -> err('Custom error: 10')
 
         :param fn: Function to create error content from
@@ -404,13 +375,11 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
         Examples:
 
         - Some(10).filter(lambda x: x % 2 == 0) -> Some(10)
-
         - Some(5).filter(lambda x: x % 2 == 0) -> Nada()
-
         - Nada().filter(lambda x: x % 2 == 0) -> Nada()
 
-        :param predicate: Function that takes Option.value as only argument, returns bool
-        :return: Option
+        :param predicate: Function that takes Maybe.value as only argument, returns bool
+        :return: Maybe
         """
         if self.is_nada():
             return Nada()
@@ -422,16 +391,15 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
     def other_if_some(self, other: "Maybe[T]") -> "Maybe[T]":
         """
-        Return Nada() if Option.value is None, otherwise return a different Option
+        Return Nada() if Maybe.value is None, otherwise return a different Maybe
 
         Examples:
 
         - Some(10).other_if_some(Some(15)) -> Some(15)
-
         - Nada().other_if_some(Some(15)) -> Nada()
 
-        :param other: Another Option
-        :return: Option
+        :param other: Another Maybe instance
+        :return: Maybe
         """
         if self.is_some():
             return other
@@ -440,16 +408,15 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
     def other_if_nada(self, other: "Maybe[T]") -> "Maybe[T]":
         """
-        Return another Option if Option.value is None, otherwise return original Option
+        Return another Maybe if Maybe.value is None, otherwise return original Maybe
 
         Examples:
 
         - Some(10).other_if_nada(Some(15)) -> Some(10)
-
         - Nada().other_if_nada(Some(15)) -> Some(15)
 
-        :param other: Another Option
-        :return: Option
+        :param other: Another Maybe instance
+        :return: Maybe
         """
         if self.is_nada():
             return other
@@ -458,19 +425,16 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
     def zip(self, other: "Maybe[T]") -> "Maybe[tuple[T, T]]":
         """
-        Return tuple in an Option if both Options are not Nada(), else return Nada()
+        Return tuple in a Maybe if both Options are not Nada(), else return Nada()
 
         Examples:
 
         - Some(10).zip(Some(15)) -> Some((10, 15))
-
         - Some(10).zip(Nada()) -> Nada()
-
         - Nada().zip(Some(10)) -> Nada()
-
         - Nada().zip(Nada()) -> Nada()
 
-        :param other: Another Option
+        :param other: Another Maybe
         :return: Some(tuple())
         """
         if self.is_some() and other.is_some():
@@ -480,17 +444,15 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
     def unzip(self) -> "tuple[Maybe[T], Maybe[T]]":
         """
-        Return a tuple of Options from an Option with an internal tuple value
+        Return a tuple of Options from a Maybe with an internal tuple value
 
         Examples:
 
         - Some((10, 15)).unzip() -> (Some(10), Some(15))
-
         - Some((10, None)).unzip() -> (Some(10), Nada())
+        - Maybe((None, None)).unzip() -> (Nada(), Nada())
 
-        - Option((None, None)).unzip() -> (Nada(), Nada())
-
-        :return: tuple(Option, Option)
+        :return: tuple(Maybe, Maybe)
         """
         if not isinstance(self.value, tuple):
             return Nada(), Nada()
@@ -509,7 +471,7 @@ class Maybe[T](IRepr, IMonad[T], IFunctor[T], IEquality):
 
 
 class Some[T](Maybe[T]):
-    """Creates an Option[T] with a non-None value"""
+    """Creates a Maybe[T] with a non-None value"""
 
     def __init__(self, value: T):
         if value is None:
@@ -519,7 +481,7 @@ class Some[T](Maybe[T]):
 
 
 class Nada[T](Maybe[T]):
-    """Creates an Option[T] with a None value"""
+    """Creates a Maybe[T] with a None value"""
 
     def __init__(self):
         super().__init__(None)
