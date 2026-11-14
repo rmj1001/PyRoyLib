@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Callable
 
+
 class IMonad[T](ABC):
     value: T
 
@@ -17,9 +18,9 @@ class IMonad[T](ABC):
         """Return value if possible, or a default value."""
 
     @abstractmethod
-    def unwrap_or_else(self, fn: Callable, *args, **kwargs) -> T:
+    def unwrap_or_else(self, fn: Callable) -> T:
         """Return value if possible, or a value returned from passed Callable."""
 
     @abstractmethod
-    def or_else(self, fn: Callable, *args, **kwargs) -> IMonad[T]:
+    def or_else(self, fn: Callable) -> IMonad[T]:
         """Return self or another IMonad created from fn"""
