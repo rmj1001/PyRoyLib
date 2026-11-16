@@ -363,5 +363,21 @@ class TestMaybe(unittest.TestCase):
             returner(2), Some(2)
         )
 
+    def test_immutability(self):
+        some = Some(1)
+        nada = Nada()
+
+        with self.assertRaises(Exception):
+            some.testing = 5
+
+        with self.assertRaises(Exception):
+            some.value = 5
+
+        with self.assertRaises(Exception):
+            nada.testing = 5
+
+        with self.assertRaises(Exception):
+            nada.value = 5
+
 if __name__ == '__main__':
     unittest.main()

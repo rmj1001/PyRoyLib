@@ -21,11 +21,32 @@ class ResultVariant(StrEnum):
 
 class Result[T, E]:
     """Rust-style result"""
-    __match_args__ = ('value',)
+    __match_args__ = ('_value',)
+    __slots__ = ('_value', '_state')
 
     def __init__(self, value: T | E, state: ResultVariant = ResultVariant.OK):
-        self.value: T | E = value
-        self.state: ResultVariant = state
+        self._value: T | E = value
+        self._state: ResultVariant = state
+
+    @property
+    def value(self) -> T | E:
+        """
+        FOR INTERNAL USE ONLY.
+
+        Do not check this outside of the Result class.
+        :return: self._value
+        """
+        return self._value
+
+    @property
+    def state(self) -> ResultVariant:
+        """
+        FOR INTERNAL USE ONLY.
+
+        Do not check this outside of the Result class.
+        :return: self._state
+        """
+        return self._state
 
     def __bool__(self) -> bool:
         """
@@ -70,7 +91,7 @@ class Result[T, E]:
         if not isinstance(other, Result):
             return NotImplemented
 
-        return self.value == other.value and self.state == other.state
+        return self.value == other._value and self.state == other._state
 
     def __ne__(self, other: object) -> bool:
         """
@@ -90,7 +111,7 @@ class Result[T, E]:
         if not isinstance(other, Result):
             return NotImplemented
 
-        return self.value != other.value or self.state != other.state
+        return self.value != other._value or self.state != other._state
 
     def and_then[U](self, fn: Callable[[T], Result[U, E]]) -> "Result[U,E]":
         """
@@ -630,6 +651,7 @@ class Result[T, E]:
 
 class Ok[T, E](Result[T, E]):
     """Create a Result[T, E] with an Ok variant"""
+    __slots__ = ()
 
     def __init__(self, value: T) -> None:
         super().__init__(value, ResultVariant.OK)
@@ -637,6 +659,7 @@ class Ok[T, E](Result[T, E]):
 
 class Err[T, E](Result[T, E]):
     """Create a Result[T, E] with an Err variant"""
+    __slots__ = ()
 
     def __init__(self, error: E) -> None:
         super().__init__(error, ResultVariant.ERR)

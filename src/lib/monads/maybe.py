@@ -14,10 +14,21 @@ class MaybeException[E](Exception):
 
 class Maybe[T]:
     """Rust-style option"""
-    __match_args__ = ('value',)
+    __match_args__ = ('_value',)
+    __slots__ = ('_value',)
 
     def __init__(self, value: T | None):
-        self.value: T | None = value
+        self._value: T | None = value
+
+    @property
+    def value(self) -> T:
+        """
+        FOR INTERNAL USE ONLY.
+
+        Do not check this outside of the Maybe class.
+        :return: self._value
+        """
+        return self._value
 
     def __bool__(self) -> bool:
         """
@@ -591,6 +602,7 @@ class Maybe[T]:
 
 class Some[T](Maybe[T]):
     """Creates a Maybe[T] with a non-None value"""
+    __slots__ = ()
 
     def __init__(self, value: T):
         if value is None:
@@ -601,6 +613,7 @@ class Some[T](Maybe[T]):
 
 class Nada[T](Maybe[T]):
     """Creates a Maybe[T] with a None value"""
+    __slots__ = ()
 
     def __init__(self):
         super().__init__(None)

@@ -46,15 +46,13 @@ class TestResult(unittest.TestCase):
         """Test Result.ok()"""
         res = Ok(1)
 
-        self.assertEqual(res.value, 1)
-        self.assertEqual(res.state, ResultVariant.OK)
+        self.assertEqual(res, Result(1, ResultVariant.OK))
 
     def test_err(self):
         """Test Result.err()"""
         res = Err("Error")
 
-        self.assertEqual(res.value, 'Error')
-        self.assertEqual(res.state, ResultVariant.ERR)
+        self.assertEqual(res, Result('Error', ResultVariant.ERR))
 
     def test_is_ok(self):
         """Test Result.is_ok()"""
@@ -322,6 +320,22 @@ class TestResult(unittest.TestCase):
 
         self.assertEqual(raises(False).unwrap(), True)
         self.assertEqual(raises(True).unwrap_err().args[0], msg)
+
+    def test_immutability(self):
+        ok = Ok(1)
+        err = Err(1)
+
+        with self.assertRaises(Exception):
+            ok.testing = 5
+
+        with self.assertRaises(Exception):
+            ok.value = 5
+
+        with self.assertRaises(Exception):
+            err.testing = 5
+
+        with self.assertRaises(Exception):
+            err.value = 5
 
 
 if __name__ == '__main__':
