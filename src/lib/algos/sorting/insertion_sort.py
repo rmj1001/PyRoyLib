@@ -1,4 +1,9 @@
-def insertion_sort[T](arr: list[T]):
+from copy import deepcopy
+
+def insertion_sort[T](arr: list[T], copy: bool = True) -> list[T]:
+    if copy:
+        arr = deepcopy(arr)
+
     n = len(arr)
 
     for i in range(1, n):
@@ -10,3 +15,5 @@ def insertion_sort[T](arr: list[T]):
                 insert_idx = j
 
         arr.insert(insert_idx, current_val)
+
+    return arr

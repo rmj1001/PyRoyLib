@@ -1,3 +1,4 @@
+from copy import deepcopy
 from src.lib.algos.sorting.swap import swap
 
 
@@ -15,13 +16,17 @@ def split[T](arr: list[T], start: int, end: int) -> int:
     return i + 1
 
 
-def quick_sort[T](arr: list[T], start: int | None = None, end: int | None = None) -> None:
+def quick_sort[T](arr: list[T], start: int = 0, end: int = -1, copy: bool = True) -> list[T]:
     """Quick sort a list[T]"""
+    if copy:
+        arr = deepcopy(arr)
+
     # Set start and end to the first and last element of the array if they aren't passed as args
-    start = 0 if start is None else start
-    end = len(arr)-1 if end is None else end
+    end = len(arr)-1 if end == -1 else end
 
     if start < end:
         pivot = split(arr, start, end)
         quick_sort(arr, start, pivot - 1)
         quick_sort(arr, pivot + 1, end)
+
+    return arr

@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 def merge[T](left: list[T], right: list[T]) -> list[T]:
     result: list[T] = []
     i = 0
@@ -17,7 +19,10 @@ def merge[T](left: list[T], right: list[T]) -> list[T]:
     return result
 
 
-def merge_sort[T](arr: list[T]) -> list[T]:
+def merge_sort[T](arr: list[T], copy: bool = True) -> list[T]:
+    if copy:
+        arr = deepcopy(arr)
+
     if len(arr) <= 1:
         return arr
 

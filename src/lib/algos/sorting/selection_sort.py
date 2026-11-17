@@ -1,7 +1,8 @@
+from copy import deepcopy
 from src.lib.algos.sorting.swap import swap
 
 
-def find_min(arr: list, start_index: int):
+def find_min[T](arr: list[T], start_index: int) -> int:
     min_index = start_index
     size = len(arr)
 
@@ -12,8 +13,13 @@ def find_min(arr: list, start_index: int):
     return min_index
 
 
-def selection_sort(arr: list):
+def selection_sort[T](arr: list[T], copy: bool = True) -> list[T]:
+    if copy:
+        arr = deepcopy(arr)
+
     size = len(arr)
     for start_index in range(0, size - 1, 1):
         min_index = find_min(arr, start_index)
         swap(arr, min_index, start_index)
+
+    return arr
